@@ -210,11 +210,8 @@ def main():
             if mp25_codes:
                 st.markdown('<h2 class="results-header">Select Codes to Keep</h2>', unsafe_allow_html=True)
                 
-                # Create code grid for display
-                cols = st.columns(4)
-                for i, code in enumerate(mp25_codes):
-                    with cols[i % 4]:
-                        st.markdown(f'<div class="code-item">{code}</div>', unsafe_allow_html=True)
+                # Show available codes in text
+                st.markdown(f"**Available codes:** {', '.join(mp25_codes)}")
                 
                 # Selection section
                 st.markdown('<div class="selection-section">', unsafe_allow_html=True)
