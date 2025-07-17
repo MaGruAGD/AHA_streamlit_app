@@ -1,19 +1,45 @@
+import streamlit as st
+import pandas as pd
+import re
+
+# --- Extract allowed codes from CSV ---
+def extract_mp25_codes(df):
+    DEFAULT_ALLOWED_CODES = [
+        "ANACHL", "BLT412", "BLT3", "BLT8", "CHLSU", "CHLPS", "CLPERF",
+        "DIVPR", "ECOLI", "ECORU", "ECF18Q", "EHDV", "HMELE", "HSOMN",
+        "LEPTO", "MGMS", "MYCBO", "MTGPS", "MSUIS", "PASMHY", "PCVT",
+        "PCV2", "PRRS", "PTBC", "SALDI", "SRPR3", "SRPR", "TETRA", "TOXO",
+        "A2", "BHBP", "BVD", "CEM", "CYSU", "INFA", "MHYO", "MSH", "PARVO",
+        "PIA", "SALM", "BLT"
+    ]
+    pattern = r'MP25(' + '|'.join(DEFAULT_ALLOWED_CODES) + r')[A-Z0-9]*'
+    all_text = df.astype(str).agg(' '.join, axis=1).str.cat(sep=' ')
+    matches = re.findall(pattern, all_text)
+    return sorted(set(matches))
+
+# --- Filter based on selected codes ---
+def filter_csv_by_codes(df, selected_codes):
+    if not selected_codes:
+        return pd.DataFrame()
+    pattern = r'MP25(' + '|'.join(re.escape(code) for code in selected_codes) + r')[A-Z0-9]*'
+    mask = df.astype(str).apply(lambda x: x.str.contains(pattern, regex=True, na=False)).any(axis=1)
+    return df[mask]
+
+# --- MAIN STREAMLIT APP ---
 def main():
     st.set_page_config(page_title="MP25 Filter", page_icon="🔬", layout="wide")
 
-    # Add wow-factor CSS
+    # --- Modern UI CSS ---
     st.markdown("""
         <style>
-            @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
-
             html, body, [class*="css"] {
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: linear-gradient(to right, #f0f4ff, #ffffff);
                 font-size: 15px;
-                background: radial-gradient(circle at top left, #f0f8ff, #ffffff);
             }
 
             .header {
-                font-size: 2.4rem;
+                font-size: 2rem;
                 font-weight: 800;
                 color: #003366;
                 margin-bottom: 1rem;
@@ -23,18 +49,17 @@ def main():
                 background: rgba(255, 255, 255, 0.85);
                 border-radius: 16px;
                 padding: 2rem;
-                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
                 border: 1px solid #dce6f0;
                 backdrop-filter: blur(8px);
             }
 
             .section {
-                background: rgba(240, 248, 255, 0.65);
+                background: #f7fbff;
                 padding: 1.5rem;
                 margin-top: 2rem;
                 border-radius: 14px;
-                box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-                transition: all 0.3s ease-in-out;
+                border: 1px solid #e0eaf5;
             }
 
             .code-grid {
@@ -42,7 +67,6 @@ def main():
                 grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
                 gap: 0.5rem;
                 margin-top: 1rem;
-                transition: all 0.4s ease;
             }
 
             .stButton button {
@@ -50,30 +74,26 @@ def main():
                 background-color: #003366;
                 color: white;
                 font-weight: bold;
-                transition: 0.2s ease;
             }
 
             .stButton button:hover {
                 background-color: #00509e;
                 transform: scale(1.02);
-            }
-
-            .stCheckbox > label {
-                font-weight: 600;
-                color: #003366;
+                transition: 0.2s;
             }
 
             .footer {
-                font-size: 0.9rem;
+                font-size: 0.85rem;
                 text-align: center;
                 margin-top: 3rem;
-                color: #666;
+                color: #777;
             }
         </style>
     """, unsafe_allow_html=True)
 
     st.markdown('<div class="header">🔬 MP25 Code Filter</div>', unsafe_allow_html=True)
 
+    # --- File Upload UI ---
     with st.container():
         st.markdown('<div class="upload-box">', unsafe_allow_html=True)
         uploaded_file = st.file_uploader("📂 Upload your CSV file with MP25 codes", type="csv")
@@ -135,3 +155,8 @@ def main():
             st.error(f"💥 Failed to process file. Error: {e}")
 
     st.markdown("<div class='footer'>🚀 Built with ❤️ using Streamlit</div>", unsafe_allow_html=True)
+
+
+# --- Run App ---
+if __name__ == "__main__":
+    main()
