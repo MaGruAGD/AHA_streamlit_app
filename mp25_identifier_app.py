@@ -245,37 +245,42 @@ def main():
         # Code selection for each run
         st.header("Code Selection for Runs")
         
-        tabs = st.tabs([f"Run {i+1}" for i in range(st.session_state.num_runs)])
-        
-        for i, tab in enumerate(tabs):
-            with tab:
-                run_num = i + 1
-                st.subheader(f"Select Analytical Codes for Run {run_num}")
+        # Create separate containers for each run instead of tabs to avoid key conflicts
+        for run_num in range(1, st.session_state.num_runs + 1):
+            with st.container():
+                st.subheader(f"Run {run_num} - Select Analytical Codes")
                 
                 if st.session_state.processor.analytical_codes:
                     # Create columns for checkboxes
                     cols = st.columns(4)
                     
+                    # Track checkbox changes
                     for j, code in enumerate(st.session_state.processor.analytical_codes):
                         col_idx = j % 4
                         
                         is_selected = code in st.session_state.selected_codes[run_num]
                         
-                        if cols[col_idx].checkbox(
+                        # Create unique key for each checkbox
+                        checkbox_key = f"run_{run_num}_code_{code}_{j}"
+                        
+                        checkbox_value = cols[col_idx].checkbox(
                             f"{code}",
                             value=is_selected,
-                            key=f"run_{run_num}_code_{code}"
-                        ):
-                            if code not in st.session_state.selected_codes[run_num]:
-                                st.session_state.selected_codes[run_num].append(code)
-                        else:
-                            if code in st.session_state.selected_codes[run_num]:
-                                st.session_state.selected_codes[run_num].remove(code)
+                            key=checkbox_key
+                        )
+                        
+                        # Update selected codes based on checkbox state
+                        if checkbox_value and code not in st.session_state.selected_codes[run_num]:
+                            st.session_state.selected_codes[run_num].append(code)
+                        elif not checkbox_value and code in st.session_state.selected_codes[run_num]:
+                            st.session_state.selected_codes[run_num].remove(code)
                 
                 # Display selected codes
                 if st.session_state.selected_codes[run_num]:
                     st.write(f"**Selected codes for Run {run_num}:**")
                     st.write(", ".join(st.session_state.selected_codes[run_num]))
+                
+                st.markdown("---")  # Add separator between runs
         
         # Volume Management
         st.header("Volume Management")
