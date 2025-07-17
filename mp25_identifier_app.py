@@ -174,7 +174,7 @@ class PlateSelector:
         selected_pos = selected_position
         
         # Plate rows
-        for row in self.rows:
+        for row_idx, row in enumerate(self.rows):
             row_cols = st.columns(13)
             row_cols[0].write(f"**{row}**")
             
@@ -182,9 +182,12 @@ class PlateSelector:
                 well_pos = f"{row}{col_num}"
                 is_selected = well_pos == selected_position
                 
+                # Create unique key with timestamp or counter to avoid conflicts
+                unique_key = f"{key}_{well_pos}_{row_idx}_{i}"
+                
                 if row_cols[i + 1].button(
                     well_pos,
-                    key=f"{key}_{well_pos}",
+                    key=unique_key,
                     type="primary" if is_selected else "secondary"
                 ):
                     selected_pos = well_pos
@@ -289,7 +292,7 @@ def main():
             st.subheader("Set Transfer Volumes")
             
             # Volume settings for each analytical code
-            for code in st.session_state.processor.analytical_codes:
+            for idx, code in enumerate(st.session_state.processor.analytical_codes):
                 default_vol = ANALYTICAL_CODES.get(code, {}).get('default_volume', 20)
                 current_vol = st.session_state.volume_settings.get(code, default_vol)
                 
@@ -299,7 +302,7 @@ def main():
                     max_value=1000,
                     value=current_vol,
                     step=5,
-                    key=f"vol_{code}"
+                    key=f"volume_slider_{code}_{idx}"
                 )
                 st.session_state.volume_settings[code] = new_vol
         
@@ -307,7 +310,7 @@ def main():
         st.header("Sample Addition System")
         
         with st.expander("Add New Samples", expanded=False):
-            sample_type = st.radio("Sample Type", ["Regular Samples", "Control Samples"])
+            sample_type = st.radio("Sample Type", ["Regular Samples", "Control Samples"], key="sample_type_radio")
             
             if sample_type == "Regular Samples":
                 st.subheader("Add Regular Sample")
@@ -319,21 +322,23 @@ def main():
                     if st.session_state.processor.pp25_codes:
                         selected_poolplaat = st.selectbox(
                             "Select Poolplaat:",
-                            st.session_state.processor.pp25_codes
+                            st.session_state.processor.pp25_codes,
+                            key="regular_poolplaat_select"
                         )
                     else:
-                        selected_poolplaat = st.text_input("Poolplaat Code:")
+                        selected_poolplaat = st.text_input("Poolplaat Code:", key="regular_poolplaat_input")
                     
                     # Position selection
-                    position = st.text_input("Starting Position (e.g., D2):", value="A1")
+                    position = st.text_input("Starting Position (e.g., D2):", value="A1", key="regular_position_input")
                     
                     # Target analysis
                     target_analysis = st.selectbox(
                         "Target Analysis:",
-                        st.session_state.processor.analytical_codes
+                        st.session_state.processor.analytical_codes,
+                        key="regular_target_analysis"
                     )
                     
-                    plate_number = st.number_input("Plate Number:", min_value=1, value=1)
+                    plate_number = st.number_input("Plate Number:", min_value=1, value=1, key="regular_plate_number")
                     
                     # Volume
                     volume = st.number_input(
@@ -341,12 +346,13 @@ def main():
                         min_value=0,
                         max_value=1000,
                         value=st.session_state.volume_settings.get(target_analysis, 20),
-                        step=5
+                        step=5,
+                        key="regular_volume_input"
                     )
                 
                 with col2:
                     # Plate selector
-                    if st.checkbox("Show Plate Selector"):
+                    if st.checkbox("Show Plate Selector", key="show_regular_plate_selector"):
                         selected_position = st.session_state.plate_selector.render_plate_selector(
                             "regular_sample",
                             position
@@ -354,7 +360,7 @@ def main():
                         position = selected_position
                 
                 # Add sample button
-                if st.button("Add Regular Sample"):
+                if st.button("Add Regular Sample", key="add_regular_sample_btn"):
                     sample_number = st.session_state.plate_selector.position_to_number(position)
                     
                     sample_data = {
@@ -379,7 +385,7 @@ def main():
                 analytical_code = st.selectbox(
                     "Select Analytical Code:",
                     st.session_state.processor.analytical_codes,
-                    key="control_analytical_code"
+                    key="control_analytical_code_select"
                 )
                 
                 # Show available controls for selected code
@@ -392,7 +398,7 @@ def main():
                     
                     # Control selection
                     control_names = [control[0] for control in controls]
-                    selected_control = st.selectbox("Select Control:", control_names)
+                    selected_control = st.selectbox("Select Control:", control_names, key="control_name_select")
                     
                     # Find position for selected control
                     control_position = None
@@ -408,11 +414,11 @@ def main():
                         max_value=1000,
                         value=st.session_state.volume_settings.get(analytical_code, 20),
                         step=5,
-                        key="control_volume"
+                        key="control_volume_input"
                     )
                     
                     # Add control button
-                    if st.button("Add Control Sample"):
+                    if st.button("Add Control Sample", key="add_control_sample_btn"):
                         sample_number = st.session_state.plate_selector.position_to_number(control_position)
                         
                         control_data = {
@@ -440,7 +446,7 @@ def main():
         # Export System
         st.header("Export Worklists")
         
-        if st.button("Generate Worklists"):
+        if st.button("Generate Worklists", key="generate_worklists_btn"):
             export_files = {}
             
             for run_num in range(1, st.session_state.num_runs + 1):
