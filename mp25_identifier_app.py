@@ -138,7 +138,6 @@ def main():
 
             if mp25_codes:
                 st.markdown('<h2 class="results-header">Select Codes to Keep</h2>', unsafe_allow_html=True)
-                st.markdown(f"**Available codes:** {', '.join(mp25_codes)}")
 
                 st.markdown('<div class="selection-section">', unsafe_allow_html=True)
                 st.markdown("**Choose which codes to keep in the filtered CSV:**")
