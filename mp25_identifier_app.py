@@ -492,7 +492,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
             volume,                    # Step1Volume
             analyseplaat_entry         # Step1Destination
         ]
-        
+                
         processor.add_row(row_data)
         
         # Determine which run this sample belongs to
@@ -513,17 +513,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
             st.toast(f"✅ Sample added to Run {run_for_sample}", icon="✅")
         else:
             st.toast(f"✅ Sample added successfully", icon="✅")
-        
-        # Use JavaScript to delay the rerun
-        st.html("""
-        <script>
-        setTimeout(function() {
-            window.parent.location.reload();
-        }, 3000);
-        </script>
-        """)
 
-             
         
 def volume_manager_interface(processor, allowed_codes):
     """Volume Manager interface to edit volumes for all MP25 codes"""
