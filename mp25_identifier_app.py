@@ -622,13 +622,25 @@ def step_select_codes():
         if run_num not in st.session_state.selected_codes:
             st.session_state.selected_codes[run_num] = []
         
-        # Multi-select for codes
-        selected = st.multiselect(
-            f"Select codes for Run {run_num}:",
-            options=available_codes,
-            default=st.session_state.selected_codes[run_num],
-            key=f"codes_run_{run_num}"
-        )
+        selected = []
+        
+        # Create columns for better layout (adjust number of columns as needed)
+        num_cols = 3
+        cols = st.columns(num_cols)
+        
+        for i, code in enumerate(available_codes):
+            col_idx = i % num_cols
+            with cols[col_idx]:
+                # Check if this code is already selected
+                is_selected = code in st.session_state.selected_codes[run_num]
+                
+                # Create checkbox
+                if st.checkbox(
+                    code,
+                    value=is_selected,
+                    key=f"checkbox_{run_num}_{code}"
+                ):
+                    selected.append(code)
         
         st.session_state.selected_codes[run_num] = selected
 
