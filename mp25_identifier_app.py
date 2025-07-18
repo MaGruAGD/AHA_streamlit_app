@@ -441,9 +441,7 @@ def well_plate_selector(key, title="Select Position", default_position="A1"):
                             use_container_width=True
                         ):
                             st.session_state[visual_state_key] = well_position
-                            # Update the main selector to match
-                            st.session_state[f"{key}_row"] = well_position[0]
-                            st.session_state[f"{key}_col"] = int(well_position[1:])
+                            # Force a rerun to update the visual selection
                             st.rerun()
             
             # Display selected position in popup
@@ -453,11 +451,11 @@ def well_plate_selector(key, title="Select Position", default_position="A1"):
             col_close1, col_close2, col_close3 = st.columns([1, 1, 1])
             with col_close2:
                 if st.button("✅ Apply & Close", key=f"{key}_close_popup", type="primary"):
-                    # Apply the visual selection to the main selector
+                    # Note: We cannot directly modify the selectbox values
+                    # The user needs to manually update the selectboxes to match their visual selection
                     visual_pos = st.session_state[visual_state_key]
-                    st.session_state[f"{key}_row"] = visual_pos[0]
-                    st.session_state[f"{key}_col"] = int(visual_pos[1:])
                     st.session_state[f"{key}_show_popup"] = False
+                    st.info(f"Please update the Row and Column dropdowns above to match your visual selection: {visual_pos}")
                     st.rerun()
     
     return position
