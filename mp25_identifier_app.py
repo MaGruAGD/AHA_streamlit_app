@@ -516,39 +516,65 @@ def add_row_interface(processor, allowed_codes, control_samples):
 
         
 def volume_manager_interface(processor, allowed_codes):
-    """Volume Manager interface to edit volumes for all MP25 codes"""
+    """Volume Manager interface to edit volumes for selected MP25 codes only"""
     st.header("Step 5: Volume Manager")
     
     if processor is None:
         st.warning("Please upload a CSV file first.")
         return
     
-    # Get all unique MP25 codes from the current dataframe
-    mp25_codes = set()
+    # Get codes that have been selected in the "Select Codes" step
+    selected_codes_from_runs = set()
+    for run_num, codes in st.session_state.selected_codes.items():
+        if codes:  # Only add if codes exist for this run
+            selected_codes_from_runs.update(codes)
+    
+    # Get codes that have been added through the "Add Rows" function
+    # by checking what MP25 codes are actually present in the current dataframe
+    added_codes_from_rows = set()
     for col in processor.df.columns:
         for value in processor.df[col].astype(str):
             for code in allowed_codes:
                 pattern = r'MP25' + re.escape(code) + r'(?:\d+)?'
                 if re.search(pattern, value):
-                    mp25_codes.add(code)
+                    added_codes_from_rows.add(code)
     
-    mp25_codes = sorted(list(mp25_codes))
+    # Combine both sets to get all relevant codes
+    relevant_codes = selected_codes_from_runs.union(added_codes_from_rows)
+    relevant_codes = sorted(list(relevant_codes))
     
-    if not mp25_codes:
-        st.warning("No MP25 codes found in the current data.")
+    if not relevant_codes:
+        st.warning("No codes selected or added yet. Please go to 'Select Codes' or 'Add Rows' first.")
         return
     
-    st.subheader("Edit Volumes for MP25 Codes")
-    st.write("Adjust the volumes for each MP25 code found in your data:")
+    st.subheader("Edit Volumes for Selected MP25 Codes")
+    st.write("Adjust the volumes for each MP25 code that you've selected or added:")
     
-    # Create volume inputs for each found MP25 code
+    # Show info about where codes came from
+    with st.expander("ℹ️ Code Sources", expanded=False):
+        if selected_codes_from_runs:
+            st.write("**From Selected Codes:**")
+            st.write(", ".join(sorted(selected_codes_from_runs)))
+        
+        if added_codes_from_rows:
+            st.write("**From Added Rows:**")
+            st.write(", ".join(sorted(added_codes_from_rows)))
+    
+    # Create volume inputs for each relevant MP25 code
     volume_changes = {}
     
-    for code in mp25_codes:
+    for code in relevant_codes:
         col1, col2, col3 = st.columns([2, 1, 1])
         
         with col1:
-            st.write(f"**MP25{code}**")
+            # Show indicator of where this code came from
+            indicators = []
+            if code in selected_codes_from_runs:
+                indicators.append("Selected")
+            if code in added_codes_from_rows:
+                indicators.append("Added")
+            
+            st.write(f"**MP25{code}** *({', '.join(indicators)})*")
         
         with col2:
             # Get current volume from the dataframe or use default
@@ -650,11 +676,29 @@ def step_select_codes():
         st.warning("Please upload a CSV file first.")
         return
     
-    available_codes = st.session_state.processor.codes
+    # Get codes from both the original CSV and any added rows
+    original_codes = st.session_state.processor.codes
+    
+    # Dynamically get codes from current dataframe (includes added rows)
+    current_codes = set()
+    for col in st.session_state.processor.df.columns:
+        for value in st.session_state.processor.df[col].astype(str):
+            for code in st.session_state.processor.allowed_codes:
+                pattern = r'(?:MP25|PP25)' + re.escape(code) + r'(?:\d+)?'
+                if re.search(pattern, value):
+                    current_codes.add(code)
+    
+    # Combine original and current codes
+    available_codes = sorted(list(set(original_codes).union(current_codes)))
     
     if not available_codes:
         st.warning("No codes found in the uploaded CSV file.")
         return
+    
+    # Show info about code sources if there are added codes
+    added_codes = set(available_codes) - set(original_codes)
+    if added_codes:
+        st.info(f"📝 Updated codes list includes {len(added_codes)} newly added code(s): {', '.join(sorted(added_codes))}")
     
     # Code selection for each run
     for run_num in range(1, st.session_state.num_runs + 1):
@@ -685,13 +729,18 @@ def step_select_codes():
                 # Check if this code is already used in another run
                 is_used_elsewhere = code in other_runs_codes
                 
+                # Add indicator for newly added codes
+                code_label = code
+                if code in added_codes:
+                    code_label = f"{code} ✨"  # Add sparkle emoji for added codes
+                
                 # Create checkbox - disabled if used in another run
                 checkbox_value = st.checkbox(
-                    code,
+                    code_label,
                     value=is_selected,
                     key=f"checkbox_{run_num}_{code}",
                     disabled=is_used_elsewhere,
-                    help=f"Already selected in another run" if is_used_elsewhere else None
+                    help=f"Already selected in another run" if is_used_elsewhere else ("Added via Add Rows" if code in added_codes else None)
                 )
                 
                 # Add to selected list if checked
