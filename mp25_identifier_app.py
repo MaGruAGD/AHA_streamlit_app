@@ -494,14 +494,16 @@ def add_row_interface(processor, allowed_codes, control_samples):
         ]
         
         processor.add_row(row_data)
-        # Debug: Check what's in selected_codes
-        st.write("DEBUG - Selected codes:", st.session_state.selected_codes)
-        st.write("DEBUG - Current selected_code:", selected_code)
-                
         # Determine which run this sample belongs to
         run_for_sample = None
         for run_num, codes in st.session_state.selected_codes.items():
-            if selected_code in codes:
+            # Convert codes to list of values if it's a dict-like structure
+            if isinstance(codes, dict):
+                code_list = list(codes.values())
+            else:
+                code_list = codes
+            
+            if selected_code in code_list:
                 run_for_sample = run_num
                 break
         
@@ -510,6 +512,10 @@ def add_row_interface(processor, allowed_codes, control_samples):
             st.success(f"✅ Sample added to Run {run_for_sample}")
         else:
             st.success(f"✅ Sample added successfully")
+
+        st.rerun()
+
+
         
         
 def volume_manager_interface(processor, allowed_codes):
