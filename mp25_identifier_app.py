@@ -624,6 +624,12 @@ def step_select_codes():
         
         selected = []
         
+        # Get all codes that are already selected in OTHER runs
+        other_runs_codes = set()
+        for other_run in range(1, st.session_state.num_runs + 1):
+            if other_run != run_num:
+                other_runs_codes.update(st.session_state.selected_codes.get(other_run, []))
+        
         # Create columns for better layout (adjust number of columns as needed)
         num_cols = 3
         cols = st.columns(num_cols)
@@ -634,11 +640,16 @@ def step_select_codes():
                 # Check if this code is already selected for this run
                 is_selected = code in st.session_state.selected_codes[run_num]
                 
-                # Create checkbox - each run gets its own unique key
+                # Check if this code is already used in another run
+                is_used_elsewhere = code in other_runs_codes
+                
+                # Create checkbox - disabled if used in another run
                 checkbox_value = st.checkbox(
                     code,
                     value=is_selected,
-                    key=f"checkbox_{run_num}_{code}"
+                    key=f"checkbox_{run_num}_{code}",
+                    disabled=is_used_elsewhere,
+                    help=f"Already selected in another run" if is_used_elsewhere else None
                 )
                 
                 # Add to selected list if checked
