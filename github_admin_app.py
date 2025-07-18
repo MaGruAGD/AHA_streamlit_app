@@ -15,12 +15,36 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Admin credentials (in production, use environment variables or secure storage)
-ADMIN_CREDENTIALS = {
-    "admin": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",  # 'password' hashed
-    "superuser": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",  # 'secret123' hashed
-    "andrew": "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3"   # 'secret' hashed
-}
+# Admin credentials - MUST be set via environment variables for security
+# DO NOT hardcode credentials in source code for production!
+def get_admin_credentials():
+    """Get admin credentials from environment variables"""
+    credentials = {}
+    
+    # Try to load from environment variables
+    admin_users = os.getenv('ADMIN_USERS', '').split(',')
+    
+    for user in admin_users:
+        if user.strip():
+            # Format: USERNAME:HASHED_PASSWORD
+            username = user.strip()
+            password_hash = os.getenv(f'ADMIN_PASSWORD_{username.upper()}')
+            if password_hash:
+                credentials[username] = password_hash
+    
+    # Fallback for development only - REMOVE IN PRODUCTION
+    if not credentials:
+        st.error("⚠️ WARNING: No admin credentials configured via environment variables!")
+        st.error("This is a SECURITY RISK in production. Please set ADMIN_USERS and ADMIN_PASSWORD_* environment variables.")
+        
+        # Development fallback - REMOVE THESE IN PRODUCTION
+        if os.getenv('ENVIRONMENT') == 'development':
+            st.warning("Using development credentials - NOT SECURE!")
+            credentials = {
+                "admin": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",  # 'password' - CHANGE THIS!
+            }
+    
+    return credentials
 
 # GitHub configuration
 GITHUB_CONFIG = {
@@ -184,9 +208,10 @@ def login_page():
             login_button = st.form_submit_button("Login", use_container_width=True)
             
             if login_button:
-                if username in ADMIN_CREDENTIALS:
+                admin_credentials = get_admin_credentials()
+                if username in admin_credentials:
                     hashed_password = hash_password(password)
-                    if hashed_password == ADMIN_CREDENTIALS[username]:
+                    if hashed_password == admin_credentials[username]:
                         st.session_state.logged_in = True
                         st.session_state.username = username
                         st.success("Login successful!")
