@@ -176,6 +176,30 @@ class CSVProcessor:
         
         return sorted(list(codes))
     
+    def get_pp25_ids(self, code):
+        """Get all PP25 IDs for a specific code from the CSV"""
+        pattern = r'PP25' + re.escape(code) + r'\d+'
+        pp25_ids = set()
+        
+        for col in self.df.columns:
+            for value in self.df[col].astype(str):
+                matches = re.findall(pattern, value)
+                pp25_ids.update(matches)
+        
+        return sorted(list(pp25_ids))
+    
+    def get_mp25_ids(self, code):
+        """Get all MP25 IDs for a specific code from the CSV"""
+        pattern = r'MP25' + re.escape(code) + r'\d+'
+        mp25_ids = set()
+        
+        for col in self.df.columns:
+            for value in self.df[col].astype(str):
+                matches = re.findall(pattern, value)
+                mp25_ids.update(matches)
+        
+        return sorted(list(mp25_ids))
+    
     def reset_data(self):
         """Reset data to original state"""
         self.df = self.original_df.copy()
@@ -283,6 +307,167 @@ def create_plate_selector(key_prefix, selected_position="A1"):
                     st.rerun()
     
     return st.session_state[f"{key_prefix}_selected"]
+
+def add_row_interface(processor, allowed_codes, control_samples):
+    """Enhanced add row interface with regular and control samples"""
+    st.header("Step 4: Add Rows")
+    
+    if processor is None:
+        st.warning("Please upload a CSV file first.")
+        return
+    
+    # Sample type selection
+    sample_type = st.radio(
+        "Sample Type:",
+        ["Regular Samples", "Control Samples"],
+        key="sample_type_radio"
+    )
+    
+    # Code selection
+    selected_code = st.selectbox(
+        "Select Code:",
+        options=allowed_codes,
+        key="code_selector"
+    )
+    
+    if not selected_code:
+        st.warning("Please select a code.")
+        return
+    
+    # Create two columns for Poolplaat and Analyseplaat
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("🧪 Poolplaat")
+        
+        # Get available PP25 IDs for the selected code
+        pp25_ids = processor.get_pp25_ids(selected_code)
+        
+        if pp25_ids:
+            poolplaat_id = st.selectbox(
+                "Poolplaat ID:",
+                options=pp25_ids,
+                key="poolplaat_id_selector"
+            )
+        else:
+            poolplaat_id = st.text_input(
+                "Poolplaat ID:",
+                value=f"PP25{selected_code}",
+                key="poolplaat_id_input"
+            )
+        
+        # Position input
+        poolplaat_position = st.text_input(
+            "Positie op poolplaat:",
+            value="A1",
+            key="poolplaat_position",
+            help="Enter position like A1, B2, etc."
+        )
+        
+        # Calculate sample number automatically
+        sample_number = position_to_sample_number(poolplaat_position)
+        st.text_input(
+            "Sample number:",
+            value=str(sample_number),
+            disabled=True,
+            key="sample_number_display",
+            help="Automatically calculated from position"
+        )
+    
+    with col2:
+        st.subheader("🔬 Analyseplaat")
+        
+        # Get available MP25 IDs for the selected code
+        mp25_ids = processor.get_mp25_ids(selected_code)
+        
+        if mp25_ids:
+            analyseplaat_id = st.selectbox(
+                "Analyseplaat ID:",
+                options=mp25_ids,
+                key="analyseplaat_id_selector"
+            )
+        else:
+            analyseplaat_id = st.text_input(
+                "Analyseplaat ID:",
+                value=f"MP25{selected_code}",
+                key="analyseplaat_id_input"
+            )
+        
+        # Control sample selection (only for control samples)
+        if sample_type == "Control Samples":
+            if selected_code in control_samples:
+                control_options = control_samples[selected_code]['names']
+                control_positions = control_samples[selected_code]['positions']
+                
+                selected_control_idx = st.selectbox(
+                    "Control Sample:",
+                    options=range(len(control_options)),
+                    format_func=lambda x: control_options[x],
+                    key="control_sample_selector"
+                )
+                
+                # Automatically set position based on control sample
+                analyseplaat_position = control_positions[selected_control_idx]
+                st.text_input(
+                    "Positie op analyseplaat:",
+                    value=analyseplaat_position,
+                    disabled=True,
+                    key="analyseplaat_position_control",
+                    help="Position automatically set based on control sample"
+                )
+            else:
+                st.warning(f"No control samples defined for code {selected_code}")
+                analyseplaat_position = "A1"
+        else:
+            # Regular samples - allow manual position selection
+            analyseplaat_position = st.text_input(
+                "Positie op analyseplaat:",
+                value="A1",
+                key="analyseplaat_position_regular",
+                help="Enter position like A1, B2, etc."
+            )
+    
+    # Get volume for the selected code
+    volume = CUSTOM_DEFAULTS.get(selected_code, 20)
+    
+    # Add sample button
+    if st.button("➕ Add Sample", type="primary", use_container_width=True):
+        # Validate inputs
+        if not poolplaat_id or not poolplaat_position or not analyseplaat_id or not analyseplaat_position:
+            st.error("Please fill in all required fields.")
+            return
+        
+        # Create the row in the specified format
+        # Format: """PP25CODE"":position",100,Sample number,Sample,1 M,,,"""PP25CODE"":position",volume,"""MP25CODE"":position"
+        poolplaat_entry = f'"{poolplaat_id}":{poolplaat_position}'
+        analyseplaat_entry = f'"{analyseplaat_id}":{analyseplaat_position}'
+        
+        row_data = [
+            poolplaat_entry,  # Column 0
+            100,              # Column 1
+            f"Sample {sample_number}",  # Column 2
+            "Sample",         # Column 3
+            "1 M",           # Column 4
+            "",              # Column 5
+            "",              # Column 6
+            "",              # Column 7
+            poolplaat_entry, # Column 8
+            volume,          # Column 9
+            analyseplaat_entry  # Column 10
+        ]
+        
+        # Ensure we have enough columns
+        while len(row_data) < len(processor.df.columns):
+            row_data.append("")
+        
+        # Add the row to the processor
+        processor.add_row(row_data)
+        
+        st.success(f"✅ Added {sample_type.lower()[:-1]} for code {selected_code}")
+        st.info(f"Added: {poolplaat_entry} → {analyseplaat_entry} (Volume: {volume})")
+        
+        # Clear the form by rerunning
+        st.rerun()
 
 def initialize_session_state():
     """Initialize session state variables"""
@@ -402,8 +587,6 @@ def main():
             except Exception as e:
                 st.error(f"Error reading CSV file: {str(e)}")
     
-    # ... (rest of your steps remain the same, but use the loaded allowed_codes and control_samples)
-    
     elif step == "2. Select Runs":
         st.header("Step 2: Select Number of Runs")
         
@@ -420,7 +603,142 @@ def main():
         
         st.success(f"Selected {st.session_state.num_runs} run(s)")
     
-    # ... (continue with remaining steps, using control_samples variable instead of CONTROL_SAMPLES)
+    elif step == "3. Select Codes":
+        st.header("Step 3: Select Codes and Volumes")
+        
+        if st.session_state.processor is None:
+            st.warning("Please upload a CSV file first.")
+            return
+        
+        available_codes = st.session_state.processor.codes
+        
+        if not available_codes:
+            st.warning("No codes found in the uploaded CSV file.")
+            return
+        
+        # Code selection for each run
+        for run_num in range(1, st.session_state.num_runs + 1):
+            st.subheader(f"Run {run_num}")
+            
+            # Initialize selected codes for this run
+            if run_num not in st.session_state.selected_codes:
+                st.session_state.selected_codes[run_num] = []
+            
+            # Multi-select for codes
+            selected = st.multiselect(
+                f"Select codes for Run {run_num}:",
+                options=available_codes,
+                default=st.session_state.selected_codes[run_num],
+                key=f"codes_run_{run_num}"
+            )
+            
+            st.session_state.selected_codes[run_num] = selected
+            
+            # Volume settings for selected codes
+            if selected:
+                st.write("**Volume Settings:**")
+                for code in selected:
+                    col1, col2 = st.columns([3, 1])
+                    with col1:
+                        st.write(f"Code: {code}")
+                    with col2:
+                        default_volume = CUSTOM_DEFAULTS.get(code, 20)
+                        volume = st.number_input(
+                            f"Volume",
+                            min_value=1,
+                            max_value=100,
+                            value=st.session_state.volumes.get(f"{run_num}_{code}", default_volume),
+                            key=f"volume_{run_num}_{code}",
+                            label_visibility="collapsed"
+                        )
+                        st.session_state.volumes[f"{run_num}_{code}"] = volume
+    
+    elif step == "4. Add Rows":
+        add_row_interface(st.session_state.processor, allowed_codes, control_samples)
+    
+    elif step == "5. Process Data":
+        st.header("Step 5: Process Data")
+        
+        if st.session_state.processor is None:
+            st.warning("Please upload a CSV file first.")
+            return
+        
+        if not any(st.session_state.selected_codes.values()):
+            st.warning("Please select codes for processing.")
+            return
+        
+        if st.button("🔄 Process Data", type="primary"):
+            st.session_state.filtered_data = {}
+            
+            for run_num in range(1, st.session_state.num_runs + 1):
+                selected_codes = st.session_state.selected_codes.get(run_num, [])
+                
+                if selected_codes:
+                    # Filter data
+                    filtered_df = st.session_state.processor.filter_data(selected_codes, run_num)
+                    
+                    # Apply volumes
+                    volumes = {}
+                    for code in selected_codes:
+                        volume_key = f"{run_num}_{code}"
+                        if volume_key in st.session_state.volumes:
+                            volumes[code] = st.session_state.volumes[volume_key]
+                    
+                    if volumes:
+                        filtered_df = st.session_state.processor.apply_volumes(filtered_df, volumes)
+                    
+                    st.session_state.filtered_data[run_num] = filtered_df
+            
+            st.session_state.data_processed = True
+            st.success("✅ Data processed successfully!")
+        
+        # Display processed data
+        if st.session_state.data_processed and st.session_state.filtered_data:
+            for run_num, df in st.session_state.filtered_data.items():
+                st.subheader(f"Run {run_num} - Processed Data")
+                st.write(f"**Rows:** {len(df)}")
+                st.dataframe(df, use_container_width=True)
+    
+    elif step == "6. Download Results":
+        st.header("Step 6: Download Results")
+        
+        if not st.session_state.data_processed or not st.session_state.filtered_data:
+            st.warning("Please process data first.")
+            return
+        
+        # Download options
+        download_format = st.radio(
+            "Download Format:",
+            ["Separate files for each run", "Combined file with all runs"],
+            horizontal=True
+        )
+        
+        if download_format == "Separate files for each run":
+            for run_num, df in st.session_state.filtered_data.items():
+                csv_data = df.to_csv(index=False, quoting=1)
+                st.download_button(
+                    label=f"📥 Download Run {run_num}",
+                    data=csv_data,
+                    file_name=f"processed_run_{run_num}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    mime="text/csv",
+                    use_container_width=True
+                )
+        
+        else:
+            # Combine all runs
+            combined_df = pd.concat(st.session_state.filtered_data.values(), ignore_index=True)
+            csv_data = combined_df.to_csv(index=False, quoting=1)
+            st.download_button(
+                label="📥 Download Combined Results",
+                data=csv_data,
+                file_name=f"processed_combined_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
+            
+            st.subheader("Combined Results Preview")
+            st.write(f"**Total Rows:** {len(combined_df)}")
+            st.dataframe(combined_df, use_container_width=True)
 
 if __name__ == "__main__":
     main()
