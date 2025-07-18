@@ -533,7 +533,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
             )
         
         # Use the improved well plate selector
-        poolplaat_position = well_plate_selector_compact(
+        poolplaat_position = well_plate_selector(
             key="poolplaat_position_selector",
             title="Select position on poolplaat",
             default_position="A1"
@@ -595,7 +595,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
                 analyseplaat_position = "A1"
         else:
             # Regular samples - use improved well plate selector
-            analyseplaat_position = well_plate_selector_compact(
+            analyseplaat_position = well_plate_selector(
                 key="analyseplaat_position_selector",
                 title="Select position on analyseplaat",
                 default_position="A1"
