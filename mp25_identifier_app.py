@@ -478,39 +478,30 @@ def main():
             ["1. Upload CSV", "2. Select Runs", "3. Select Codes", "4. Add Rows", "5. Process Data", "6. Download Results"]
         )
         
-        # Push content to bottom using empty space
-        st.write("")
-        st.write("")
-        st.write("")
-        st.write("")
-        st.write("")
-        st.write("")
-        st.write("")
-        st.write("")
-        st.write("")
-        st.write("")
-        st.write("")
-        st.write("")
-        st.write("")
-        st.write("")
-        st.write("")
-        st.write("")
-        st.write("")
-        st.write("")
-        st.write("")
-        st.write("")
-        st.write("")
-        st.write("")
-        st.write("")
+        # CSS to position reset button at bottom of sidebar
+        st.markdown("""
+        <style>
+        .sidebar-bottom {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: calc(100% - 40px);
+            max-width: 300px;
+            z-index: 999;
+        }
+        </style>
+        """, unsafe_allow_html=True)
         
-        # Reset button at actual bottom of sidebar
+        # Reset button container
         if st.session_state.get('processor') is not None:
-            if st.button("🔄 Reset to Original Data", key="sidebar_reset"):
+            st.markdown('<div class="sidebar-bottom">', unsafe_allow_html=True)
+            if st.button("🔄 Reset to Original Data", key="sidebar_reset", use_container_width=True):
                 st.session_state.processor.reset_data()
                 st.session_state.data_processed = False
                 st.session_state.filtered_data = {}
                 st.success("Data reset to original state!")
                 st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
     
     # Main content area
     if step == "1. Upload CSV":
