@@ -513,10 +513,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
         else:
             st.success(f"✅ Sample added successfully")
 
-        st.rerun()
-
-
-        
+             
         
 def volume_manager_interface(processor, allowed_codes):
     """Volume Manager interface to edit volumes for all MP25 codes"""
