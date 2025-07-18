@@ -45,37 +45,32 @@ def initialize_database():
     """Initialize database from various sources"""
     st.subheader("Database Configuration")
     
+    # Try to load from GitHub automatically first
+    repo_url = "MaGruAGD/AHA_streamlit_app"
+    filename = "database.json"
+    
+    # Show loading message
+    with st.spinner("Loading database from GitHub..."):
+        database = load_database_from_github(repo_url, filename=filename)
+    
+    if database:
+        st.success(f"✅ Database loaded from GitHub repository: {repo_url}")
+        st.session_state.database = database
+        return database
+    
+    # If GitHub loading failed, show fallback options
+    st.warning("⚠️ Could not load database from GitHub. Choose an alternative:")
+    
     # Database source selection
     source = st.radio(
         "Database Source:",
-        ["GitHub Repository", "Upload File", "Use Default"],
+        ["Upload File", "Use Default"],
         help="Choose how to load the database configuration"
     )
     
     database = None
     
-    if source == "GitHub Repository":
-        col1, col2 = st.columns(2)
-        with col1:
-            repo_url = st.text_input(
-                "Repository (owner/repo):", 
-                value="yourusername/your-repo",
-                help="Format: username/repository-name"
-            )
-        with col2:
-            filename = st.text_input(
-                "Database filename:", 
-                value="database.json",
-                help="JSON file containing the database"
-            )
-        
-        if st.button("Load from GitHub"):
-            database = load_database_from_github(repo_url, filename=filename)
-            if database:
-                st.success("✅ Database loaded from GitHub!")
-                st.session_state.database = database
-    
-    elif source == "Upload File":
+    if source == "Upload File":
         uploaded_file = st.file_uploader(
             "Upload Database File",
             type=['json'],
@@ -369,6 +364,7 @@ def main():
         # Database info
         st.markdown("---")
         st.subheader("Database Info")
+        st.write(f"**Source:** MaGruAGD/AHA_streamlit_app")
         st.write(f"**Loaded codes:** {len(allowed_codes)}")
         if st.button("🔄 Reload Database"):
             st.session_state.database_loaded = False
