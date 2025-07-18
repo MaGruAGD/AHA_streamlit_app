@@ -206,7 +206,7 @@ def main():
     # Sidebar for navigation
     with st.sidebar:
         st.header("Navigation")
-        step = st.selectbox(
+        step = st.radio(
             "Select Step:",
             ["1. Upload CSV", "2. Select Runs", "3. Select Codes", "4. Add Rows", "5. Process Data", "6. Download Results"]
         )
