@@ -504,8 +504,8 @@ def main():
 
                 else:
                     st.warning("No valid codes found in the CSV file.")                       
-                        st.write("**Looking for patterns like:** MP25[CODE] or PP25[CODE]")
-                        st.write("**Available codes:** " + ", ".join(DEFAULT_ALLOWED_CODES[:10]) + "...")
+                    st.write("**Looking for patterns like:** MP25[CODE] or PP25[CODE]")
+                    st.write("**Available codes:** " + ", ".join(DEFAULT_ALLOWED_CODES[:10]) + "...")
                 
             except Exception as e:
                 st.error(f"Error reading CSV file: {str(e)}")
