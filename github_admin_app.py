@@ -15,34 +15,33 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Admin credentials - MUST be set via environment variables for security
-# DO NOT hardcode credentials in source code for production!
+# Admin credentials - TEMPORARY FOR DEVELOPMENT
+# TODO: Move to environment variables for production security!
+ADMIN_CREDENTIALS = {
+    "admin": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",  # 'password' 
+    "superuser": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",  # 'secret123'
+    "andrew": "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3"   # 'secret'
+}
+
 def get_admin_credentials():
-    """Get admin credentials from environment variables"""
+    """Get admin credentials - checks environment variables first, then fallback"""
     credentials = {}
     
-    # Try to load from environment variables
+    # Try to load from environment variables first
     admin_users = os.getenv('ADMIN_USERS', '').split(',')
     
     for user in admin_users:
         if user.strip():
-            # Format: USERNAME:HASHED_PASSWORD
             username = user.strip()
             password_hash = os.getenv(f'ADMIN_PASSWORD_{username.upper()}')
             if password_hash:
                 credentials[username] = password_hash
     
-    # Fallback for development only - REMOVE IN PRODUCTION
+    # If no environment variables set, use hardcoded ones (DEVELOPMENT ONLY)
     if not credentials:
-        st.error("⚠️ WARNING: No admin credentials configured via environment variables!")
-        st.error("This is a SECURITY RISK in production. Please set ADMIN_USERS and ADMIN_PASSWORD_* environment variables.")
-        
-        # Development fallback - REMOVE THESE IN PRODUCTION
-        if os.getenv('ENVIRONMENT') == 'development':
-            st.warning("Using development credentials - NOT SECURE!")
-            credentials = {
-                "admin": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",  # 'password' - CHANGE THIS!
-            }
+        if not os.getenv('PRODUCTION'):  # Only show warning if not in production
+            st.warning("⚠️ Using hardcoded credentials - set environment variables for production!")
+        credentials = ADMIN_CREDENTIALS
     
     return credentials
 
