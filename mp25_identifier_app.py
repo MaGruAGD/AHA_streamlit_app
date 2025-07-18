@@ -405,11 +405,7 @@ def position_to_sample_number(position):
     
     row_num = ord(row) - ord('A') + 1
     return (row_num - 1) * 12 + col
-
-def create_96_well_plate_selector(key_prefix, selected_position="A1"):
-    """Create a 96-well plate selector widget"""
-    st.write("96-Well Plate Selector:")
-    
+   
     # Initialize session state for plate selector
     if f"{key_prefix}_selected" not in st.session_state:
         st.session_state[f"{key_prefix}_selected"] = selected_position
@@ -490,32 +486,8 @@ def main():
                 use_container_width=True
             ):
                 st.session_state.current_step = step_name
-                st.rerun()
-        
-        # CSS and reset button at bottom (same as before)
-        st.markdown("""
-        <style>
-        .sidebar-bottom {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            width: calc(100% - 40px);
-            max-width: 300px;
-            z-index: 999;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-        
-        if st.session_state.get('processor') is not None:
-            st.markdown('<div class="sidebar-bottom">', unsafe_allow_html=True)
-            if st.button("🔄 Reset to Original Data", key="sidebar_reset", use_container_width=True):
-                st.session_state.processor.reset_data()
-                st.session_state.data_processed = False
-                st.session_state.filtered_data = {}
-                st.success("Data reset to original state!")
-                st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
-                
+                st.rerun()    
+               
     # Main content area
     step = st.session_state.current_step
     if step == "1. Upload CSV":
@@ -634,24 +606,14 @@ def main():
                     # Position input with plate selector
                     pp25_position = st.text_input("Position:", value="A1", key="pp25_pos")
                     
-                    if st.checkbox("Show Plate Selector", key="show_pp25_plate"):
-                        selected_pos = create_96_well_plate_selector("pp25", pp25_position)
-                        if selected_pos != pp25_position:
-                            st.session_state.pp25_pos = selected_pos
-                            st.rerun()
-            
+                                
             with col2:
                 st.subheader("Analyseplaat (MP25)")
                 mp25_code = st.selectbox("MP25 Code:", st.session_state.processor.codes)
                 mp25_num = st.number_input("Number:", min_value=1, max_value=999, value=1)
                 mp25_position = st.text_input("Position:", value="A1", key="mp25_pos")
                 
-                if st.checkbox("Show Plate Selector", key="show_mp25_plate"):
-                    selected_pos = create_96_well_plate_selector("mp25", mp25_position)
-                    if selected_pos != mp25_position:
-                        st.session_state.mp25_pos = selected_pos
-                        st.rerun()
-            
+           
             # Control sample specific options
             if sample_type == "Control Sample":
                 if mp25_code in CONTROL_SAMPLES:
