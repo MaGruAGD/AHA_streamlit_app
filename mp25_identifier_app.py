@@ -494,7 +494,10 @@ def add_row_interface(processor, allowed_codes, control_samples):
         ]
         
         processor.add_row(row_data)
-        
+        # Debug: Check what's in selected_codes
+        st.write("DEBUG - Selected codes:", st.session_state.selected_codes)
+        st.write("DEBUG - Current selected_code:", selected_code)
+                
         # Determine which run this sample belongs to
         run_for_sample = None
         for run_num, codes in st.session_state.selected_codes.items():
