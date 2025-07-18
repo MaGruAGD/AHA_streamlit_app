@@ -257,6 +257,9 @@ def well_plate_selector(key, title="Select Position", default_position="A1"):
     Returns the selected position (e.g., "A1", "B2", etc.)
     """
     
+    # Create a unique key for this component instance
+    component_key = f"well_plate_{key}"
+    
     # HTML/CSS/JS for the well plate selector
     html_code = f"""
     <!DOCTYPE html>
@@ -321,9 +324,11 @@ def well_plate_selector(key, title="Select Position", default_position="A1"):
             }}
             .well:hover {{
                 background-color: #e5e7eb;
+                border-color: #3b82f6;
             }}
             .well.selected {{
                 background-color: #3b82f6;
+                border-color: #1e40af;
                 color: white;
             }}
             .selected-display {{
@@ -370,11 +375,15 @@ def well_plate_selector(key, title="Select Position", default_position="A1"):
 
         <script>
             let selectedPosition = '{default_position}';
+            let isInitialized = false;
             
             function generateWells() {{
                 const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
                 const cols = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
                 const grid = document.getElementById('well-grid');
+                
+                // Clear existing wells
+                grid.innerHTML = '';
                 
                 rows.forEach((row, rowIndex) => {{
                     const rowContainer = document.createElement('div');
@@ -437,24 +446,119 @@ def well_plate_selector(key, title="Select Position", default_position="A1"):
                 document.getElementById('selected-position').textContent = position;
                 
                 // Send position back to Streamlit
-                window.parent.postMessage({{
-                    type: 'streamlit:setComponentValue',
-                    value: position
-                }}, '*');
+                try {{
+                    if (window.parent && window.parent.postMessage) {{
+                        window.parent.postMessage({{
+                            type: 'streamlit:setComponentValue',
+                            value: position
+                        }}, '*');
+                    }}
+                }} catch (e) {{
+                    console.log('Could not send message to parent:', e);
+                }}
             }}
             
-            // Initialize the plate
-            generateWells();
+            // Initialize the plate when DOM is ready
+            function initializePlate() {{
+                if (!isInitialized) {{
+                    generateWells();
+                    isInitialized = true;
+                    
+                    // Send initial value
+                    try {{
+                        if (window.parent && window.parent.postMessage) {{
+                            window.parent.postMessage({{
+                                type: 'streamlit:setComponentValue',
+                                value: selectedPosition
+                            }}, '*');
+                        }}
+                    }} catch (e) {{
+                        console.log('Could not send initial message to parent:', e);
+                    }}
+                }}
+            }}
+            
+            // Initialize when DOM is loaded
+            if (document.readyState === 'loading') {{
+                document.addEventListener('DOMContentLoaded', initializePlate);
+            }} else {{
+                initializePlate();
+            }}
         </script>
     </body>
     </html>
     """
     
-    # Render the component
-    selected_position = components.html(html_code, height=400, key=key)
+    try:
+        # Render the component with error handling
+        selected_position = components.html(
+            html_code, 
+            height=400, 
+            key=component_key
+        )
+        
+        # Return the selected position or default
+        return selected_position if selected_position else default_position
+        
+    except Exception as e:
+        # Fallback to a simple selectbox if HTML component fails
+        st.warning(f"Well plate selector unavailable, using dropdown instead.")
+        
+        # Create all possible positions
+        rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+        cols = list(range(1, 13))
+        positions = [f"{row}{col}" for row in rows for col in cols]
+        
+        # Use selectbox as fallback
+        return st.selectbox(
+            title,
+            options=positions,
+            index=positions.index(default_position) if default_position in positions else 0,
+            key=f"fallback_{component_key}"
+        )
+
+
+# Alternative simplified version using native Streamlit components
+def well_plate_selector_simple(key, title="Select Position", default_position="A1"):
+    """
+    Simplified well plate selector using native Streamlit components
+    """
+    st.write(f"**{title}**")
     
-    # Return the selected position or default
-    return selected_position if selected_position else default_position
+    # Create row and column selectors
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        # Extract row from default position
+        default_row = default_position[0] if default_position else 'A'
+        selected_row = st.selectbox(
+            "Row:",
+            options=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'],
+            index=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].index(default_row),
+            key=f"{key}_row"
+        )
+    
+    with col2:
+        # Extract column from default position
+        try:
+            default_col = int(default_position[1:]) if len(default_position) > 1 else 1
+        except ValueError:
+            default_col = 1
+            
+        selected_col = st.selectbox(
+            "Column:",
+            options=list(range(1, 13)),
+            index=default_col - 1,
+            key=f"{key}_col"
+        )
+    
+    # Combine row and column
+    position = f"{selected_row}{selected_col}"
+    
+    # Show selected position
+    st.info(f"Selected position: **{position}**")
+    
+    return position
 
 def load_logo_from_github(repo_url, branch="main", filename="logo.png"):
     """Load logo from GitHub repository"""
