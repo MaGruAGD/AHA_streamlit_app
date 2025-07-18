@@ -267,21 +267,21 @@ def well_plate_selector_visual(key, title="Select Position", default_position="A
     rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     cols = list(range(1, 13))
     
-    # Column headers
+    # Column headers - centered
     header_cols = st.columns([1] + [1] * 12)
     with header_cols[0]:
         st.write("")  # Empty space for row labels
     for i, col_num in enumerate(cols):
         with header_cols[i + 1]:
-            st.write(f"**{col_num}**")
+            st.markdown(f"<div style='text-align: center; font-weight: bold;'>{col_num}</div>", unsafe_allow_html=True)
     
     # Well grid
     for row in rows:
         row_cols = st.columns([1] + [1] * 12)
         
-        # Row label
+        # Row label - centered
         with row_cols[0]:
-            st.write(f"**{row}**")
+            st.markdown(f"<div style='text-align: center; font-weight: bold; padding-top: 8px;'>{row}</div>", unsafe_allow_html=True)
         
         # Wells in this row
         for i, col_num in enumerate(cols):
@@ -305,7 +305,6 @@ def well_plate_selector_visual(key, title="Select Position", default_position="A
     st.info(f"Selected: **{st.session_state[state_key]}**")
     
     return st.session_state[state_key]
-
 
 def well_plate_selector_compact(key, title="Select Position", default_position="A1"):
     """
@@ -395,25 +394,22 @@ def well_plate_selector_grid(key, title="Select Position", default_position="A1"
     
     return selected_position
 
-
 def well_plate_selector(key, title="Select Position", default_position="A1"):
     """
-    Main well plate selector function with multiple options
+    Main well plate selector function with two options (removed Button Grid)
     """
     # Let user choose the selector type
     selector_type = st.radio(
         "Selector Style:",
-        ["Compact (Dropdowns)", "Visual Grid", "Button Grid"],
+        ["Compact (Dropdowns)", "Visual Grid"],
         key=f"{key}_selector_type",
         horizontal=True
     )
     
     if selector_type == "Compact (Dropdowns)":
         return well_plate_selector_compact(key, title, default_position)
-    elif selector_type == "Visual Grid":
+    else:  # Visual Grid
         return well_plate_selector_visual(key, title, default_position)
-    else:  # Button Grid
-        return well_plate_selector_grid(key, title, default_position)
 
 def load_logo_from_github(repo_url, branch="main", filename="logo.png"):
     """Load logo from GitHub repository"""
