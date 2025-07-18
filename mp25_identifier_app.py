@@ -751,7 +751,7 @@ def main():
             
             # Create download button
             st.download_button(
-                label=f"📥 Download Run {run} ({len(df_with_volumes)} rows)",
+                label=f"📥 Download Run {run}",
                 data=csv_data,
                 file_name=filename,
                 mime="text/csv",
