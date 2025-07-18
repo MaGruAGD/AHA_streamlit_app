@@ -494,6 +494,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
         ]
         
         processor.add_row(row_data)
+        
         # Determine which run this sample belongs to
         run_for_sample = None
         for run_num, codes in st.session_state.selected_codes.items():
@@ -507,11 +508,13 @@ def add_row_interface(processor, allowed_codes, control_samples):
                 run_for_sample = run_num
                 break
         
-        # Show run notification
+        # Show run notification with toast
         if run_for_sample:
-            st.success(f"✅ Sample added to Run {run_for_sample}")
+            st.toast(f"✅ Sample added to Run {run_for_sample}", icon="✅")
         else:
-            st.success(f"✅ Sample added successfully")
+            st.toast(f"✅ Sample added successfully", icon="✅")
+        
+        st.rerun()
 
              
         
