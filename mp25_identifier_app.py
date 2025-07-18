@@ -349,44 +349,101 @@ def well_plate_selector_compact(key, title="Select Position", default_position="
     return position
 
 
-def well_plate_selector(key: str, title: str, default_position: str = "A1"):
+ef well_plate_selector(key: str, title: str = "Select Position", default_position: str = "A1"):
     rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     cols = list(range(1, 13))
 
     row_key = f"{key}_row"
     col_key = f"{key}_col"
+    popup_key = f"{key}_show_popup"
+    visual_state_key = f"{key}_visual_state"
 
-    # Set defaults in session state if not already present
+    # Initialize session state for row and col if not present
     if row_key not in st.session_state:
         st.session_state[row_key] = default_position[0]
 
     if col_key not in st.session_state:
-        st.session_state[col_key] = int(default_position[1:])
+        try:
+            st.session_state[col_key] = int(default_position[1:])
+        except:
+            st.session_state[col_key] = 1
+
+    # Initialize visual selection state
+    if visual_state_key not in st.session_state:
+        st.session_state[visual_state_key] = f"{st.session_state[row_key]}{st.session_state[col_key]}"
 
     st.markdown(f"### {title}")
-    subcol1, subcol2 = st.columns([1, 2])
 
-    with subcol1:
+    col1, col2 = st.columns([3, 1])
+
+    with col1:
+        # Compact selectors
         selected_row = st.selectbox(
-            "Row",
+            "Row:",
             options=rows,
             index=rows.index(st.session_state[row_key]),
             key=f"{key}_row_dropdown"
         )
-
-    with subcol2:
         selected_col = st.selectbox(
-            "Column",
+            "Column:",
             options=cols,
             index=st.session_state[col_key] - 1,
             key=f"{key}_col_dropdown"
         )
 
-    # Auto-apply selections to session state
-    st.session_state[row_key] = selected_row
-    st.session_state[col_key] = selected_col
+        # Update session_state with dropdown selections
+        st.session_state[row_key] = selected_row
+        st.session_state[col_key] = selected_col
 
-    return f"{selected_row}{selected_col}"
+    with col2:
+        if st.button("🔍 Visual", key=f"{key}_visual_btn", help="Open visual well plate selector"):
+            st.session_state[popup_key] = True
+            # Sync visual selector to current dropdown selection when opening
+            st.session_state[visual_state_key] = f"{st.session_state[row_key]}{st.session_state[col_key]}"
+            st.experimental_rerun()
+
+    # Show popup if active
+    if st.session_state.get(popup_key, False):
+        with st.expander("🧬 Visual Well Plate Selector", expanded=True):
+            # Column headers
+            header_cols = st.columns([1] + [1] * 12)
+            with header_cols[0]:
+                st.write("")  # Empty corner for row labels
+            for i, col_num in enumerate(cols):
+                with header_cols[i + 1]:
+                    st.markdown(f"<div style='text-align: center; font-weight: bold;'>{col_num}</div>", unsafe_allow_html=True)
+
+            # Well grid
+            for row in rows:
+                row_cols = st.columns([1] + [1] * 12)
+                with row_cols[0]:
+                    st.markdown(f"<div style='text-align: center; font-weight: bold; padding-top: 8px;'>{row}</div>", unsafe_allow_html=True)
+                for i, col_num in enumerate(cols):
+                    well_pos = f"{row}{col_num}"
+                    with row_cols[i + 1]:
+                        is_selected = st.session_state[visual_state_key] == well_pos
+                        btn_label = "●" if is_selected else "○"
+                        # Use unique key for each button
+                        if st.button(
+                            btn_label,
+                            key=f"{key}_visual_well_{well_pos}",
+                            type="primary" if is_selected else "secondary",
+                            help=f"Select {well_pos}",
+                            use_container_width=True
+                        ):
+                            # Update visual selection
+                            st.session_state[visual_state_key] = well_pos
+                            # Also update main dropdown selections immediately
+                            st.session_state[row_key] = well_pos[0]
+                            st.session_state[col_key] = int(well_pos[1:])
+                            # Close popup immediately
+                            st.session_state[popup_key] = False
+                            st.experimental_rerun()
+
+            st.success(f"Visual selection: **{st.session_state[visual_state_key]}**")
+
+    # Return combined selected position string
+    return f"{st.session_state[row_key]}{st.session_state[col_key]}"
 
 def load_logo_from_github(repo_url, branch="main", filename="logo.png"):
     """Load logo from GitHub repository"""
