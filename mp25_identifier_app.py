@@ -798,46 +798,12 @@ def step_download_results():
 # Main Application
 
 def main():
-    # Fixed logo and title layout
-    logo_url = "https://raw.githubusercontent.com/MaGruAGD/AHA_streamlit_app/main/logo.png"
+    # Simple header without custom logo
+    st.title("🧪 AHA! - Andrew Helper App")
+    st.markdown("*CSV Processing Tool for Laboratory Data Analysis*")
     
-    try:
-        # Create a container for the header
-        header_container = st.container()
-        
-        with header_container:
-            # Create columns with proper spacing
-            col1, col2, col3 = st.columns([1, 6, 1])
-            
-            with col1:
-                st.image(logo_url, width=80)
-            
-            with col2:
-                # Center the title and subtitle
-                st.markdown(
-                    """
-                    <div style="text-align: center; margin-top: 10px;">
-                        <h1>🧪 AHA! - Andrew Helper App</h1>
-                        <p style="font-style: italic; color: #666; margin-top: -10px;">
-                            CSV Processing Tool for Laboratory Data Analysis
-                        </p>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
-            
-            with col3:
-                # Empty column for balance
-                pass
-        
-        # Add some spacing after the header
-        st.markdown("---")
-        
-    except Exception as e:
-        # Fallback if logo doesn't load
-        st.title("🧪 AHA! - Andrew Helper App")
-        st.markdown("*CSV Processing Tool for Laboratory Data Analysis*")
-        st.caption(f"Note: Logo loading failed - {str(e)}")
+    # Add some spacing after the header
+    st.markdown("---")
     
     initialize_session_state()
     
@@ -872,12 +838,11 @@ def main():
         step_select_codes()
     elif step == "4. Add Rows":
         add_row_interface(st.session_state.processor, allowed_codes, control_samples)
-    elif step == "5. Volume Manager":  # Add this new step
+    elif step == "5. Volume Manager":
         volume_manager_interface(st.session_state.processor, allowed_codes)
-    elif step == "6. Process Data":  # Update step number
+    elif step == "6. Process Data":
         step_process_data()
-    elif step == "7. Download Results":  # Update step number
+    elif step == "7. Download Results":
         step_download_results()
-
 if __name__ == "__main__":
     main()
