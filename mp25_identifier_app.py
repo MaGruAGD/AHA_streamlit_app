@@ -508,11 +508,15 @@ def add_row_interface(processor, allowed_codes, control_samples):
                 run_for_sample = run_num
                 break
         
-        # Show run notification with toast
+        # Show run notification with toast for 3 seconds
         if run_for_sample:
             st.toast(f"✅ Sample added to Run {run_for_sample}", icon="✅")
         else:
             st.toast(f"✅ Sample added successfully", icon="✅")
+        
+        # Small delay before rerun to let toast appear
+        import time
+        time.sleep(0.1)
         
         st.rerun()
 
