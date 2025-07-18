@@ -798,9 +798,18 @@ def step_download_results():
 # Main Application
 
 def main():
-    # Simple header without custom logo
-    st.title("🧪 AHA! - Andrew Helper App")
-    st.markdown("*CSV Processing Tool for Laboratory Data Analysis*")
+    # Centered header without custom logo
+    st.markdown(
+        """
+        <div style="text-align: center;">
+            <h1>🧪 AHA! - Andrew Helper App</h1>
+            <p style="font-style: italic; color: #666; margin-top: -10px;">
+                CSV Processing Tool for Laboratory Data Analysis
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
     
     # Add some spacing after the header
     st.markdown("---")
@@ -844,5 +853,6 @@ def main():
         step_process_data()
     elif step == "7. Download Results":
         step_download_results()
+        
 if __name__ == "__main__":
     main()
