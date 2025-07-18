@@ -13,48 +13,297 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Default allowed codes
-DEFAULT_ALLOWED_CODES = [
-    'ANACHL', 'A2', 'BHBP', 'BLT3', 'BLT8', 'BLT412', 'CA', 'CHOEST', 'CHOL', 'CK', 'CKD',
-    'ECORU', 'FERU', 'GLUC', 'GMAX', 'GMIN', 'HBTEST', 'HDLC', 'HPLIP', 'HSCRP', 'IRON',
-    'LIPA', 'LDLC', 'PHOS', 'PROZ', 'SRPR', 'SRPR3', 'TIBC', 'TRIG', 'UIBC', 'UREA', 'VITD'
-]
-
-# Control samples configuration
-CONTROL_SAMPLES = {
-    'ANACHL': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'A2': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'BHBP': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'BLT3': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'BLT8': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'BLT412': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'CA': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'CHOEST': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'CHOL': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'CK': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'CKD': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'ECORU': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'FERU': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'GLUC': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'GMAX': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'GMIN': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'HBTEST': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'HDLC': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'HPLIP': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'HSCRP': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'IRON': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'LIPA': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'LDLC': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'PHOS': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'PROZ': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'SRPR': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'SRPR3': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'TIBC': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'TRIG': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'UIBC': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'UREA': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
-    'VITD': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']}
+# Database from the attached file
+MERGED_DATABASE = {
+    "ANACHL": {
+        "allowed": True,
+        "control_samples": {
+            "pcs_ana": {"position": "G6", "name": "PCS ANA"},
+            "ncs_ana": {"position": "H6", "name": "NCS ANA"},
+            "pcs_chlam": {"position": "G12", "name": "PCS CHLAM"},
+            "ncs_chlam": {"position": "H12", "name": "NCS CHLAM"}
+        }
+    },
+    "A2": {
+        "allowed": True,
+        "control_samples": {
+            "pcs": {"position": "G12", "name": "PCS"},
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "BHBP": {
+        "allowed": True,
+        "control_samples": {
+            "ncs_hyo": {"position": "H9", "name": "NCS HYO"},
+            "ncs_pilo": {"position": "H12", "name": "NCS PILO"}
+        }
+    },
+    "BLT": {
+        "allowed": True,
+        "control_samples": {
+            "ref": {"position": "F12", "name": "REF"},
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "BLT3": {
+        "allowed": True,
+        "control_samples": {
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "BLT8": {
+        "allowed": True,
+        "control_samples": {
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "BLT412": {
+        "allowed": True,
+        "control_samples": {
+            "ncs_4": {"position": "H6", "name": "NCS 4"},
+            "ncs_12": {"position": "H12", "name": "NCS 12"}
+        }
+    },
+    "BVD": {
+        "allowed": True,
+        "control_samples": {
+            "ref": {"position": "F12", "name": "REF"},
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "CEM": {
+        "allowed": True,
+        "control_samples": {
+            "ref": {"position": "F12", "name": "REF"},
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "CYSU": {
+        "allowed": True,
+        "control_samples": {
+            "pcs": {"position": "G12", "name": "PCS"},
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "CHLSU": {
+        "allowed": True,
+        "control_samples": {
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "CHLPS": {
+        "allowed": True,
+        "control_samples": {
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "CLPERF": {
+        "allowed": True,
+        "control_samples": {
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "DIVPR": {
+        "allowed": True,
+        "control_samples": {
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "ECOLI": {
+        "allowed": True,
+        "control_samples": {
+            "ncs": {"position": "A12", "name": "NCS"}
+        }
+    },
+    "ECORU": {
+        "allowed": True,
+        "control_samples": {
+            "ncs": {"position": "A12", "name": "NCS"}
+        }
+    },
+    "EHDV": {
+        "allowed": True,
+        "control_samples": {
+            "ref": {"position": "F12", "name": "REF"},
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "HMELE": {
+        "allowed": True,
+        "control_samples": {
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "HSOMN": {
+        "allowed": True,
+        "control_samples": {
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "INFA": {
+        "allowed": True,
+        "control_samples": {
+            "ref": {"position": "F12", "name": "REF"},
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "LEPTO": {
+        "allowed": True,
+        "control_samples": {
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "MGMS": {
+        "allowed": True,
+        "control_samples": {
+            "ref": {"position": "E12", "name": "REF"},
+            "pcs_mg": {"position": "F12", "name": "PCS MG"},
+            "pcs_ms": {"position": "G12", "name": "PCS MS"},
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "MYCBO": {
+        "allowed": True,
+        "control_samples": {
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "MHYO": {
+        "allowed": True,
+        "control_samples": {
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "MSH": {
+        "allowed": True,
+        "control_samples": {
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "MTGPS": {
+        "allowed": True,
+        "control_samples": {
+            "ncs_mt": {"position": "H8", "name": "NCS MT"},
+            "ncs_gps": {"position": "H12", "name": "NCS GPS"}
+        }
+    },
+    "MSUIS": {
+        "allowed": True,
+        "control_samples": {
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "PARVO": {
+        "allowed": True,
+        "control_samples": {
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "PASMHY": {
+        "allowed": True,
+        "control_samples": {
+            "ncs_past": {"position": "H6", "name": "NCS PAST"},
+            "ncs_mhyo": {"position": "H12", "name": "NCS MHYO"}
+        }
+    },
+    "PCV2": {
+        "allowed": True,
+        "control_samples": {
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "PCVT": {
+        "allowed": True,
+        "control_samples": {
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "PIA": {
+        "allowed": True,
+        "control_samples": {
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "PRRS": {
+        "allowed": True,
+        "control_samples": {
+            "ref": {"position": "E12", "name": "REF"},
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "PTBC": {
+        "allowed": True,
+        "control_samples": {
+            "ref": {"position": "F12", "name": "REF"},
+            "pcs": {"position": "G12", "name": "PCS"},
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "SALDI": {
+        "allowed": True,
+        "control_samples": {
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "SALM": {
+        "allowed": True,
+        "control_samples": {
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "SRPR": {
+        "allowed": True,
+        "control_samples": {
+            "ncs": {"position": "B12", "name": "NCS"}
+        }
+    },
+    "SRPR3": {
+        "allowed": True,
+        "control_samples": {
+            "ncs": {"position": "B12", "name": "NCS"}
+        }
+    },
+    "TETRA": {
+        "allowed": True,
+        "control_samples": {
+            "ncs_crypto": {"position": "H4", "name": "NCS crypto"},
+            "ncs_rota": {"position": "H8", "name": "NCS rota"},
+            "ncs_corona": {"position": "H12", "name": "NCS corona"}
+        }
+    },
+    "TOXO": {
+        "allowed": True,
+        "control_samples": {
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    },
+    "ECF18Q": {
+        "allowed": True,
+        "control_samples": {
+            "ncs": {"position": "H12", "name": "NCS"}
+        }
+    }
 }
+
+# Extract allowed codes from the database
+DEFAULT_ALLOWED_CODES = sorted([code for code, data in MERGED_DATABASE.items() if data["allowed"]])
+
+# Convert control samples to the format expected by the original code
+CONTROL_SAMPLES = {}
+for code, data in MERGED_DATABASE.items():
+    if data["allowed"] and "control_samples" in data:
+        control_samples = data["control_samples"]
+        positions = []
+        names = []
+        
+        for control_id, control_info in control_samples.items():
+            positions.append(control_info["position"])
+            names.append(control_info["name"])
+        
+        CONTROL_SAMPLES[code] = {
+            'positions': positions,
+            'names': names
+        }
 
 # Custom default volumes
 CUSTOM_DEFAULTS = {
