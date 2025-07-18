@@ -405,7 +405,9 @@ def position_to_sample_number(position):
     
     row_num = ord(row) - ord('A') + 1
     return (row_num - 1) * 12 + col
-   
+
+def create_plate_selector(key_prefix, selected_position="A1"):
+    """Create a visual plate selector widget"""
     # Initialize session state for plate selector
     if f"{key_prefix}_selected" not in st.session_state:
         st.session_state[f"{key_prefix}_selected"] = selected_position
@@ -467,41 +469,43 @@ def main():
     initialize_session_state()
 
     # Sidebar for navigation
-with st.sidebar:
-    st.header("Navigation")
-    
-    # Initialize step in session state if not exists
-    if 'current_step' not in st.session_state:
-        st.session_state.current_step = "1. Upload CSV"
+    with st.sidebar:
+        st.header("Navigation")
         
-    # Create navigation buttons
-    steps = ["1. Upload CSV", "2. Select Runs", "3. Select Codes", "4. Add Rows", "5. Process Data", "6. Download Results"]
-    
-    for step_name in steps:
-        is_current = st.session_state.current_step == step_name
+        # Initialize step in session state if not exists
+        if 'current_step' not in st.session_state:
+            st.session_state.current_step = "1. Upload CSV"
+            
+        # Create navigation buttons
+        steps = ["1. Upload CSV", "2. Select Runs", "3. Select Codes", "4. Add Rows", "5. Process Data", "6. Download Results"]
+        
+        for step_name in steps:
+            is_current = st.session_state.current_step == step_name
+            if st.button(
+                step_name, 
+                key=f"nav_{step_name}",
+                type="primary" if is_current else "secondary",
+                use_container_width=True
+            ):
+                st.session_state.current_step = step_name
+                st.rerun()
+        
+        # Add reset button
+        st.markdown("---")
         if st.button(
-            step_name, 
-            key=f"nav_{step_name}",
-            type="primary" if is_current else "secondary",
-            use_container_width=True
+            "🔄 Reset Application",
+            type="secondary",
+            use_container_width=True,
+            help="Clear all data and start over"
         ):
-            st.session_state.current_step = step_name
+            # Clear all session state
+            for key in list(st.session_state.keys()):
+                del st.session_state[key]
             st.rerun()
-    
-    # Add reset button
-    st.markdown("---")
-    if st.button(
-        "🔄 Reset Application",
-        type="secondary",
-        use_container_width=True,
-        help="Clear all data and start over"
-    ):
-        # Clear all session state
-        for key in list(st.session_state.keys()):
-            del st.session_state[key]
-        st.rerun()
+
     # Main content area
     step = st.session_state.current_step
+    
     if step == "1. Upload CSV":
         st.header("Step 1: Upload CSV File")
         
@@ -523,8 +527,6 @@ with st.sidebar:
                 if st.session_state.processor.codes:
                     st.write(f"Found {len(st.session_state.processor.codes)} codes:")
                     st.write(", ".join(st.session_state.processor.codes))
-                    
-
                 else:
                     st.warning("No valid codes found in the CSV file.")                       
                     st.write("**Looking for patterns like:** MP25[CODE] or PP25[CODE]")
@@ -770,6 +772,6 @@ with st.sidebar:
                 mime="text/csv",
                 key=f"download_run_{run}"
             )
-        
+
 if __name__ == "__main__":
     main()
