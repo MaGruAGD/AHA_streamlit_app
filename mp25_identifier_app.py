@@ -631,17 +631,21 @@ def step_select_codes():
         for i, code in enumerate(available_codes):
             col_idx = i % num_cols
             with cols[col_idx]:
-                # Check if this code is already selected
+                # Check if this code is already selected for this run
                 is_selected = code in st.session_state.selected_codes[run_num]
                 
-                # Create checkbox
-                if st.checkbox(
+                # Create checkbox - each run gets its own unique key
+                checkbox_value = st.checkbox(
                     code,
                     value=is_selected,
                     key=f"checkbox_{run_num}_{code}"
-                ):
+                )
+                
+                # Add to selected list if checked
+                if checkbox_value:
                     selected.append(code)
         
+        # Update session state for this specific run
         st.session_state.selected_codes[run_num] = selected
 
 def step_process_data():
