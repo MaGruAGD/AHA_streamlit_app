@@ -494,37 +494,16 @@ def main():
                 df = pd.read_csv(uploaded_file, quoting=1)
                 st.session_state.processor = CSVProcessor(df)
                 st.success("✅ CSV file uploaded successfully!")
-                
-                # Show preview
-                st.subheader("Data Preview")
-                st.dataframe(df.head(10))
-                
+                              
                 # Show extracted codes
                 st.subheader("Extracted Codes")
                 if st.session_state.processor.codes:
                     st.write(f"Found {len(st.session_state.processor.codes)} codes:")
                     st.write(", ".join(st.session_state.processor.codes))
                     
-                    # Add debugging info
-                    with st.expander("Debug Information"):
-                        st.write("**Raw data sample for debugging:**")
-                        for col in df.columns[:3]:  # Show first 3 columns
-                            st.write(f"Column '{col}':")
-                            sample_values = df[col].astype(str).head(5).tolist()
-                            for i, val in enumerate(sample_values):
-                                st.write(f"  Row {i}: {val}")
+
                 else:
-                    st.warning("No valid codes found in the CSV file.")
-                    
-                    # Show debug info for troubleshooting
-                    with st.expander("Debug Information - No codes found"):
-                        st.write("**Sample data from CSV:**")
-                        for col in df.columns[:5]:  # Show first 5 columns
-                            st.write(f"Column '{col}':")
-                            sample_values = df[col].astype(str).head(3).tolist()
-                            for i, val in enumerate(sample_values):
-                                st.write(f"  Row {i}: {val}")
-                        
+                    st.warning("No valid codes found in the CSV file.")                       
                         st.write("**Looking for patterns like:** MP25[CODE] or PP25[CODE]")
                         st.write("**Available codes:** " + ", ".join(DEFAULT_ALLOWED_CODES[:10]) + "...")
                 
