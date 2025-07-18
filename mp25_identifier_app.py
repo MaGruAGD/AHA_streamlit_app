@@ -796,22 +796,29 @@ def step_download_results():
         )
             
 # Main Application
+
 def main():
-    # Load and display logo
-    logo_data = load_logo_from_github("MaGruAGD/AHA_streamlit_app", filename="logo.png")
+    # Direct logo loading - simpler approach
+    logo_url = "https://raw.githubusercontent.com/MaGruAGD/AHA_streamlit_app/main/logo.png"
     
-    if logo_data:
+    try:
         # Create columns for logo and title
         col1, col2 = st.columns([1, 3])
         with col1:
-            st.image(logo_data, width=120)
+            st.image(logo_url, width=120)
         with col2:
             st.title("🧪 AHA! - Andrew Helper App")
             st.markdown("*CSV Processing Tool for Laboratory Data Analysis*")
-    else:
+    except Exception as e:
         # Fallback if logo doesn't load
         st.title("🧪 AHA! - Andrew Helper App")
         st.markdown("*CSV Processing Tool for Laboratory Data Analysis*")
+        st.caption(f"Note: Logo loading failed - {str(e)}")
+    
+    # Rest of your code continues here...
+    initialize_session_state()
+    
+    # ... rest remains the same
     
     initialize_session_state()
     
