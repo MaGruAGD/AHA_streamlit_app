@@ -583,11 +583,6 @@ def main():
                                            if st.session_state.selected_codes.get(f"code_{c}_run_{run}", False))
                     disabled = disabled or (current_run_count >= 8 and not st.session_state.selected_codes.get(key, False))
                     
-                    # Show warning message once per run if at limit
-                    if current_run_count >= 8 and idx == 0:  # Show only once per run
-                        st.error("❌ You can't select more than 8 MP25 codes per run")
-                    current_value = st.session_state.selected_codes.get(key, False)
-        
                     # Render checkbox with disable logic
                     st.session_state.selected_codes[key] = st.checkbox(
                         f"{code}",
