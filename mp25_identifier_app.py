@@ -1,517 +1,493 @@
 import streamlit as st
 import pandas as pd
 import re
-import datetime
-import json
 import io
-from typing import Dict, List, Optional, Tuple
+from datetime import datetime
 import numpy as np
 
-# Configure page
+# Page configuration
 st.set_page_config(
-    page_title="Laboratory Sample Processing App",
+    page_title="AHA! - Andrew Helper App",
     page_icon="🧪",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Predefined analytical codes and their control configurations
-ANALYTICAL_CODES = {
-    'ANACHL': {'controls': [('PCS ANA', 'G6'), ('NCS ANA', 'H6'), ('PCS CHLAM', 'G12'), ('NCS CHLAM', 'H12')], 'default_volume': 20},
-    'BVD': {'controls': [('REF', 'F12'), ('NCS', 'H12')], 'default_volume': 20},
-    'MGMS': {'controls': [('REF', 'E12'), ('PCS MG', 'F12'), ('PCS MS', 'G12'), ('NCS', 'H12')], 'default_volume': 20},
-    'SRPR': {'controls': [('NCS', 'H12')], 'default_volume': 50},
-    'BLT3': {'controls': [('NCS', 'H12')], 'default_volume': 10},
-    'TETRA': {'controls': [('NCS TET', 'F12'), ('NCS CHL', 'G12'), ('NCS SUL', 'H12')], 'default_volume': 20},
-    'ECOLI': {'controls': [('NCS', 'H12')], 'default_volume': 20},
-    'PRRS': {'controls': [('NCS', 'H12')], 'default_volume': 20},
-    'PARVO': {'controls': [('NCS', 'H12')], 'default_volume': 20},
-    'SALM': {'controls': [('NCS', 'H12')], 'default_volume': 20},
-    'LEPTO': {'controls': [('NCS', 'H12')], 'default_volume': 20},
-    'MYCBO': {'controls': [('NCS', 'H12')], 'default_volume': 20},
-    'A2': {'controls': [('NCS', 'H12')], 'default_volume': 20},
-    'BHBP': {'controls': [('NCS', 'H12')], 'default_volume': 20},
-    'TOXO': {'controls': [('NCS', 'H12')], 'default_volume': 20},
-    'BLT1': {'controls': [('NCS', 'H12')], 'default_volume': 20},
-    'BLT2': {'controls': [('NCS', 'H12')], 'default_volume': 20},
-    'BLT4': {'controls': [('NCS', 'H12')], 'default_volume': 20},
-    'BLT5': {'controls': [('NCS', 'H12')], 'default_volume': 20},
-    'CAM': {'controls': [('NCS', 'H12')], 'default_volume': 20},
-    'CAMPY': {'controls': [('NCS', 'H12')], 'default_volume': 20},
-    'CHLA': {'controls': [('NCS', 'H12')], 'default_volume': 20},
-    'CHLAM': {'controls': [('NCS', 'H12')], 'default_volume': 20},
-    'CLAM': {'controls': [('NCS', 'H12')], 'default_volume': 20},
-    'FLUO': {'controls': [('NCS', 'H12')], 'default_volume': 20},
-    'GENTA': {'controls': [('NCS', 'H12')], 'default_volume': 20},
-    'LINCO': {'controls': [('NCS', 'H12')], 'default_volume': 20},
-    'NEOMY': {'controls': [('NCS', 'H12')], 'default_volume': 20},
-    'SPIRA': {'controls': [('NCS', 'H12')], 'default_volume': 20},
-    'SULFA': {'controls': [('NCS', 'H12')], 'default_volume': 20},
-    'TYLO': {'controls': [('NCS', 'H12')], 'default_volume': 20},
-    'VANCO': {'controls': [('NCS', 'H12')], 'default_volume': 20}
+# Default allowed codes
+DEFAULT_ALLOWED_CODES = [
+    'ANACHL', 'A2', 'BHBP', 'BLT3', 'BLT8', 'BLT412', 'CA', 'CHOEST', 'CHOL', 'CK', 'CKD',
+    'ECORU', 'FERU', 'GLUC', 'GMAX', 'GMIN', 'HBTEST', 'HDLC', 'HPLIP', 'HSCRP', 'IRON',
+    'LIPA', 'LDLC', 'PHOS', 'PROZ', 'SRPR', 'SRPR3', 'TIBC', 'TRIG', 'UIBC', 'UREA', 'VITD'
+]
+
+# Control samples configuration
+CONTROL_SAMPLES = {
+    'ANACHL': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'A2': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'BHBP': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'BLT3': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'BLT8': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'BLT412': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'CA': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'CHOEST': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'CHOL': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'CK': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'CKD': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'ECORU': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'FERU': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'GLUC': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'GMAX': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'GMIN': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'HBTEST': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'HDLC': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'HPLIP': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'HSCRP': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'IRON': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'LIPA': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'LDLC': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'PHOS': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'PROZ': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'SRPR': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'SRPR3': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'TIBC': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'TRIG': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'UIBC': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'UREA': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']},
+    'VITD': {'positions': ['A1', 'A2'], 'names': ['Controle niveau 1', 'Controle niveau 2']}
+}
+
+# Custom default volumes
+CUSTOM_DEFAULTS = {
+    'SRPR': 50,
+    'SRPR3': 40,
+    'ECORU': 50,
+    'BLT3': 10,
+    'BLT8': 10,
+    'BLT412': 10
 }
 
 class CSVProcessor:
-    """Handle CSV file processing and code extraction"""
-    
-    def __init__(self):
-        self.original_data = None
-        self.processed_data = None
-        self.mp25_codes = []
-        self.pp25_codes = []
-        self.analytical_codes = []
-    
-    def process_csv(self, uploaded_file) -> pd.DataFrame:
-        """Process uploaded CSV file and extract codes"""
-        try:
-            # Read CSV file
-            df = pd.read_csv(uploaded_file)
-            self.original_data = df.copy()
-            self.processed_data = df.copy()
-            
-            # Extract codes from all columns
-            self._extract_codes(df)
-            
-            return df
-        except Exception as e:
-            st.error(f"Error processing CSV file: {str(e)}")
-            return None
-    
-    def _extract_codes(self, df: pd.DataFrame):
-        """Extract MP25, PP25, and analytical codes from dataframe"""
-        # Convert dataframe to string for regex search
-        df_str = df.astype(str)
-        all_text = ' '.join(df_str.values.flatten())
+    def __init__(self, df):
+        self.original_df = df.copy()
+        self.df = df.copy()
+        self.codes = self.extract_codes()
         
-        # Extract MP25 codes
-        mp25_pattern = r'MP25[A-Z0-9]+'
-        self.mp25_codes = list(set(re.findall(mp25_pattern, all_text)))
+    def extract_codes(self):
+        """Extract MP25 and PP25 codes from the CSV data"""
+        codes = set()
+        sorted_codes = sorted(DEFAULT_ALLOWED_CODES)
+        pattern = r'(?:MP25|PP25)(' + '|'.join(sorted_codes) + r')'
         
-        # Extract PP25 codes
-        pp25_pattern = r'PP25[A-Z0-9]+'
-        self.pp25_codes = list(set(re.findall(pp25_pattern, all_text)))
+        for col in self.df.columns:
+            for value in self.df[col].astype(str):
+                matches = re.findall(pattern, value)
+                codes.update(matches)
         
-        # Extract analytical codes
-        for code in ANALYTICAL_CODES.keys():
-            if code in all_text:
-                self.analytical_codes.append(code)
-        
-        # Sort codes
-        self.mp25_codes.sort()
-        self.pp25_codes.sort()
-        self.analytical_codes.sort()
-    
-    def filter_by_codes(self, selected_codes: List[str]) -> pd.DataFrame:
-        """Filter dataframe by selected analytical codes"""
-        if not selected_codes:
-            return self.processed_data
-        
-        # Create filter based on selected codes
-        mask = pd.Series([False] * len(self.processed_data))
-        
-        for code in selected_codes:
-            # Search for code in all columns
-            code_mask = self.processed_data.astype(str).apply(
-                lambda x: x.str.contains(code, na=False)
-            ).any(axis=1)
-            mask = mask | code_mask
-        
-        return self.processed_data[mask]
-    
-    def add_sample_row(self, sample_data: Dict) -> None:
-        """Add a new sample row to the processed data"""
-        new_row = pd.DataFrame([sample_data])
-        self.processed_data = pd.concat([self.processed_data, new_row], ignore_index=True)
+        return sorted(list(codes))
     
     def reset_data(self):
-        """Reset processed data to original"""
-        if self.original_data is not None:
-            self.processed_data = self.original_data.copy()
+        """Reset data to original state"""
+        self.df = self.original_df.copy()
+        
+    def add_row(self, row_data):
+        """Add a new row to the dataframe"""
+        self.df = pd.concat([self.df, pd.DataFrame([row_data])], ignore_index=True)
+    
+    def filter_data(self, selected_codes, run_number):
+        """Filter data based on selected codes and run number"""
+        filtered_df = self.df.copy()
+        
+        # Create regex pattern for selected codes
+        if selected_codes:
+            pattern = r'(?:MP25|PP25)(' + '|'.join(selected_codes) + r')'
+            
+            # Filter rows that contain any of the selected codes
+            mask = filtered_df.astype(str).apply(
+                lambda x: x.str.contains(pattern, regex=True, na=False)
+            ).any(axis=1)
+            
+            filtered_df = filtered_df[mask]
+        
+        return filtered_df
+    
+    def apply_volumes(self, df, volumes):
+        """Apply custom volumes to the dataframe"""
+        df_copy = df.copy()
+        for code, volume in volumes.items():
+            # Find rows containing this code and update volume (column index 8)
+            pattern = r'(?:MP25|PP25)' + code + r'(?:\d+)?'
+            mask = df_copy.astype(str).apply(
+                lambda x: x.str.contains(pattern, regex=True, na=False)
+            ).any(axis=1)
+            
+            if mask.any():
+                df_copy.loc[mask, df_copy.columns[8]] = volume
+        
+        return df_copy
 
-class PlateSelector:
-    """Handle 96-well plate selection interface"""
-    
-    def __init__(self):
-        self.rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-        self.cols = list(range(1, 13))
-    
-    def position_to_number(self, position: str) -> int:
-        """Convert well position (e.g., 'A1') to sample number"""
-        if len(position) < 2:
-            return 1
-        
-        row = position[0].upper()
-        col = int(position[1:])
-        
-        if row in self.rows and col in self.cols:
-            row_idx = self.rows.index(row)
-            return row_idx * 12 + col
+def position_to_sample_number(position):
+    """Convert well position (A1, B2, etc.) to sample number (1-96)"""
+    if len(position) < 2:
         return 1
     
-    def number_to_position(self, number: int) -> str:
-        """Convert sample number to well position"""
-        if number < 1 or number > 96:
-            return 'A1'
-        
-        number -= 1  # Convert to 0-based
-        row_idx = number // 12
-        col_idx = number % 12
-        
-        return f"{self.rows[row_idx]}{col_idx + 1}"
+    row = position[0].upper()
+    try:
+        col = int(position[1:])
+    except ValueError:
+        return 1
     
-    def render_plate_selector(self, key: str, selected_position: str = "A1") -> str:
-        """Render interactive plate selector"""
-        st.write(f"**96-Well Plate Selector ({key})**")
-        
-        # Create plate grid
+    row_num = ord(row) - ord('A') + 1
+    return (row_num - 1) * 12 + col
+
+def create_96_well_plate_selector(key_prefix, selected_position="A1"):
+    """Create a 96-well plate selector widget"""
+    st.write("96-Well Plate Selector:")
+    
+    # Initialize session state for plate selector
+    if f"{key_prefix}_selected" not in st.session_state:
+        st.session_state[f"{key_prefix}_selected"] = selected_position
+    
+    # Create grid layout
+    cols = st.columns(13)  # 12 columns + 1 for row labels
+    
+    # Column headers
+    with cols[0]:
+        st.write("")
+    for i in range(1, 13):
+        with cols[i]:
+            st.write(f"**{i}**")
+    
+    # Create wells
+    for row_idx, row in enumerate(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']):
         cols = st.columns(13)
         
-        # Header row
-        cols[0].write("")
-        for i, col_num in enumerate(self.cols):
-            cols[i + 1].write(f"**{col_num}**")
+        # Row label
+        with cols[0]:
+            st.write(f"**{row}**")
         
-        selected_pos = selected_position
-        
-        # Plate rows
-        for row_idx, row in enumerate(self.rows):
-            row_cols = st.columns(13)
-            row_cols[0].write(f"**{row}**")
-            
-            for i, col_num in enumerate(self.cols):
-                well_pos = f"{row}{col_num}"
-                is_selected = well_pos == selected_position
+        # Wells
+        for col_idx in range(1, 13):
+            with cols[col_idx]:
+                well_position = f"{row}{col_idx}"
+                is_selected = st.session_state[f"{key_prefix}_selected"] == well_position
                 
-                # Create unique key with timestamp or counter to avoid conflicts
-                unique_key = f"{key}_{well_pos}_{row_idx}_{i}"
-                
-                if row_cols[i + 1].button(
-                    well_pos,
-                    key=unique_key,
-                    type="primary" if is_selected else "secondary"
+                if st.button(
+                    well_position,
+                    key=f"{key_prefix}_well_{well_position}",
+                    type="primary" if is_selected else "secondary",
+                    use_container_width=True
                 ):
-                    selected_pos = well_pos
-        
-        return selected_pos
-
-def main():
-    st.title("🧪 Laboratory Sample Processing App")
-    st.markdown("---")
+                    st.session_state[f"{key_prefix}_selected"] = well_position
+                    st.rerun()
     
-    # Initialize session state
+    return st.session_state[f"{key_prefix}_selected"]
+
+def initialize_session_state():
+    """Initialize session state variables"""
     if 'processor' not in st.session_state:
-        st.session_state.processor = CSVProcessor()
-    if 'plate_selector' not in st.session_state:
-        st.session_state.plate_selector = PlateSelector()
-    if 'current_data' not in st.session_state:
-        st.session_state.current_data = None
-    if 'selected_codes' not in st.session_state:
-        st.session_state.selected_codes = {1: [], 2: [], 3: []}
-    if 'volume_settings' not in st.session_state:
-        st.session_state.volume_settings = {}
+        st.session_state.processor = None
     if 'num_runs' not in st.session_state:
         st.session_state.num_runs = 1
+    if 'selected_codes' not in st.session_state:
+        st.session_state.selected_codes = {}
+    if 'volumes' not in st.session_state:
+        st.session_state.volumes = {}
+    if 'data_processed' not in st.session_state:
+        st.session_state.data_processed = False
+    if 'filtered_data' not in st.session_state:
+        st.session_state.filtered_data = {}
+
+def main():
+    st.title("🧪 AHA! - Andrew Helper App")
+    st.markdown("*CSV Processing Tool for Laboratory Data Analysis*")
     
-    # Sidebar for main controls
+    initialize_session_state()
+    
+    # Sidebar for navigation
     with st.sidebar:
-        st.header("Main Controls")
-        
-        # CSV File Upload
-        uploaded_file = st.file_uploader("Upload CSV File", type=['csv'])
-        
-        if uploaded_file is not None:
-            # Process CSV
-            df = st.session_state.processor.process_csv(uploaded_file)
-            if df is not None:
-                st.session_state.current_data = df
-                st.success(f"✅ CSV processed successfully! ({len(df)} rows)")
-                
-                # Display extracted codes
-                st.subheader("Extracted Codes")
-                st.write(f"**MP25 Codes:** {len(st.session_state.processor.mp25_codes)}")
-                st.write(f"**PP25 Codes:** {len(st.session_state.processor.pp25_codes)}")
-                st.write(f"**Analytical Codes:** {len(st.session_state.processor.analytical_codes)}")
-        
-        # Number of runs selection
-        st.subheader("Number of Runs")
-        num_runs = st.radio("Select number of runs:", [1, 2, 3], key="num_runs_radio")
-        st.session_state.num_runs = num_runs
-        
-        # Reset button
-        if st.button("🔄 Reset Data"):
-            st.session_state.processor.reset_data()
-            st.session_state.selected_codes = {1: [], 2: [], 3: []}
-            st.rerun()
+        st.header("Navigation")
+        step = st.selectbox(
+            "Select Step:",
+            ["1. Upload CSV", "2. Select Runs", "3. Select Codes", "4. Add Rows", "5. Process Data", "6. Download Results"]
+        )
     
     # Main content area
-    if st.session_state.current_data is not None:
-        # Code selection for each run
-        st.header("Code Selection for Runs")
+    if step == "1. Upload CSV":
+        st.header("Step 1: Upload CSV File")
         
-        # Create separate containers for each run instead of tabs to avoid key conflicts
-        for run_num in range(1, st.session_state.num_runs + 1):
-            with st.container():
-                st.subheader(f"Run {run_num} - Select Analytical Codes")
-                
-                if st.session_state.processor.analytical_codes:
-                    # Create columns for checkboxes
-                    cols = st.columns(4)
-                    
-                    # Track checkbox changes
-                    for j, code in enumerate(st.session_state.processor.analytical_codes):
-                        col_idx = j % 4
-                        
-                        is_selected = code in st.session_state.selected_codes[run_num]
-                        
-                        # Create unique key for each checkbox
-                        checkbox_key = f"run_{run_num}_code_{code}_{j}"
-                        
-                        checkbox_value = cols[col_idx].checkbox(
-                            f"{code}",
-                            value=is_selected,
-                            key=checkbox_key
-                        )
-                        
-                        # Update selected codes based on checkbox state
-                        if checkbox_value and code not in st.session_state.selected_codes[run_num]:
-                            st.session_state.selected_codes[run_num].append(code)
-                        elif not checkbox_value and code in st.session_state.selected_codes[run_num]:
-                            st.session_state.selected_codes[run_num].remove(code)
-                
-                # Display selected codes
-                if st.session_state.selected_codes[run_num]:
-                    st.write(f"**Selected codes for Run {run_num}:**")
-                    st.write(", ".join(st.session_state.selected_codes[run_num]))
-                
-                st.markdown("---")  # Add separator between runs
+        uploaded_file = st.file_uploader(
+            "Choose a CSV file",
+            type="csv",
+            help="Upload your laboratory data CSV file"
+        )
         
-        # Volume Management
-        st.header("Volume Management")
-        
-        with st.expander("Volume Settings", expanded=False):
-            st.subheader("Set Transfer Volumes")
-            
-            # Volume settings for each analytical code
-            for idx, code in enumerate(st.session_state.processor.analytical_codes):
-                default_vol = ANALYTICAL_CODES.get(code, {}).get('default_volume', 20)
-                current_vol = st.session_state.volume_settings.get(code, default_vol)
+        if uploaded_file is not None:
+            try:
+                # Read CSV with proper quote handling
+                df = pd.read_csv(uploaded_file, quoting=1)
+                st.session_state.processor = CSVProcessor(df)
+                st.success("✅ CSV file uploaded successfully!")
                 
-                new_vol = st.slider(
-                    f"{code} Volume (μL)",
-                    min_value=0,
-                    max_value=1000,
-                    value=current_vol,
-                    step=5,
-                    key=f"volume_slider_{code}_{idx}"
-                )
-                st.session_state.volume_settings[code] = new_vol
-        
-        # Sample Addition System
-        st.header("Sample Addition System")
-        
-        with st.expander("Add New Samples", expanded=False):
-            sample_type = st.radio("Sample Type", ["Regular Samples", "Control Samples"], key="sample_type_radio")
-            
-            if sample_type == "Regular Samples":
-                st.subheader("Add Regular Sample")
+                # Show preview
+                st.subheader("Data Preview")
+                st.dataframe(df.head(10))
                 
-                col1, col2 = st.columns(2)
+                # Show extracted codes
+                st.subheader("Extracted Codes")
+                if st.session_state.processor.codes:
+                    st.write(f"Found {len(st.session_state.processor.codes)} codes:")
+                    st.write(", ".join(st.session_state.processor.codes))
+                else:
+                    st.warning("No valid codes found in the CSV file.")
                 
-                with col1:
-                    # Poolplaat selection
-                    if st.session_state.processor.pp25_codes:
-                        selected_poolplaat = st.selectbox(
-                            "Select Poolplaat:",
-                            st.session_state.processor.pp25_codes,
-                            key="regular_poolplaat_select"
-                        )
-                    else:
-                        selected_poolplaat = st.text_input("Poolplaat Code:", key="regular_poolplaat_input")
-                    
-                    # Position selection
-                    position = st.text_input("Starting Position (e.g., D2):", value="A1", key="regular_position_input")
-                    
-                    # Target analysis
-                    target_analysis = st.selectbox(
-                        "Target Analysis:",
-                        st.session_state.processor.analytical_codes,
-                        key="regular_target_analysis"
-                    )
-                    
-                    plate_number = st.number_input("Plate Number:", min_value=1, value=1, key="regular_plate_number")
-                    
-                    # Volume
-                    volume = st.number_input(
-                        "Volume (μL):",
-                        min_value=0,
-                        max_value=1000,
-                        value=st.session_state.volume_settings.get(target_analysis, 20),
-                        step=5,
-                        key="regular_volume_input"
-                    )
-                
-                with col2:
-                    # Plate selector
-                    if st.checkbox("Show Plate Selector", key="show_regular_plate_selector"):
-                        selected_position = st.session_state.plate_selector.render_plate_selector(
-                            "regular_sample",
-                            position
-                        )
-                        position = selected_position
-                
-                # Add sample button
-                if st.button("Add Regular Sample", key="add_regular_sample_btn"):
-                    sample_number = st.session_state.plate_selector.position_to_number(position)
-                    
-                    sample_data = {
-                        'Sample_Type': 'Regular',
-                        'Poolplaat': selected_poolplaat,
-                        'Position': position,
-                        'Sample_Number': sample_number,
-                        'Target_Analysis': target_analysis,
-                        'Plate_Number': plate_number,
-                        'Volume': volume,
-                        'Timestamp': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    }
-                    
-                    st.session_state.processor.add_sample_row(sample_data)
-                    st.success(f"Added regular sample at position {position}")
-                    st.rerun()
-            
-            else:  # Control Samples
-                st.subheader("Add Control Sample")
-                
-                # Analytical code selection
-                analytical_code = st.selectbox(
-                    "Select Analytical Code:",
-                    st.session_state.processor.analytical_codes,
-                    key="control_analytical_code_select"
-                )
-                
-                # Show available controls for selected code
-                if analytical_code in ANALYTICAL_CODES:
-                    controls = ANALYTICAL_CODES[analytical_code]['controls']
-                    
-                    st.write(f"**Available controls for {analytical_code}:**")
-                    for control_name, control_pos in controls:
-                        st.write(f"- {control_name}: {control_pos}")
-                    
-                    # Control selection
-                    control_names = [control[0] for control in controls]
-                    selected_control = st.selectbox("Select Control:", control_names, key="control_name_select")
-                    
-                    # Find position for selected control
-                    control_position = None
-                    for control_name, control_pos in controls:
-                        if control_name == selected_control:
-                            control_position = control_pos
-                            break
-                    
-                    # Volume
-                    volume = st.number_input(
-                        "Control Volume (μL):",
-                        min_value=0,
-                        max_value=1000,
-                        value=st.session_state.volume_settings.get(analytical_code, 20),
-                        step=5,
-                        key="control_volume_input"
-                    )
-                    
-                    # Add control button
-                    if st.button("Add Control Sample", key="add_control_sample_btn"):
-                        sample_number = st.session_state.plate_selector.position_to_number(control_position)
-                        
-                        control_data = {
-                            'Sample_Type': 'Control',
-                            'Control_Name': selected_control,
-                            'Position': control_position,
-                            'Sample_Number': sample_number,
-                            'Target_Analysis': analytical_code,
-                            'Volume': volume,
-                            'Timestamp': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                        }
-                        
-                        st.session_state.processor.add_sample_row(control_data)
-                        st.success(f"Added control sample {selected_control} at position {control_position}")
-                        st.rerun()
-        
-        # Data Preview
-        st.header("Data Preview")
-        
-        with st.expander("Current Data", expanded=True):
-            if st.session_state.processor.processed_data is not None:
-                st.dataframe(st.session_state.processor.processed_data)
-                st.write(f"Total rows: {len(st.session_state.processor.processed_data)}")
-        
-        # Export System
-        st.header("Export Worklists")
-        
-        if st.button("Generate Worklists", key="generate_worklists_btn"):
-            export_files = {}
-            
-            for run_num in range(1, st.session_state.num_runs + 1):
-                if st.session_state.selected_codes[run_num]:
-                    # Filter data for this run
-                    filtered_data = st.session_state.processor.filter_by_codes(
-                        st.session_state.selected_codes[run_num]
-                    )
-                    
-                    # Apply volume settings
-                    if len(filtered_data) > 0:
-                        # Create a copy to avoid modifying original
-                        export_data = filtered_data.copy()
-                        
-                        # Apply volumes (assuming volume column is at index 8)
-                        if len(export_data.columns) > 8:
-                            for code in st.session_state.selected_codes[run_num]:
-                                volume = st.session_state.volume_settings.get(code, 20)
-                                # Apply volume to rows containing this code
-                                code_mask = export_data.astype(str).apply(
-                                    lambda x: x.str.contains(code, na=False)
-                                ).any(axis=1)
-                                export_data.loc[code_mask, export_data.columns[8]] = volume
-                        
-                        # Generate filename
-                        today = datetime.datetime.now().strftime("%Y-%m-%d")
-                        filename = f"Werklijst - Andrew - Run {run_num} - {today}.csv"
-                        
-                        # Convert to CSV
-                        csv_buffer = io.StringIO()
-                        export_data.to_csv(csv_buffer, index=False)
-                        export_files[filename] = csv_buffer.getvalue()
-            
-            # Display download buttons
-            if export_files:
-                st.success(f"Generated {len(export_files)} worklist files!")
-                
-                for filename, csv_content in export_files.items():
-                    st.download_button(
-                        label=f"📥 Download {filename}",
-                        data=csv_content,
-                        file_name=filename,
-                        mime="text/csv"
-                    )
-                
-                # Show summary
-                st.subheader("Export Summary")
-                for run_num in range(1, st.session_state.num_runs + 1):
-                    if st.session_state.selected_codes[run_num]:
-                        st.write(f"**Run {run_num}:** {', '.join(st.session_state.selected_codes[run_num])}")
-            else:
-                st.warning("No runs selected for export. Please select analytical codes for at least one run.")
+            except Exception as e:
+                st.error(f"Error reading CSV file: {str(e)}")
     
-    else:
-        st.info("👆 Please upload a CSV file to begin processing.")
+    elif step == "2. Select Runs":
+        st.header("Step 2: Select Number of Runs")
         
-        # Show example of expected CSV format
-        st.subheader("Expected CSV Format")
-        st.write("Your CSV file should contain sample data with columns that may include:")
-        st.write("- Sample identifiers")
-        st.write("- MP25 codes (e.g., MP25ANACHL)")
-        st.write("- PP25 codes (e.g., PP25PLSTA)")
-        st.write("- Analytical codes (e.g., ANACHL, BVD, MGMS)")
-        st.write("- Position information")
-        st.write("- Volume settings")
+        if st.session_state.processor is None:
+            st.warning("Please upload a CSV file first.")
+            return
+        
+        st.session_state.num_runs = st.radio(
+            "Number of runs:",
+            options=[1, 2, 3],
+            index=st.session_state.num_runs - 1,
+            horizontal=True
+        )
+        
+        st.success(f"Selected {st.session_state.num_runs} run(s)")
+    
+    elif step == "3. Select Codes":
+        st.header("Step 3: Select Codes for Each Run")
+        
+        if st.session_state.processor is None:
+            st.warning("Please upload a CSV file first.")
+            return
+        
+        if not st.session_state.processor.codes:
+            st.warning("No codes found in the CSV file.")
+            return
+        
+        # Create checkboxes for each code and run combination
+        st.subheader("Select which codes to include in each run:")
+        
+        for run in range(1, st.session_state.num_runs + 1):
+            st.write(f"**Run {run}:**")
+            cols = st.columns(4)  # 4 columns for better layout
+            
+            for idx, code in enumerate(st.session_state.processor.codes):
+                col_idx = idx % 4
+                with cols[col_idx]:
+                    key = f"code_{code}_run_{run}"
+                    if key not in st.session_state.selected_codes:
+                        st.session_state.selected_codes[key] = False
+                    
+                    st.session_state.selected_codes[key] = st.checkbox(
+                        f"{code}",
+                        value=st.session_state.selected_codes[key],
+                        key=key
+                    )
+            
+            st.write("---")
+    
+    elif step == "4. Add Rows":
+        st.header("Step 4: Add New Rows (Optional)")
+        
+        if st.session_state.processor is None:
+            st.warning("Please upload a CSV file first.")
+            return
+        
+        with st.expander("Add New Row", expanded=False):
+            # Sample type selection
+            sample_type = st.radio(
+                "Sample Type:",
+                ["Regular Sample", "Control Sample"],
+                horizontal=True
+            )
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.subheader("Poolplaat (PP25)")
+                pp25_codes = [code for code in st.session_state.processor.codes if code != ""]
+                if pp25_codes:
+                    pp25_code = st.selectbox("PP25 Code:", pp25_codes)
+                    
+                    # Position input with plate selector
+                    pp25_position = st.text_input("Position:", value="A1", key="pp25_pos")
+                    
+                    if st.checkbox("Show Plate Selector", key="show_pp25_plate"):
+                        selected_pos = create_96_well_plate_selector("pp25", pp25_position)
+                        if selected_pos != pp25_position:
+                            st.session_state.pp25_pos = selected_pos
+                            st.rerun()
+            
+            with col2:
+                st.subheader("Analyseplaat (MP25)")
+                mp25_code = st.selectbox("MP25 Code:", st.session_state.processor.codes)
+                mp25_num = st.number_input("Number:", min_value=1, max_value=999, value=1)
+                mp25_position = st.text_input("Position:", value="A1", key="mp25_pos")
+                
+                if st.checkbox("Show Plate Selector", key="show_mp25_plate"):
+                    selected_pos = create_96_well_plate_selector("mp25", mp25_position)
+                    if selected_pos != mp25_position:
+                        st.session_state.mp25_pos = selected_pos
+                        st.rerun()
+            
+            # Control sample specific options
+            if sample_type == "Control Sample":
+                if mp25_code in CONTROL_SAMPLES:
+                    control_info = CONTROL_SAMPLES[mp25_code]
+                    control_idx = st.selectbox(
+                        "Control Sample:",
+                        range(len(control_info['names'])),
+                        format_func=lambda x: control_info['names'][x]
+                    )
+                    pp25_position = control_info['positions'][control_idx]
+                    st.info(f"Auto-selected position: {pp25_position}")
+            
+            # Add row button
+            if st.button("Add Row"):
+                if 'pp25_code' in locals() and 'mp25_code' in locals():
+                    sample_num = position_to_sample_number(pp25_position)
+                    
+                    # Create new row data
+                    col0 = f'"{pp25_code}":{pp25_position}'
+                    col7 = col0
+                    col9 = f'"MP25{mp25_code}{mp25_num}":{mp25_position}'
+                    
+                    new_row = [
+                        col0, '100', f'Sample {sample_num}', 'Sample', '1 M', '', '', 
+                        col7, '20', col9
+                    ]
+                    
+                    # Pad row to match original dataframe columns
+                    while len(new_row) < len(st.session_state.processor.df.columns):
+                        new_row.append('')
+                    
+                    st.session_state.processor.add_row(new_row)
+                    st.success("Row added successfully!")
+                    st.rerun()
+    
+    elif step == "5. Process Data":
+        st.header("Step 5: Process Data and Set Volumes")
+        
+        if st.session_state.processor is None:
+            st.warning("Please upload a CSV file first.")
+            return
+        
+        # Process data button
+        if st.button("Process Selected Data"):
+            # Get selected codes for each run
+            selected_by_run = {}
+            for run in range(1, st.session_state.num_runs + 1):
+                selected_codes = []
+                for code in st.session_state.processor.codes:
+                    key = f"code_{code}_run_{run}"
+                    if st.session_state.selected_codes.get(key, False):
+                        selected_codes.append(code)
+                selected_by_run[run] = selected_codes
+            
+            # Filter data for each run
+            st.session_state.filtered_data = {}
+            for run, codes in selected_by_run.items():
+                if codes:
+                    filtered_df = st.session_state.processor.filter_data(codes, run)
+                    st.session_state.filtered_data[run] = filtered_df
+            
+            st.session_state.data_processed = True
+            st.success("Data processed successfully!")
+        
+        # Show volume editors if data is processed
+        if st.session_state.data_processed and st.session_state.filtered_data:
+            st.subheader("Volume Settings")
+            
+            # Get all unique codes from filtered data
+            all_codes = set()
+            for run_data in st.session_state.filtered_data.values():
+                for code in st.session_state.processor.codes:
+                    pattern = r'(?:MP25|PP25)' + code + r'(?:\d+)?'
+                    if run_data.astype(str).apply(
+                        lambda x: x.str.contains(pattern, regex=True, na=False)
+                    ).any(axis=1).any():
+                        all_codes.add(code)
+            
+            # Create volume inputs
+            cols = st.columns(3)
+            for idx, code in enumerate(sorted(all_codes)):
+                col_idx = idx % 3
+                with cols[col_idx]:
+                    default_vol = CUSTOM_DEFAULTS.get(code, 20)
+                    st.session_state.volumes[code] = st.number_input(
+                        f"{code} Volume:",
+                        min_value=1,
+                        max_value=1000,
+                        value=st.session_state.volumes.get(code, default_vol),
+                        key=f"vol_{code}"
+                    )
+            
+            # Show preview of processed data
+            st.subheader("Processed Data Preview")
+            for run, df in st.session_state.filtered_data.items():
+                with st.expander(f"Run {run} ({len(df)} rows)"):
+                    # Apply volumes
+                    df_with_volumes = st.session_state.processor.apply_volumes(df, st.session_state.volumes)
+                    st.dataframe(df_with_volumes)
+                    
+                    # Show MP25 codes found
+                    mp25_codes = set()
+                    for col in df_with_volumes.columns:
+                        for value in df_with_volumes[col].astype(str):
+                            matches = re.findall(r'MP25([A-Z0-9]+)', value)
+                            mp25_codes.update(matches)
+                    
+                    if mp25_codes:
+                        st.write(f"**MP25 codes found:** {', '.join(sorted(mp25_codes))}")
+    
+    elif step == "6. Download Results":
+        st.header("Step 6: Download Results")
+        
+        if st.session_state.processor is None:
+            st.warning("Please upload a CSV file first.")
+            return
+        
+        if not st.session_state.data_processed or not st.session_state.filtered_data:
+            st.warning("Please process data first.")
+            return
+        
+        # Generate download buttons for each run
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        
+        for run, df in st.session_state.filtered_data.items():
+            # Apply volumes
+            df_with_volumes = st.session_state.processor.apply_volumes(df, st.session_state.volumes)
+            
+            # Generate filename
+            filename = f"Werklijst - Andrew - Run {run} - {current_date}.csv"
+            
+            # Convert to CSV
+            csv_buffer = io.StringIO()
+            df_with_volumes.to_csv(csv_buffer, index=False)
+            csv_data = csv_buffer.getvalue()
+            
+            # Create download button
+            st.download_button(
+                label=f"📥 Download Run {run} ({len(df_with_volumes)} rows)",
+                data=csv_data,
+                file_name=filename,
+                mime="text/csv",
+                key=f"download_run_{run}"
+            )
+        
+        # Reset data button
+        if st.button("🔄 Reset to Original Data"):
+            st.session_state.processor.reset_data()
+            st.session_state.data_processed = False
+            st.session_state.filtered_data = {}
+            st.success("Data reset to original state!")
+            st.rerun()
 
 if __name__ == "__main__":
     main()
