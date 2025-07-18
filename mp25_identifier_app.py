@@ -438,7 +438,7 @@ def well_plate_selector(key: str, title: str = "Select Position", default_positi
                             st.session_state[col_key] = int(well_pos[1:])
                             # Close popup immediately
                             st.session_state[popup_key] = False
-                            st.experimental_rerun()
+                            st.rerun()
 
             st.success(f"Visual selection: **{st.session_state[visual_state_key]}**")
 
