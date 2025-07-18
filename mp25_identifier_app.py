@@ -631,25 +631,6 @@ def step_select_codes():
         )
         
         st.session_state.selected_codes[run_num] = selected
-        
-        # Volume settings for selected codes
-        if selected:
-            st.write("**Volume Settings:**")
-            for code in selected:
-                col1, col2 = st.columns([3, 1])
-                with col1:
-                    st.write(f"Code: {code}")
-                with col2:
-                    default_volume = CUSTOM_DEFAULTS.get(code, 20)
-                    volume = st.number_input(
-                        "Volume",
-                        min_value=1,
-                        max_value=100,
-                        value=st.session_state.volumes.get(f"{run_num}_{code}", default_volume),
-                        key=f"volume_{run_num}_{code}",
-                        label_visibility="collapsed"
-                    )
-                    st.session_state.volumes[f"{run_num}_{code}"] = volume
 
 def step_process_data():
     """Step 6: Process Data"""
