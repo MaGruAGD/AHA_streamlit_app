@@ -782,10 +782,15 @@ def step_download_results():
     for run_num, df in st.session_state.filtered_data.items():
         # Use QUOTE_MINIMAL to only quote fields that contain special characters
         csv_data = df.to_csv(index=False, quoting=0)  # 0 = QUOTE_MINIMAL
+        
+        # Create filename in format: Andrew_Werklijst_RunX_ddmmyy.csv
+        current_date = datetime.now().strftime('%d%m%y')
+        filename = f"Andrew_Werklijst_Run{run_num}_{current_date}.csv"
+        
         st.download_button(
             label=f"📥 Download Run {run_num}",
             data=csv_data,
-            file_name=f"processed_run_{run_num}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            file_name=filename,
             mime="text/csv",
             use_container_width=True
         )
