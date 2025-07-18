@@ -379,7 +379,7 @@ def well_plate_selector(key, title="Select Position", default_position="A1"):
         subcol1, subcol2 = st.columns(2)
 
         with subcol1:
-            st.session_state[row_key] = st.selectbox(
+            st.selectbox(
                 "Row:",
                 options=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'],
                 index=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].index(st.session_state[row_key]),
