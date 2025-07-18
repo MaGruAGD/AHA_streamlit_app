@@ -465,28 +465,42 @@ def main():
     st.markdown("*CSV Processing Tool for Laboratory Data Analysis*")
     
     initialize_session_state()
-    
+
     # Sidebar for navigation
-     with st.sidebar:
-        st.header("Navigation")
-                
-        # Initialize step in session state if not exists
-        if 'current_step' not in st.session_state:
-            st.session_state.current_step = "1. Upload CSV"
-                
-        # Create navigation buttons
-        steps = ["1. Upload CSV", "2. Select Runs", "3. Select Codes", "4. Add Rows", "5. Process Data", "6. Download Results"]
-                
-        for step_name in steps:
-            is_current = st.session_state.current_step == step_name
-            if st.button(
-                step_name, 
-                key=f"nav_{step_name}",
-                type="primary" if is_current else "secondary",
-                use_container_width=True
-            ):
-                st.session_state.current_step = step_name
-                st.rerun()
+with st.sidebar:
+    st.header("Navigation")
+    
+    # Initialize step in session state if not exists
+    if 'current_step' not in st.session_state:
+        st.session_state.current_step = "1. Upload CSV"
+        
+    # Create navigation buttons
+    steps = ["1. Upload CSV", "2. Select Runs", "3. Select Codes", "4. Add Rows", "5. Process Data", "6. Download Results"]
+    
+    for step_name in steps:
+        is_current = st.session_state.current_step == step_name
+        if st.button(
+            step_name, 
+            key=f"nav_{step_name}",
+            type="primary" if is_current else "secondary",
+            use_container_width=True
+        ):
+            st.session_state.current_step = step_name
+            st.rerun()
+    
+    # Add reset button
+    st.markdown("---")
+    if st.button(
+        "🔄 Reset Application",
+        type="secondary",
+        use_container_width=True,
+        help="Clear all data and start over"
+    ):
+        # Clear all session state
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.rerun()
+
                 
         # Add reset button
         st.markdown("---")
@@ -500,6 +514,7 @@ def main():
             for key in list(st.session_state.keys()):
                     del st.session_state[key]
                 st.rerun()
+                
     # Main content area
     step = st.session_state.current_step
     if step == "1. Upload CSV":
