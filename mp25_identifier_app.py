@@ -396,14 +396,16 @@ def well_plate_selector(key, title="Select Position", default_position="A1"):
             new_row = st.selectbox(
                 "Row",
                 options=rows,
-                index=rows.index(current_row)
+                index=rows.index(current_row),
+                key=f"{key}_row_dropdown"
             )
-
+        
         with subcol2:
             new_col = st.selectbox(
                 "Column",
                 options=cols,
-                index=current_col - 1
+                index=current_col - 1,
+                key=f"{key}_col_dropdown"
             )
 
         # Save new values
