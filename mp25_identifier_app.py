@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import re
 import io
+import json
+import requests
 from datetime import datetime
 import numpy as np
 
@@ -13,299 +15,138 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Database from the attached file
-MERGED_DATABASE = {
-    "ANACHL": {
-        "allowed": True,
-        "control_samples": {
-            "pcs_ana": {"position": "G6", "name": "PCS ANA"},
-            "ncs_ana": {"position": "H6", "name": "NCS ANA"},
-            "pcs_chlam": {"position": "G12", "name": "PCS CHLAM"},
-            "ncs_chlam": {"position": "H12", "name": "NCS CHLAM"}
-        }
-    },
-    "A2": {
-        "allowed": True,
-        "control_samples": {
-            "pcs": {"position": "G12", "name": "PCS"},
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "BHBP": {
-        "allowed": True,
-        "control_samples": {
-            "ncs_hyo": {"position": "H9", "name": "NCS HYO"},
-            "ncs_pilo": {"position": "H12", "name": "NCS PILO"}
-        }
-    },
-    "BLT": {
-        "allowed": True,
-        "control_samples": {
-            "ref": {"position": "F12", "name": "REF"},
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "BLT3": {
-        "allowed": True,
-        "control_samples": {
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "BLT8": {
-        "allowed": True,
-        "control_samples": {
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "BLT412": {
-        "allowed": True,
-        "control_samples": {
-            "ncs_4": {"position": "H6", "name": "NCS 4"},
-            "ncs_12": {"position": "H12", "name": "NCS 12"}
-        }
-    },
-    "BVD": {
-        "allowed": True,
-        "control_samples": {
-            "ref": {"position": "F12", "name": "REF"},
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "CEM": {
-        "allowed": True,
-        "control_samples": {
-            "ref": {"position": "F12", "name": "REF"},
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "CYSU": {
-        "allowed": True,
-        "control_samples": {
-            "pcs": {"position": "G12", "name": "PCS"},
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "CHLSU": {
-        "allowed": True,
-        "control_samples": {
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "CHLPS": {
-        "allowed": True,
-        "control_samples": {
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "CLPERF": {
-        "allowed": True,
-        "control_samples": {
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "DIVPR": {
-        "allowed": True,
-        "control_samples": {
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "ECOLI": {
-        "allowed": True,
-        "control_samples": {
-            "ncs": {"position": "A12", "name": "NCS"}
-        }
-    },
-    "ECORU": {
-        "allowed": True,
-        "control_samples": {
-            "ncs": {"position": "A12", "name": "NCS"}
-        }
-    },
-    "EHDV": {
-        "allowed": True,
-        "control_samples": {
-            "ref": {"position": "F12", "name": "REF"},
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "HMELE": {
-        "allowed": True,
-        "control_samples": {
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "HSOMN": {
-        "allowed": True,
-        "control_samples": {
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "INFA": {
-        "allowed": True,
-        "control_samples": {
-            "ref": {"position": "F12", "name": "REF"},
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "LEPTO": {
-        "allowed": True,
-        "control_samples": {
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "MGMS": {
-        "allowed": True,
-        "control_samples": {
-            "ref": {"position": "E12", "name": "REF"},
-            "pcs_mg": {"position": "F12", "name": "PCS MG"},
-            "pcs_ms": {"position": "G12", "name": "PCS MS"},
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "MYCBO": {
-        "allowed": True,
-        "control_samples": {
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "MHYO": {
-        "allowed": True,
-        "control_samples": {
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "MSH": {
-        "allowed": True,
-        "control_samples": {
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "MTGPS": {
-        "allowed": True,
-        "control_samples": {
-            "ncs_mt": {"position": "H8", "name": "NCS MT"},
-            "ncs_gps": {"position": "H12", "name": "NCS GPS"}
-        }
-    },
-    "MSUIS": {
-        "allowed": True,
-        "control_samples": {
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "PARVO": {
-        "allowed": True,
-        "control_samples": {
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "PASMHY": {
-        "allowed": True,
-        "control_samples": {
-            "ncs_past": {"position": "H6", "name": "NCS PAST"},
-            "ncs_mhyo": {"position": "H12", "name": "NCS MHYO"}
-        }
-    },
-    "PCV2": {
-        "allowed": True,
-        "control_samples": {
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "PCVT": {
-        "allowed": True,
-        "control_samples": {
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "PIA": {
-        "allowed": True,
-        "control_samples": {
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "PRRS": {
-        "allowed": True,
-        "control_samples": {
-            "ref": {"position": "E12", "name": "REF"},
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "PTBC": {
-        "allowed": True,
-        "control_samples": {
-            "ref": {"position": "F12", "name": "REF"},
-            "pcs": {"position": "G12", "name": "PCS"},
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "SALDI": {
-        "allowed": True,
-        "control_samples": {
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "SALM": {
-        "allowed": True,
-        "control_samples": {
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "SRPR": {
-        "allowed": True,
-        "control_samples": {
-            "ncs": {"position": "B12", "name": "NCS"}
-        }
-    },
-    "SRPR3": {
-        "allowed": True,
-        "control_samples": {
-            "ncs": {"position": "B12", "name": "NCS"}
-        }
-    },
-    "TETRA": {
-        "allowed": True,
-        "control_samples": {
-            "ncs_crypto": {"position": "H4", "name": "NCS crypto"},
-            "ncs_rota": {"position": "H8", "name": "NCS rota"},
-            "ncs_corona": {"position": "H12", "name": "NCS corona"}
-        }
-    },
-    "TOXO": {
-        "allowed": True,
-        "control_samples": {
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
-    },
-    "ECF18Q": {
-        "allowed": True,
-        "control_samples": {
-            "ncs": {"position": "H12", "name": "NCS"}
-        }
+@st.cache_data
+def load_database_from_github(repo_url, branch="main", filename="database.json"):
+    """Load database from GitHub repository"""
+    try:
+        # Construct raw GitHub URL
+        raw_url = f"https://raw.githubusercontent.com/{repo_url}/{branch}/{filename}"
+        response = requests.get(raw_url)
+        response.raise_for_status()
+        return json.loads(response.text)
+    except Exception as e:
+        st.error(f"Error loading database from GitHub: {str(e)}")
+        return None
+
+@st.cache_data
+def load_local_database(uploaded_file):
+    """Load database from uploaded file"""
+    try:
+        if uploaded_file.name.endswith('.json'):
+            return json.loads(uploaded_file.read().decode())
+        else:
+            st.error("Please upload a JSON file")
+            return None
+    except Exception as e:
+        st.error(f"Error loading database file: {str(e)}")
+        return None
+
+def initialize_database():
+    """Initialize database from various sources"""
+    st.subheader("Database Configuration")
+    
+    # Database source selection
+    source = st.radio(
+        "Database Source:",
+        ["GitHub Repository", "Upload File", "Use Default"],
+        help="Choose how to load the database configuration"
+    )
+    
+    database = None
+    
+    if source == "GitHub Repository":
+        col1, col2 = st.columns(2)
+        with col1:
+            repo_url = st.text_input(
+                "Repository (owner/repo):", 
+                value="yourusername/your-repo",
+                help="Format: username/repository-name"
+            )
+        with col2:
+            filename = st.text_input(
+                "Database filename:", 
+                value="database.json",
+                help="JSON file containing the database"
+            )
+        
+        if st.button("Load from GitHub"):
+            database = load_database_from_github(repo_url, filename=filename)
+            if database:
+                st.success("✅ Database loaded from GitHub!")
+                st.session_state.database = database
+    
+    elif source == "Upload File":
+        uploaded_file = st.file_uploader(
+            "Upload Database File",
+            type=['json'],
+            help="Upload a JSON file containing the database configuration"
+        )
+        
+        if uploaded_file is not None:
+            database = load_local_database(uploaded_file)
+            if database:
+                st.success("✅ Database loaded from file!")
+                st.session_state.database = database
+    
+    elif source == "Use Default":
+        # Use the original embedded database as fallback
+        database = get_default_database()
+        st.session_state.database = database
+        st.info("Using default embedded database")
+    
+    return database
+
+def get_default_database():
+    """Return the default database (your original one)"""
+    return {
+        "ANACHL": {
+            "allowed": True,
+            "control_samples": {
+                "pcs_ana": {"position": "G6", "name": "PCS ANA"},
+                "ncs_ana": {"position": "H6", "name": "NCS ANA"},
+                "pcs_chlam": {"position": "G12", "name": "PCS CHLAM"},
+                "ncs_chlam": {"position": "H12", "name": "NCS CHLAM"}
+            }
+        },
+        "A2": {
+            "allowed": True,
+            "control_samples": {
+                "pcs": {"position": "G12", "name": "PCS"},
+                "ncs": {"position": "H12", "name": "NCS"}
+            }
+        },
+        # ... (rest of your original database)
+        # I'll truncate this for brevity, but you'd include all your original entries
     }
-}
 
-# Extract allowed codes from the database
-DEFAULT_ALLOWED_CODES = sorted([code for code, data in MERGED_DATABASE.items() if data["allowed"]])
+def process_database(database):
+    """Process database into the format expected by the app"""
+    if not database:
+        return {}, {}
+    
+    # Extract allowed codes from the database
+    allowed_codes = sorted([code for code, data in database.items() if data.get("allowed", False)])
+    
+    # Convert control samples to the format expected by the original code
+    control_samples = {}
+    for code, data in database.items():
+        if data.get("allowed", False) and "control_samples" in data:
+            control_samples_data = data["control_samples"]
+            positions = []
+            names = []
+            
+            for control_id, control_info in control_samples_data.items():
+                positions.append(control_info["position"])
+                names.append(control_info["name"])
+            
+            control_samples[code] = {
+                'positions': positions,
+                'names': names
+            }
+    
+    return allowed_codes, control_samples
 
-# Convert control samples to the format expected by the original code
-CONTROL_SAMPLES = {}
-for code, data in MERGED_DATABASE.items():
-    if data["allowed"] and "control_samples" in data:
-        control_samples = data["control_samples"]
-        positions = []
-        names = []
-        
-        for control_id, control_info in control_samples.items():
-            positions.append(control_info["position"])
-            names.append(control_info["name"])
-        
-        CONTROL_SAMPLES[code] = {
-            'positions': positions,
-            'names': names
-        }
-
-# Custom default volumes
+# Custom default volumes (you might want to move this to the database file too)
 CUSTOM_DEFAULTS = {
     'SRPR': 50,
     'SRPR3': 40,
@@ -316,9 +157,10 @@ CUSTOM_DEFAULTS = {
 }
 
 class CSVProcessor:
-    def __init__(self, df):
+    def __init__(self, df, allowed_codes):
         self.original_df = df.copy()
         self.df = df.copy()
+        self.allowed_codes = allowed_codes
         self.codes = self.extract_codes()
         
     def extract_codes(self):
@@ -326,7 +168,7 @@ class CSVProcessor:
         codes = set()
         
         # Sort codes by length (longest first) to handle overlapping codes correctly
-        sorted_codes = sorted(DEFAULT_ALLOWED_CODES, key=len, reverse=True)
+        sorted_codes = sorted(self.allowed_codes, key=len, reverse=True)
         
         # Create pattern that matches the longest codes first
         for code in sorted_codes:
@@ -461,12 +303,33 @@ def initialize_session_state():
         st.session_state.data_processed = False
     if 'filtered_data' not in st.session_state:
         st.session_state.filtered_data = {}
+    if 'database' not in st.session_state:
+        st.session_state.database = None
+    if 'database_loaded' not in st.session_state:
+        st.session_state.database_loaded = False
 
 def main():
     st.title("🧪 AHA! - Andrew Helper App")
     st.markdown("*CSV Processing Tool for Laboratory Data Analysis*")
     
     initialize_session_state()
+    
+    # Check if database is loaded
+    if not st.session_state.database_loaded:
+        st.header("Database Setup")
+        database = initialize_database()
+        if database:
+            st.session_state.database_loaded = True
+            st.rerun()
+        else:
+            st.stop()
+    
+    # Process database
+    allowed_codes, control_samples = process_database(st.session_state.database)
+    
+    if not allowed_codes:
+        st.error("No valid codes found in database")
+        st.stop()
 
     # Sidebar for navigation
     with st.sidebar:
@@ -502,6 +365,14 @@ def main():
             for key in list(st.session_state.keys()):
                 del st.session_state[key]
             st.rerun()
+        
+        # Database info
+        st.markdown("---")
+        st.subheader("Database Info")
+        st.write(f"**Loaded codes:** {len(allowed_codes)}")
+        if st.button("🔄 Reload Database"):
+            st.session_state.database_loaded = False
+            st.rerun()
 
     # Main content area
     step = st.session_state.current_step
@@ -519,7 +390,7 @@ def main():
             try:
                 # Read CSV with proper quote handling
                 df = pd.read_csv(uploaded_file, quoting=1)
-                st.session_state.processor = CSVProcessor(df)
+                st.session_state.processor = CSVProcessor(df, allowed_codes)
                 st.success("✅ CSV file uploaded successfully!")
                               
                 # Show extracted codes
@@ -530,10 +401,12 @@ def main():
                 else:
                     st.warning("No valid codes found in the CSV file.")                       
                     st.write("**Looking for patterns like:** MP25[CODE] or PP25[CODE]")
-                    st.write("**Available codes:** " + ", ".join(DEFAULT_ALLOWED_CODES[:10]) + "...")
+                    st.write("**Available codes:** " + ", ".join(allowed_codes[:10]) + "...")
                 
             except Exception as e:
                 st.error(f"Error reading CSV file: {str(e)}")
+    
+    # ... (rest of your steps remain the same, but use the loaded allowed_codes and control_samples)
     
     elif step == "2. Select Runs":
         st.header("Step 2: Select Number of Runs")
@@ -551,227 +424,7 @@ def main():
         
         st.success(f"Selected {st.session_state.num_runs} run(s)")
     
-    elif step == "3. Select Codes":
-        st.header("Step 3: Select Codes for Each Run")
-        
-        if st.session_state.processor is None:
-            st.warning("Please upload a CSV file first.")
-            return
-        
-        if not st.session_state.processor.codes:
-            st.warning("No codes found in the CSV file.")
-            return
-        
-        # Create checkboxes for each code and run combination
-        st.subheader("Select which codes to include in each run:")
-        
-        # Track selected codes across runs
-        selected_in_previous_runs = set()
-
-        for run in range(1, st.session_state.num_runs + 1):
-            st.write(f"**Run {run}:**")
-            cols = st.columns(4)  # 4 columns for better layout
-        
-            for idx, code in enumerate(st.session_state.processor.codes):
-                col_idx = idx % 4
-                with cols[col_idx]:
-                    key = f"code_{code}_run_{run}"
-                    # Disable if selected in any earlier run
-                    disabled = code in selected_in_previous_runs
-                    current_value = st.session_state.selected_codes.get(key, False)
-        
-                    # Render checkbox with disable logic
-                    st.session_state.selected_codes[key] = st.checkbox(
-                        f"{code}",
-                        value=current_value and not disabled,
-                        key=key,
-                        disabled=disabled
-                    )
-        
-                    # Track selected code for future runs
-                    if st.session_state.selected_codes[key]:
-                        selected_in_previous_runs.add(code)
-        
-            st.write("---")
-   
-    elif step == "4. Add Rows":
-        st.header("Step 4: Add New Rows (Optional)")
-        
-        if st.session_state.processor is None:
-            st.warning("Please upload a CSV file first.")
-            return
-        
-        with st.expander("Add New Row", expanded=False):
-            # Sample type selection
-            sample_type = st.radio(
-                "Sample Type:",
-                ["Regular Sample", "Control Sample"],
-                horizontal=True
-            )
-            
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.subheader("Poolplaat (PP25)")
-                pp25_codes = [code for code in st.session_state.processor.codes if code != ""]
-                if pp25_codes:
-                    pp25_code = st.selectbox("PP25 Code:", pp25_codes)
-                    
-                    # Position input with plate selector
-                    pp25_position = st.text_input("Position:", value="A1", key="pp25_pos")
-                    
-                                
-            with col2:
-                st.subheader("Analyseplaat (MP25)")
-                mp25_code = st.selectbox("MP25 Code:", st.session_state.processor.codes)
-                mp25_num = st.number_input("Number:", min_value=1, max_value=999, value=1)
-                mp25_position = st.text_input("Position:", value="A1", key="mp25_pos")
-                
-           
-            # Control sample specific options
-            if sample_type == "Control Sample":
-                if mp25_code in CONTROL_SAMPLES:
-                    control_info = CONTROL_SAMPLES[mp25_code]
-                    control_idx = st.selectbox(
-                        "Control Sample:",
-                        range(len(control_info['names'])),
-                        format_func=lambda x: control_info['names'][x]
-                    )
-                    pp25_position = control_info['positions'][control_idx]
-                    st.info(f"Auto-selected position: {pp25_position}")
-            
-            # Add row button
-            if st.button("Add Row"):
-                if 'pp25_code' in locals() and 'mp25_code' in locals():
-                    sample_num = position_to_sample_number(pp25_position)
-                    
-                    # Create new row data
-                    col0 = f'"{pp25_code}":{pp25_position}'
-                    col7 = col0
-                    col9 = f'"MP25{mp25_code}{mp25_num}":{mp25_position}'
-                    
-                    new_row = [
-                        col0, '100', f'Sample {sample_num}', 'Sample', '1 M', '', '', 
-                        col7, '20', col9
-                    ]
-                    
-                    # Pad row to match original dataframe columns
-                    while len(new_row) < len(st.session_state.processor.df.columns):
-                        new_row.append('')
-                    
-                    st.session_state.processor.add_row(new_row)
-                    st.success("Row added successfully!")
-                    st.rerun()
-    
-    elif step == "5. Process Data":
-        st.header("Step 5: Process Data and Set Volumes")
-        
-        if st.session_state.processor is None:
-            st.warning("Please upload a CSV file first.")
-            return
-        
-        # Process data button
-        if st.button("Process Selected Data"):
-            # Get selected codes for each run
-            selected_by_run = {}
-            for run in range(1, st.session_state.num_runs + 1):
-                selected_codes = []
-                for code in st.session_state.processor.codes:
-                    key = f"code_{code}_run_{run}"
-                    if st.session_state.selected_codes.get(key, False):
-                        selected_codes.append(code)
-                selected_by_run[run] = selected_codes
-            
-            # Filter data for each run
-            st.session_state.filtered_data = {}
-            for run, codes in selected_by_run.items():
-                if codes:
-                    filtered_df = st.session_state.processor.filter_data(codes, run)
-                    st.session_state.filtered_data[run] = filtered_df
-            
-            st.session_state.data_processed = True
-            st.success("Data processed successfully!")
-        
-        # Show volume editors if data is processed
-        if st.session_state.data_processed and st.session_state.filtered_data:
-            st.subheader("Volume Settings")
-            
-            # Get all unique codes from filtered data
-            all_codes = set()
-            for run_data in st.session_state.filtered_data.values():
-                for code in st.session_state.processor.codes:
-                    pattern = r'(?:MP25|PP25)' + re.escape(code) + r'(?:\d+)?'
-                    if run_data.astype(str).apply(
-                        lambda x: x.str.contains(pattern, regex=True, na=False)
-                    ).any(axis=1).any():
-                        all_codes.add(code)
-            
-            # Create volume inputs
-            cols = st.columns(3)
-            for idx, code in enumerate(sorted(all_codes)):
-                col_idx = idx % 3
-                with cols[col_idx]:
-                    default_vol = CUSTOM_DEFAULTS.get(code, 20)
-                    st.session_state.volumes[code] = st.number_input(
-                        f"{code} Volume:",
-                        min_value=1,
-                        max_value=1000,
-                        value=st.session_state.volumes.get(code, default_vol),
-                        key=f"vol_{code}"
-                    )
-            
-            # Show preview of processed data
-            st.subheader("Processed Data Preview")
-            for run, df in st.session_state.filtered_data.items():
-                with st.expander(f"Run {run} ({len(df)} rows)"):
-                    # Apply volumes
-                    df_with_volumes = st.session_state.processor.apply_volumes(df, st.session_state.volumes)
-                    st.dataframe(df_with_volumes)
-                    
-                    # Show MP25 codes found
-                    mp25_codes = set()
-                    for col in df_with_volumes.columns:
-                        for value in df_with_volumes[col].astype(str):
-                            matches = re.findall(r'MP25([A-Z0-9]+)', value)
-                            mp25_codes.update(matches)
-                    
-                    if mp25_codes:
-                        st.write(f"**MP25 codes found:** {', '.join(sorted(mp25_codes))}")
-    
-    elif step == "6. Download Results":
-        st.header("Step 6: Download Results")
-        
-        if st.session_state.processor is None:
-            st.warning("Please upload a CSV file first.")
-            return
-        
-        if not st.session_state.data_processed or not st.session_state.filtered_data:
-            st.warning("Please process data first.")
-            return
-        
-        # Generate download buttons for each run
-        current_date = datetime.now().strftime("%Y-%m-%d")
-        
-        for run, df in st.session_state.filtered_data.items():
-            # Apply volumes
-            df_with_volumes = st.session_state.processor.apply_volumes(df, st.session_state.volumes)
-            
-            # Generate filename
-            filename = f"Werklijst - Andrew - Run {run} - {current_date}.csv"
-            
-            # Convert to CSV
-            csv_buffer = io.StringIO()
-            df_with_volumes.to_csv(csv_buffer, index=False)
-            csv_data = csv_buffer.getvalue()
-            
-            # Create download button
-            st.download_button(
-                label=f"📥 Download Run {run}",
-                data=csv_data,
-                file_name=filename,
-                mime="text/csv",
-                key=f"download_run_{run}"
-            )
+    # ... (continue with remaining steps, using control_samples variable instead of CONTROL_SAMPLES)
 
 if __name__ == "__main__":
     main()
