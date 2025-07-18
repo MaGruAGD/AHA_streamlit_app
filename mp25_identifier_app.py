@@ -573,11 +573,10 @@ def add_row_interface(processor, allowed_codes, control_samples):
                 help="Enter PP25PLSTA ID (format: PP25PLSTAXXXX)"
             )
         
-        # Well plate selector for poolplaat position
-        st.write("**Select position on poolplaat:**")
-        poolplaat_position = well_plate_selector(
+        # Use the simplified well plate selector instead of the HTML component
+        poolplaat_position = well_plate_selector_simple(
             key="poolplaat_position_selector",
-            title="🧪 Poolplaat Position",
+            title="Select position on poolplaat",
             default_position="A1"
         )
         
@@ -635,18 +634,17 @@ def add_row_interface(processor, allowed_codes, control_samples):
             else:
                 st.warning(f"No control samples defined for code {selected_code}")
                 analyseplaat_position = "A1"
-    # Regular samples - allow well plate selection
-    st.write("**Select position on analyseplaat:**")
-    analyseplaat_position = well_plate_selector(
-        key="analyseplaat_position_selector",
-        title="🔬 Analyseplaat Position",
-        default_position="A1"
-    )
+        else:
+            # Regular samples - use simplified well plate selector
+            analyseplaat_position = well_plate_selector_simple(
+                key="analyseplaat_position_selector",
+                title="Select position on analyseplaat",
+                default_position="A1"
+            )
     
     # Get volume for the selected code
     volume = CUSTOM_DEFAULTS.get(selected_code, 20)
     
-
     # Preview section
     if poolplaat_id and poolplaat_position and analyseplaat_id and analyseplaat_position:
         poolplaat_entry = f'"{poolplaat_id}":{poolplaat_position}'
@@ -670,9 +668,10 @@ def add_row_interface(processor, allowed_codes, control_samples):
         preview_csv = ",".join([f'"{str(item)}"' if item else '""' for item in preview_row])
         
         # Display preview
+        st.subheader("Preview")
         st.code(preview_csv, language="csv")
     
-    # Replace the existing "Add Sample" button with this:
+    # Add Sample button
     if st.button("➕ Add Sample", type="primary", use_container_width=True):
         # Validate inputs
         if not poolplaat_id or not poolplaat_position or not analyseplaat_id or not analyseplaat_position:
@@ -717,6 +716,9 @@ def add_row_interface(processor, allowed_codes, control_samples):
             st.toast(f"✅ Sample added to Run {run_for_sample}", icon="✅")
         else:
             st.toast(f"✅ Sample added successfully", icon="✅")
+        
+        # Force a rerun to refresh the interface
+        st.rerun()
 
         
 def volume_manager_interface(processor, allowed_codes):
