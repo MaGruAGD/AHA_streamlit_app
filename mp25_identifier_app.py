@@ -324,13 +324,18 @@ class CSVProcessor:
     def extract_codes(self):
         """Extract MP25 and PP25 codes from the CSV data"""
         codes = set()
-        sorted_codes = sorted(DEFAULT_ALLOWED_CODES)
-        pattern = r'(?:MP25|PP25)(' + '|'.join(sorted_codes) + r')'
         
-        for col in self.df.columns:
-            for value in self.df[col].astype(str):
-                matches = re.findall(pattern, value)
-                codes.update(matches)
+        # Sort codes by length (longest first) to handle overlapping codes correctly
+        sorted_codes = sorted(DEFAULT_ALLOWED_CODES, key=len, reverse=True)
+        
+        # Create pattern that matches the longest codes first
+        for code in sorted_codes:
+            pattern = r'(?:MP25|PP25)' + re.escape(code) + r'(?:\d+)?'
+            
+            for col in self.df.columns:
+                for value in self.df[col].astype(str):
+                    if re.search(pattern, value):
+                        codes.add(code)
         
         return sorted(list(codes))
     
@@ -348,11 +353,19 @@ class CSVProcessor:
         
         # Create regex pattern for selected codes
         if selected_codes:
-            pattern = r'(?:MP25|PP25)(' + '|'.join(selected_codes) + r')'
+            # Sort selected codes by length (longest first) to handle overlapping codes
+            sorted_selected = sorted(selected_codes, key=len, reverse=True)
+            patterns = []
+            
+            for code in sorted_selected:
+                patterns.append(r'(?:MP25|PP25)' + re.escape(code) + r'(?:\d+)?')
+            
+            # Combine all patterns
+            combined_pattern = '|'.join(patterns)
             
             # Filter rows that contain any of the selected codes
             mask = filtered_df.astype(str).apply(
-                lambda x: x.str.contains(pattern, regex=True, na=False)
+                lambda x: x.str.contains(combined_pattern, regex=True, na=False)
             ).any(axis=1)
             
             filtered_df = filtered_df[mask]
@@ -362,9 +375,14 @@ class CSVProcessor:
     def apply_volumes(self, df, volumes):
         """Apply custom volumes to the dataframe"""
         df_copy = df.copy()
-        for code, volume in volumes.items():
-            # Find rows containing this code and update volume (column index 8)
-            pattern = r'(?:MP25|PP25)' + code + r'(?:\d+)?'
+        
+        # Sort codes by length (longest first) to handle overlapping codes
+        sorted_codes = sorted(volumes.keys(), key=len, reverse=True)
+        
+        for code in sorted_codes:
+            volume = volumes[code]
+            pattern = r'(?:MP25|PP25)' + re.escape(code) + r'(?:\d+)?'
+            
             mask = df_copy.astype(str).apply(
                 lambda x: x.str.contains(pattern, regex=True, na=False)
             ).any(axis=1)
@@ -486,8 +504,29 @@ def main():
                 if st.session_state.processor.codes:
                     st.write(f"Found {len(st.session_state.processor.codes)} codes:")
                     st.write(", ".join(st.session_state.processor.codes))
+                    
+                    # Add debugging info
+                    with st.expander("Debug Information"):
+                        st.write("**Raw data sample for debugging:**")
+                        for col in df.columns[:3]:  # Show first 3 columns
+                            st.write(f"Column '{col}':")
+                            sample_values = df[col].astype(str).head(5).tolist()
+                            for i, val in enumerate(sample_values):
+                                st.write(f"  Row {i}: {val}")
                 else:
                     st.warning("No valid codes found in the CSV file.")
+                    
+                    # Show debug info for troubleshooting
+                    with st.expander("Debug Information - No codes found"):
+                        st.write("**Sample data from CSV:**")
+                        for col in df.columns[:5]:  # Show first 5 columns
+                            st.write(f"Column '{col}':")
+                            sample_values = df[col].astype(str).head(3).tolist()
+                            for i, val in enumerate(sample_values):
+                                st.write(f"  Row {i}: {val}")
+                        
+                        st.write("**Looking for patterns like:** MP25[CODE] or PP25[CODE]")
+                        st.write("**Available codes:** " + ", ".join(DEFAULT_ALLOWED_CODES[:10]) + "...")
                 
             except Exception as e:
                 st.error(f"Error reading CSV file: {str(e)}")
@@ -657,7 +696,7 @@ def main():
             all_codes = set()
             for run_data in st.session_state.filtered_data.values():
                 for code in st.session_state.processor.codes:
-                    pattern = r'(?:MP25|PP25)' + code + r'(?:\d+)?'
+                    pattern = r'(?:MP25|PP25)' + re.escape(code) + r'(?:\d+)?'
                     if run_data.astype(str).apply(
                         lambda x: x.str.contains(pattern, regex=True, na=False)
                     ).any(axis=1).any():
