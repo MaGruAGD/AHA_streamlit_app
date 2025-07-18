@@ -477,6 +477,19 @@ def main():
             "Select Step:",
             ["1. Upload CSV", "2. Select Runs", "3. Select Codes", "4. Add Rows", "5. Process Data", "6. Download Results"]
         )
+
+        # Add some space
+        st.write("")
+        st.write("")
+        
+        # Reset button at bottom of sidebar
+        if st.session_state.get('processor') is not None:
+            if st.button("🔄 Reset to Original Data", key="sidebar_reset"):
+                st.session_state.processor.reset_data()
+                st.session_state.data_processed = False
+                st.session_state.filtered_data = {}
+                st.success("Data reset to original state!")
+                st.rerun()
     
     # Main content area
     if step == "1. Upload CSV":
@@ -758,13 +771,5 @@ def main():
                 key=f"download_run_{run}"
             )
         
-        # Reset data button
-        if st.button("🔄 Reset to Original Data"):
-            st.session_state.processor.reset_data()
-            st.session_state.data_processed = False
-            st.session_state.filtered_data = {}
-            st.success("Data reset to original state!")
-            st.rerun()
-
 if __name__ == "__main__":
     main()
