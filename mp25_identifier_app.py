@@ -798,27 +798,46 @@ def step_download_results():
 # Main Application
 
 def main():
-    # Direct logo loading - simpler approach
+    # Fixed logo and title layout
     logo_url = "https://raw.githubusercontent.com/MaGruAGD/AHA_streamlit_app/main/logo.png"
     
     try:
-        # Create columns for logo and title
-        col1, col2 = st.columns([1, 3])
-        with col1:
-            st.image(logo_url, width=120)
-        with col2:
-            st.title("🧪 AHA! - Andrew Helper App")
-            st.markdown("*CSV Processing Tool for Laboratory Data Analysis*")
+        # Create a container for the header
+        header_container = st.container()
+        
+        with header_container:
+            # Create columns with proper spacing
+            col1, col2, col3 = st.columns([1, 6, 1])
+            
+            with col1:
+                st.image(logo_url, width=80)
+            
+            with col2:
+                # Center the title and subtitle
+                st.markdown(
+                    """
+                    <div style="text-align: center; margin-top: 10px;">
+                        <h1>🧪 AHA! - Andrew Helper App</h1>
+                        <p style="font-style: italic; color: #666; margin-top: -10px;">
+                            CSV Processing Tool for Laboratory Data Analysis
+                        </p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+            
+            with col3:
+                # Empty column for balance
+                pass
+        
+        # Add some spacing after the header
+        st.markdown("---")
+        
     except Exception as e:
         # Fallback if logo doesn't load
         st.title("🧪 AHA! - Andrew Helper App")
         st.markdown("*CSV Processing Tool for Laboratory Data Analysis*")
         st.caption(f"Note: Logo loading failed - {str(e)}")
-    
-    # Rest of your code continues here...
-    initialize_session_state()
-    
-    # ... rest remains the same
     
     initialize_session_state()
     
