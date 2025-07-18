@@ -1,11 +1,9 @@
 import streamlit as st
 import pandas as pd
 import re
-import io
 import json
 import requests
 from datetime import datetime
-import numpy as np
 
 # Page configuration
 st.set_page_config(
@@ -15,11 +13,21 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Constants
+CUSTOM_DEFAULTS = {
+    'SRPR': 50,
+    'SRPR3': 40,
+    'ECORU': 50,
+    'BLT3': 10,
+    'BLT8': 10,
+    'BLT412': 10
+}
+
+# Database Functions
 @st.cache_data
 def load_database_from_github(repo_url, branch="main", filename="database.json"):
     """Load database from GitHub repository"""
     try:
-        # Construct raw GitHub URL
         raw_url = f"https://raw.githubusercontent.com/{repo_url}/{branch}/{filename}"
         response = requests.get(raw_url)
         response.raise_for_status()
@@ -28,28 +36,16 @@ def load_database_from_github(repo_url, branch="main", filename="database.json")
         st.error(f"Error loading database from GitHub: {str(e)}")
         return None
 
-@st.cache_data
-def load_local_database(uploaded_file):
-    """Load database from uploaded file"""
-    try:
-        if uploaded_file.name.endswith('.json'):
-            return json.loads(uploaded_file.read().decode())
-        else:
-            st.error("Please upload a JSON file")
-            return None
-    except Exception as e:
-        st.error(f"Error loading database file: {str(e)}")
-        return None
+
 
 def initialize_database():
-    """Initialize database from various sources"""
+    """Initialize database from GitHub"""
     st.subheader("Database Configuration")
     
-    # Try to load from GitHub automatically first
+    # Load from GitHub
     repo_url = "MaGruAGD/AHA_streamlit_app"
     filename = "database.json"
     
-    # Show loading message
     with st.spinner("Loading database from GitHub..."):
         database = load_database_from_github(repo_url, filename=filename)
     
@@ -57,62 +53,9 @@ def initialize_database():
         st.success(f"✅ Database loaded from GitHub repository: {repo_url}")
         st.session_state.database = database
         return database
-    
-    # If GitHub loading failed, show fallback options
-    st.warning("⚠️ Could not load database from GitHub. Choose an alternative:")
-    
-    # Database source selection
-    source = st.radio(
-        "Database Source:",
-        ["Upload File", "Use Default"],
-        help="Choose how to load the database configuration"
-    )
-    
-    database = None
-    
-    if source == "Upload File":
-        uploaded_file = st.file_uploader(
-            "Upload Database File",
-            type=['json'],
-            help="Upload a JSON file containing the database configuration"
-        )
-        
-        if uploaded_file is not None:
-            database = load_local_database(uploaded_file)
-            if database:
-                st.success("✅ Database loaded from file!")
-                st.session_state.database = database
-    
-    elif source == "Use Default":
-        # Use the original embedded database as fallback
-        database = get_default_database()
-        st.session_state.database = database
-        st.info("Using default embedded database")
-    
-    return database
-
-def get_default_database():
-    """Return the default database (your original one)"""
-    return {
-        "ANACHL": {
-            "allowed": True,
-            "control_samples": {
-                "pcs_ana": {"position": "G6", "name": "PCS ANA"},
-                "ncs_ana": {"position": "H6", "name": "NCS ANA"},
-                "pcs_chlam": {"position": "G12", "name": "PCS CHLAM"},
-                "ncs_chlam": {"position": "H12", "name": "NCS CHLAM"}
-            }
-        },
-        "A2": {
-            "allowed": True,
-            "control_samples": {
-                "pcs": {"position": "G12", "name": "PCS"},
-                "ncs": {"position": "H12", "name": "NCS"}
-            }
-        },
-        # ... (rest of your original database)
-        # I'll truncate this for brevity, but you'd include all your original entries
-    }
+    else:
+        st.error("❌ Failed to load database from GitHub. Please check your internet connection and try again.")
+        return None
 
 def process_database(database):
     """Process database into the format expected by the app"""
@@ -122,7 +65,7 @@ def process_database(database):
     # Extract allowed codes from the database
     allowed_codes = sorted([code for code, data in database.items() if data.get("allowed", False)])
     
-    # Convert control samples to the format expected by the original code
+    # Convert control samples to the format expected by the app
     control_samples = {}
     for code, data in database.items():
         if data.get("allowed", False) and "control_samples" in data:
@@ -141,16 +84,7 @@ def process_database(database):
     
     return allowed_codes, control_samples
 
-# Custom default volumes (you might want to move this to the database file too)
-CUSTOM_DEFAULTS = {
-    'SRPR': 50,
-    'SRPR3': 40,
-    'ECORU': 50,
-    'BLT3': 10,
-    'BLT8': 10,
-    'BLT412': 10
-}
-
+# CSV Processing Class
 class CSVProcessor:
     def __init__(self, df, allowed_codes):
         self.original_df = df.copy()
@@ -165,7 +99,6 @@ class CSVProcessor:
         # Sort codes by length (longest first) to handle overlapping codes correctly
         sorted_codes = sorted(self.allowed_codes, key=len, reverse=True)
         
-        # Create pattern that matches the longest codes first
         for code in sorted_codes:
             pattern = r'(?:MP25|PP25)' + re.escape(code) + r'(?:\d+)?'
             
@@ -212,10 +145,6 @@ class CSVProcessor:
         
         return sorted(list(mp25_ids))
     
-    def reset_data(self):
-        """Reset data to original state"""
-        self.df = self.original_df.copy()
-        
     def add_row(self, row_data):
         """Add a new row to the dataframe"""
         self.df = pd.concat([self.df, pd.DataFrame([row_data])], ignore_index=True)
@@ -224,7 +153,6 @@ class CSVProcessor:
         """Filter data based on selected codes and run number"""
         filtered_df = self.df.copy()
         
-        # Create regex pattern for selected codes
         if selected_codes:
             # Sort selected codes by length (longest first) to handle overlapping codes
             sorted_selected = sorted(selected_codes, key=len, reverse=True)
@@ -265,11 +193,9 @@ class CSVProcessor:
         
         return df_copy
 
+# Utility Functions
 def position_to_sample_number(position):
-    """Convert well position (A1, B2, etc.) to sample number (1-96)
-    Logic: A1=1, B1=2, C1=3, ..., H1=8, A2=9, B2=10, ..., H12=96
-    Goes down columns first, then across rows.
-    """
+    """Convert well position (A1, B2, etc.) to sample number (1-96)"""
     if len(position) < 2:
         return 1
     
@@ -284,48 +210,74 @@ def position_to_sample_number(position):
         return 1
     
     row_num = ord(row) - ord('A')  # A=0, B=1, C=2, ..., H=7
-    return (col - 1) * 8 + row_num + 1  # A1=(1-1)*8+0+1=1, B1=(1-1)*8+1+1=2, A2=(2-1)*8+0+1=9
+    return (col - 1) * 8 + row_num + 1
 
-def create_plate_selector(key_prefix, selected_position="A1"):
-    """Create a visual plate selector widget"""
-    # Initialize session state for plate selector
-    if f"{key_prefix}_selected" not in st.session_state:
-        st.session_state[f"{key_prefix}_selected"] = selected_position
+def initialize_session_state():
+    """Initialize session state variables"""
+    defaults = {
+        'processor': None,
+        'num_runs': 1,
+        'selected_codes': {},
+        'volumes': {},
+        'data_processed': False,
+        'filtered_data': {},
+        'database': None,
+        'database_loaded': False,
+        'current_step': "1. Upload CSV"
+    }
     
-    # Create grid layout
-    cols = st.columns(13)  # 12 columns + 1 for row labels
-    
-    # Column headers
-    with cols[0]:
-        st.write("")
-    for i in range(1, 13):
-        with cols[i]:
-            st.write(f"**{i}**")
-    
-    # Create wells
-    for row_idx, row in enumerate(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']):
-        cols = st.columns(13)
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+
+# UI Components
+def create_sidebar():
+    """Create the sidebar navigation"""
+    with st.sidebar:
+        st.header("Navigation")
         
-        # Row label
-        with cols[0]:
-            st.write(f"**{row}**")
+        steps = [
+            "1. Upload CSV", 
+            "2. Select Runs", 
+            "3. Select Codes", 
+            "4. Add Rows", 
+            "5. Process Data", 
+            "6. Download Results"
+        ]
         
-        # Wells
-        for col_idx in range(1, 13):
-            with cols[col_idx]:
-                well_position = f"{row}{col_idx}"
-                is_selected = st.session_state[f"{key_prefix}_selected"] == well_position
-                
-                if st.button(
-                    well_position,
-                    key=f"{key_prefix}_well_{well_position}",
-                    type="primary" if is_selected else "secondary",
-                    use_container_width=True
-                ):
-                    st.session_state[f"{key_prefix}_selected"] = well_position
-                    st.rerun()
-    
-    return st.session_state[f"{key_prefix}_selected"]
+        for step_name in steps:
+            is_current = st.session_state.current_step == step_name
+            if st.button(
+                step_name, 
+                key=f"nav_{step_name}",
+                type="primary" if is_current else "secondary",
+                use_container_width=True
+            ):
+                st.session_state.current_step = step_name
+                st.rerun()
+        
+        # Reset button
+        st.markdown("---")
+        if st.button(
+            "🔄 Reset Application",
+            type="secondary",
+            use_container_width=True,
+            help="Clear all data and start over"
+        ):
+            for key in list(st.session_state.keys()):
+                del st.session_state[key]
+            st.rerun()
+        
+        # Database info
+        st.markdown("---")
+        st.subheader("Database Info")
+        st.write("**Source:** MaGruAGD/AHA_streamlit_app")
+        if st.session_state.database:
+            allowed_codes, _ = process_database(st.session_state.database)
+            st.write(f"**Loaded codes:** {len(allowed_codes)}")
+        if st.button("🔄 Reload Database"):
+            st.session_state.database_loaded = False
+            st.rerun()
 
 def add_row_interface(processor, allowed_codes, control_samples):
     """Enhanced add row interface with regular and control samples"""
@@ -392,7 +344,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
             value=str(sample_number),
             disabled=True,
             key="sample_number_display",
-            help="Automatically calculated from position (A1=1, B1=2, H1=8, A2=9, B2=10, etc.)"
+            help="Automatically calculated from position"
         )
     
     with col2:
@@ -458,57 +410,217 @@ def add_row_interface(processor, allowed_codes, control_samples):
             st.error("Please fill in all required fields.")
             return
         
-        # Create the row in the specified format
-        # Format: """PP25CODE"":position",100,Sample number,Sample,1 M,,,"""PP25CODE"":position",volume,"""MP25CODE"":position"
+        # Create the row data
         poolplaat_entry = f'"{poolplaat_id}":{poolplaat_position}'
         analyseplaat_entry = f'"{analyseplaat_id}":{analyseplaat_position}'
         
         row_data = [
-            poolplaat_entry,  # Column 0
-            100,              # Column 1
-            f"Sample {sample_number}",  # Column 2
-            "Sample",         # Column 3
-            "1 M",           # Column 4
-            "",              # Column 5
-            "",              # Column 6
-            "",              # Column 7
-            poolplaat_entry, # Column 8
-            volume,          # Column 9
-            analyseplaat_entry  # Column 10
+            poolplaat_entry,
+            100,
+            f"Sample {sample_number}",
+            "Sample",
+            "1 M",
+            "", "", "",
+            poolplaat_entry,
+            volume,
+            analyseplaat_entry
         ]
         
         # Ensure we have enough columns
         while len(row_data) < len(processor.df.columns):
             row_data.append("")
         
-        # Add the row to the processor
         processor.add_row(row_data)
         
         st.success(f"✅ Added {sample_type.lower()[:-1]} for code {selected_code}")
         st.info(f"Added: {poolplaat_entry} → {analyseplaat_entry} (Volume: {volume})")
-        
-        # Clear the form by rerunning
         st.rerun()
 
-def initialize_session_state():
-    """Initialize session state variables"""
-    if 'processor' not in st.session_state:
-        st.session_state.processor = None
-    if 'num_runs' not in st.session_state:
-        st.session_state.num_runs = 1
-    if 'selected_codes' not in st.session_state:
-        st.session_state.selected_codes = {}
-    if 'volumes' not in st.session_state:
-        st.session_state.volumes = {}
-    if 'data_processed' not in st.session_state:
-        st.session_state.data_processed = False
-    if 'filtered_data' not in st.session_state:
-        st.session_state.filtered_data = {}
-    if 'database' not in st.session_state:
-        st.session_state.database = None
-    if 'database_loaded' not in st.session_state:
-        st.session_state.database_loaded = False
+# Main Application Steps
+def step_upload_csv(allowed_codes):
+    """Step 1: Upload CSV File"""
+    st.header("Step 1: Upload CSV File")
+    
+    uploaded_file = st.file_uploader(
+        "Choose a CSV file",
+        type="csv",
+        help="Upload your laboratory data CSV file"
+    )
+    
+    if uploaded_file is not None:
+        try:
+            df = pd.read_csv(uploaded_file, quoting=1)
+            st.session_state.processor = CSVProcessor(df, allowed_codes)
+            st.success("✅ CSV file uploaded successfully!")
+                          
+            # Show extracted codes
+            st.subheader("Extracted Codes")
+            if st.session_state.processor.codes:
+                st.write(f"Found {len(st.session_state.processor.codes)} codes:")
+                st.write(", ".join(st.session_state.processor.codes))
+            else:
+                st.warning("No valid codes found in the CSV file.")
+                st.write("**Looking for patterns like:** MP25[CODE] or PP25[CODE]")
+                st.write("**Available codes:** " + ", ".join(allowed_codes[:10]) + "...")
+        
+        except Exception as e:
+            st.error(f"Error reading CSV file: {str(e)}")
 
+def step_select_runs():
+    """Step 2: Select Number of Runs"""
+    st.header("Step 2: Select Number of Runs")
+    
+    if st.session_state.processor is None:
+        st.warning("Please upload a CSV file first.")
+        return
+    
+    st.session_state.num_runs = st.radio(
+        "Number of runs:",
+        options=[1, 2, 3],
+        index=st.session_state.num_runs - 1,
+        horizontal=True
+    )
+    
+    st.success(f"Selected {st.session_state.num_runs} run(s)")
+
+def step_select_codes():
+    """Step 3: Select Codes and Volumes"""
+    st.header("Step 3: Select Codes and Volumes")
+    
+    if st.session_state.processor is None:
+        st.warning("Please upload a CSV file first.")
+        return
+    
+    available_codes = st.session_state.processor.codes
+    
+    if not available_codes:
+        st.warning("No codes found in the uploaded CSV file.")
+        return
+    
+    # Code selection for each run
+    for run_num in range(1, st.session_state.num_runs + 1):
+        st.subheader(f"Run {run_num}")
+        
+        # Initialize selected codes for this run
+        if run_num not in st.session_state.selected_codes:
+            st.session_state.selected_codes[run_num] = []
+        
+        # Multi-select for codes
+        selected = st.multiselect(
+            f"Select codes for Run {run_num}:",
+            options=available_codes,
+            default=st.session_state.selected_codes[run_num],
+            key=f"codes_run_{run_num}"
+        )
+        
+        st.session_state.selected_codes[run_num] = selected
+        
+        # Volume settings for selected codes
+        if selected:
+            st.write("**Volume Settings:**")
+            for code in selected:
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    st.write(f"Code: {code}")
+                with col2:
+                    default_volume = CUSTOM_DEFAULTS.get(code, 20)
+                    volume = st.number_input(
+                        "Volume",
+                        min_value=1,
+                        max_value=100,
+                        value=st.session_state.volumes.get(f"{run_num}_{code}", default_volume),
+                        key=f"volume_{run_num}_{code}",
+                        label_visibility="collapsed"
+                    )
+                    st.session_state.volumes[f"{run_num}_{code}"] = volume
+
+def step_process_data():
+    """Step 5: Process Data"""
+    st.header("Step 5: Process Data")
+    
+    if st.session_state.processor is None:
+        st.warning("Please upload a CSV file first.")
+        return
+    
+    if not any(st.session_state.selected_codes.values()):
+        st.warning("Please select codes for processing.")
+        return
+    
+    if st.button("🔄 Process Data", type="primary"):
+        st.session_state.filtered_data = {}
+        
+        for run_num in range(1, st.session_state.num_runs + 1):
+            selected_codes = st.session_state.selected_codes.get(run_num, [])
+            
+            if selected_codes:
+                # Filter data
+                filtered_df = st.session_state.processor.filter_data(selected_codes, run_num)
+                
+                # Apply volumes
+                volumes = {}
+                for code in selected_codes:
+                    volume_key = f"{run_num}_{code}"
+                    if volume_key in st.session_state.volumes:
+                        volumes[code] = st.session_state.volumes[volume_key]
+                
+                if volumes:
+                    filtered_df = st.session_state.processor.apply_volumes(filtered_df, volumes)
+                
+                st.session_state.filtered_data[run_num] = filtered_df
+        
+        st.session_state.data_processed = True
+        st.success("✅ Data processed successfully!")
+    
+    # Display processed data
+    if st.session_state.data_processed and st.session_state.filtered_data:
+        for run_num, df in st.session_state.filtered_data.items():
+            st.subheader(f"Run {run_num} - Processed Data")
+            st.write(f"**Rows:** {len(df)}")
+            st.dataframe(df, use_container_width=True)
+
+def step_download_results():
+    """Step 6: Download Results"""
+    st.header("Step 6: Download Results")
+    
+    if not st.session_state.data_processed or not st.session_state.filtered_data:
+        st.warning("Please process data first.")
+        return
+    
+    # Download options
+    download_format = st.radio(
+        "Download Format:",
+        ["Separate files for each run", "Combined file with all runs"],
+        horizontal=True
+    )
+    
+    if download_format == "Separate files for each run":
+        for run_num, df in st.session_state.filtered_data.items():
+            csv_data = df.to_csv(index=False, quoting=1)
+            st.download_button(
+                label=f"📥 Download Run {run_num}",
+                data=csv_data,
+                file_name=f"processed_run_{run_num}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
+    
+    else:
+        # Combine all runs
+        combined_df = pd.concat(st.session_state.filtered_data.values(), ignore_index=True)
+        csv_data = combined_df.to_csv(index=False, quoting=1)
+        st.download_button(
+            label="📥 Download Combined Results",
+            data=csv_data,
+            file_name=f"processed_combined_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+            use_container_width=True
+        )
+        
+        st.subheader("Combined Results Preview")
+        st.write(f"**Total Rows:** {len(combined_df)}")
+        st.dataframe(combined_df, use_container_width=True)
+
+# Main Application
 def main():
     st.title("🧪 AHA! - Andrew Helper App")
     st.markdown("*CSV Processing Tool for Laboratory Data Analysis*")
@@ -532,234 +644,24 @@ def main():
         st.error("No valid codes found in database")
         st.stop()
 
-    # Sidebar for navigation
-    with st.sidebar:
-        st.header("Navigation")
-        
-        # Initialize step in session state if not exists
-        if 'current_step' not in st.session_state:
-            st.session_state.current_step = "1. Upload CSV"
-            
-        # Create navigation buttons
-        steps = ["1. Upload CSV", "2. Select Runs", "3. Select Codes", "4. Add Rows", "5. Process Data", "6. Download Results"]
-        
-        for step_name in steps:
-            is_current = st.session_state.current_step == step_name
-            if st.button(
-                step_name, 
-                key=f"nav_{step_name}",
-                type="primary" if is_current else "secondary",
-                use_container_width=True
-            ):
-                st.session_state.current_step = step_name
-                st.rerun()
-        
-        # Add reset button
-        st.markdown("---")
-        if st.button(
-            "🔄 Reset Application",
-            type="secondary",
-            use_container_width=True,
-            help="Clear all data and start over"
-        ):
-            # Clear all session state
-            for key in list(st.session_state.keys()):
-                del st.session_state[key]
-            st.rerun()
-        
-        # Database info
-        st.markdown("---")
-        st.subheader("Database Info")
-        st.write(f"**Source:** MaGruAGD/AHA_streamlit_app")
-        st.write(f"**Loaded codes:** {len(allowed_codes)}")
-        if st.button("🔄 Reload Database"):
-            st.session_state.database_loaded = False
-            st.rerun()
+    # Create sidebar
+    create_sidebar()
 
-    # Main content area
+    # Main content area based on current step
     step = st.session_state.current_step
     
     if step == "1. Upload CSV":
-        st.header("Step 1: Upload CSV File")
-        
-        uploaded_file = st.file_uploader(
-            "Choose a CSV file",
-            type="csv",
-            help="Upload your laboratory data CSV file"
-        )
-        
-        if uploaded_file is not None:
-            try:
-                # Read CSV with proper quote handling
-                df = pd.read_csv(uploaded_file, quoting=1)
-                st.session_state.processor = CSVProcessor(df, allowed_codes)
-                st.success("✅ CSV file uploaded successfully!")
-                              
-                # Show extracted codes
-                st.subheader("Extracted Codes")
-                if st.session_state.processor.codes:
-                    st.write(f"Found {len(st.session_state.processor.codes)} codes:")
-                    st.write(", ".join(st.session_state.processor.codes))
-                else:
-                    st.warning("No valid codes found in the CSV file.")                       
-                    st.write("**Looking for patterns like:** MP25[CODE] or PP25[CODE]")
-                    st.write("**Available codes:** " + ", ".join(allowed_codes[:10]) + "...")
-                
-            except Exception as e:
-                st.error(f"Error reading CSV file: {str(e)}")
-    
+        step_upload_csv(allowed_codes)
     elif step == "2. Select Runs":
-        st.header("Step 2: Select Number of Runs")
-        
-        if st.session_state.processor is None:
-            st.warning("Please upload a CSV file first.")
-            return
-        
-        st.session_state.num_runs = st.radio(
-            "Number of runs:",
-            options=[1, 2, 3],
-            index=st.session_state.num_runs - 1,
-            horizontal=True
-        )
-        
-        st.success(f"Selected {st.session_state.num_runs} run(s)")
-    
+        step_select_runs()
     elif step == "3. Select Codes":
-        st.header("Step 3: Select Codes and Volumes")
-        
-        if st.session_state.processor is None:
-            st.warning("Please upload a CSV file first.")
-            return
-        
-        available_codes = st.session_state.processor.codes
-        
-        if not available_codes:
-            st.warning("No codes found in the uploaded CSV file.")
-            return
-        
-        # Code selection for each run
-        for run_num in range(1, st.session_state.num_runs + 1):
-            st.subheader(f"Run {run_num}")
-            
-            # Initialize selected codes for this run
-            if run_num not in st.session_state.selected_codes:
-                st.session_state.selected_codes[run_num] = []
-            
-            # Multi-select for codes
-            selected = st.multiselect(
-                f"Select codes for Run {run_num}:",
-                options=available_codes,
-                default=st.session_state.selected_codes[run_num],
-                key=f"codes_run_{run_num}"
-            )
-            
-            st.session_state.selected_codes[run_num] = selected
-            
-            # Volume settings for selected codes
-            if selected:
-                st.write("**Volume Settings:**")
-                for code in selected:
-                    col1, col2 = st.columns([3, 1])
-                    with col1:
-                        st.write(f"Code: {code}")
-                    with col2:
-                        default_volume = CUSTOM_DEFAULTS.get(code, 20)
-                        volume = st.number_input(
-                            f"Volume",
-                            min_value=1,
-                            max_value=100,
-                            value=st.session_state.volumes.get(f"{run_num}_{code}", default_volume),
-                            key=f"volume_{run_num}_{code}",
-                            label_visibility="collapsed"
-                        )
-                        st.session_state.volumes[f"{run_num}_{code}"] = volume
-    
+        step_select_codes()
     elif step == "4. Add Rows":
         add_row_interface(st.session_state.processor, allowed_codes, control_samples)
-    
     elif step == "5. Process Data":
-        st.header("Step 5: Process Data")
-        
-        if st.session_state.processor is None:
-            st.warning("Please upload a CSV file first.")
-            return
-        
-        if not any(st.session_state.selected_codes.values()):
-            st.warning("Please select codes for processing.")
-            return
-        
-        if st.button("🔄 Process Data", type="primary"):
-            st.session_state.filtered_data = {}
-            
-            for run_num in range(1, st.session_state.num_runs + 1):
-                selected_codes = st.session_state.selected_codes.get(run_num, [])
-                
-                if selected_codes:
-                    # Filter data
-                    filtered_df = st.session_state.processor.filter_data(selected_codes, run_num)
-                    
-                    # Apply volumes
-                    volumes = {}
-                    for code in selected_codes:
-                        volume_key = f"{run_num}_{code}"
-                        if volume_key in st.session_state.volumes:
-                            volumes[code] = st.session_state.volumes[volume_key]
-                    
-                    if volumes:
-                        filtered_df = st.session_state.processor.apply_volumes(filtered_df, volumes)
-                    
-                    st.session_state.filtered_data[run_num] = filtered_df
-            
-            st.session_state.data_processed = True
-            st.success("✅ Data processed successfully!")
-        
-        # Display processed data
-        if st.session_state.data_processed and st.session_state.filtered_data:
-            for run_num, df in st.session_state.filtered_data.items():
-                st.subheader(f"Run {run_num} - Processed Data")
-                st.write(f"**Rows:** {len(df)}")
-                st.dataframe(df, use_container_width=True)
-    
+        step_process_data()
     elif step == "6. Download Results":
-        st.header("Step 6: Download Results")
-        
-        if not st.session_state.data_processed or not st.session_state.filtered_data:
-            st.warning("Please process data first.")
-            return
-        
-        # Download options
-        download_format = st.radio(
-            "Download Format:",
-            ["Separate files for each run", "Combined file with all runs"],
-            horizontal=True
-        )
-        
-        if download_format == "Separate files for each run":
-            for run_num, df in st.session_state.filtered_data.items():
-                csv_data = df.to_csv(index=False, quoting=1)
-                st.download_button(
-                    label=f"📥 Download Run {run_num}",
-                    data=csv_data,
-                    file_name=f"processed_run_{run_num}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                    mime="text/csv",
-                    use_container_width=True
-                )
-        
-        else:
-            # Combine all runs
-            combined_df = pd.concat(st.session_state.filtered_data.values(), ignore_index=True)
-            csv_data = combined_df.to_csv(index=False, quoting=1)
-            st.download_button(
-                label="📥 Download Combined Results",
-                data=csv_data,
-                file_name=f"processed_combined_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                mime="text/csv",
-                use_container_width=True
-            )
-            
-            st.subheader("Combined Results Preview")
-            st.write(f"**Total Rows:** {len(combined_df)}")
-            st.dataframe(combined_df, use_container_width=True)
+        step_download_results()
 
 if __name__ == "__main__":
     main()
