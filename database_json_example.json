@@ -1,0 +1,270 @@
+{
+  "ANACHL": {
+    "allowed": true,
+    "control_samples": {
+      "pcs_ana": {"position": "G6", "name": "PCS ANA"},
+      "ncs_ana": {"position": "H6", "name": "NCS ANA"},
+      "pcs_chlam": {"position": "G12", "name": "PCS CHLAM"},
+      "ncs_chlam": {"position": "H12", "name": "NCS CHLAM"}
+    }
+  },
+  "A2": {
+    "allowed": true,
+    "control_samples": {
+      "pcs": {"position": "G12", "name": "PCS"},
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "BHBP": {
+    "allowed": true,
+    "control_samples": {
+      "ncs_hyo": {"position": "H9", "name": "NCS HYO"},
+      "ncs_pilo": {"position": "H12", "name": "NCS PILO"}
+    }
+  },
+  "BLT": {
+    "allowed": true,
+    "control_samples": {
+      "ref": {"position": "F12", "name": "REF"},
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "BLT3": {
+    "allowed": true,
+    "control_samples": {
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "BLT8": {
+    "allowed": true,
+    "control_samples": {
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "BLT412": {
+    "allowed": true,
+    "control_samples": {
+      "ncs_4": {"position": "H6", "name": "NCS 4"},
+      "ncs_12": {"position": "H12", "name": "NCS 12"}
+    }
+  },
+  "BVD": {
+    "allowed": true,
+    "control_samples": {
+      "ref": {"position": "F12", "name": "REF"},
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "CEM": {
+    "allowed": true,
+    "control_samples": {
+      "ref": {"position": "F12", "name": "REF"},
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "CYSU": {
+    "allowed": true,
+    "control_samples": {
+      "pcs": {"position": "G12", "name": "PCS"},
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "CHLSU": {
+    "allowed": true,
+    "control_samples": {
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "CHLPS": {
+    "allowed": true,
+    "control_samples": {
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "CLPERF": {
+    "allowed": true,
+    "control_samples": {
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "DIVPR": {
+    "allowed": true,
+    "control_samples": {
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "ECOLI": {
+    "allowed": true,
+    "control_samples": {
+      "ncs": {"position": "A12", "name": "NCS"}
+    }
+  },
+  "ECORU": {
+    "allowed": true,
+    "control_samples": {
+      "ncs": {"position": "A12", "name": "NCS"}
+    }
+  },
+  "EHDV": {
+    "allowed": true,
+    "control_samples": {
+      "ref": {"position": "F12", "name": "REF"},
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "HMELE": {
+    "allowed": true,
+    "control_samples": {
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "HSOMN": {
+    "allowed": true,
+    "control_samples": {
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "INFA": {
+    "allowed": true,
+    "control_samples": {
+      "ref": {"position": "F12", "name": "REF"},
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "LEPTO": {
+    "allowed": true,
+    "control_samples": {
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "MGMS": {
+    "allowed": true,
+    "control_samples": {
+      "ref": {"position": "E12", "name": "REF"},
+      "pcs_mg": {"position": "F12", "name": "PCS MG"},
+      "pcs_ms": {"position": "G12", "name": "PCS MS"},
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "MYCBO": {
+    "allowed": true,
+    "control_samples": {
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "MHYO": {
+    "allowed": true,
+    "control_samples": {
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "MSH": {
+    "allowed": true,
+    "control_samples": {
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "MTGPS": {
+    "allowed": true,
+    "control_samples": {
+      "ncs_mt": {"position": "H8", "name": "NCS MT"},
+      "ncs_gps": {"position": "H12", "name": "NCS GPS"}
+    }
+  },
+  "MSUIS": {
+    "allowed": true,
+    "control_samples": {
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "PARVO": {
+    "allowed": true,
+    "control_samples": {
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "PASMHY": {
+    "allowed": true,
+    "control_samples": {
+      "ncs_past": {"position": "H6", "name": "NCS PAST"},
+      "ncs_mhyo": {"position": "H12", "name": "NCS MHYO"}
+    }
+  },
+  "PCV2": {
+    "allowed": true,
+    "control_samples": {
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "PCVT": {
+    "allowed": true,
+    "control_samples": {
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "PIA": {
+    "allowed": true,
+    "control_samples": {
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "PRRS": {
+    "allowed": true,
+    "control_samples": {
+      "ref": {"position": "E12", "name": "REF"},
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "PTBC": {
+    "allowed": true,
+    "control_samples": {
+      "ref": {"position": "F12", "name": "REF"},
+      "pcs": {"position": "G12", "name": "PCS"},
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "SALDI": {
+    "allowed": true,
+    "control_samples": {
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "SALM": {
+    "allowed": true,
+    "control_samples": {
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "SRPR": {
+    "allowed": true,
+    "control_samples": {
+      "ncs": {"position": "B12", "name": "NCS"}
+    }
+  },
+  "SRPR3": {
+    "allowed": true,
+    "control_samples": {
+      "ncs": {"position": "B12", "name": "NCS"}
+    }
+  },
+  "TETRA": {
+    "allowed": true,
+    "control_samples": {
+      "ncs_crypto": {"position": "H4", "name": "NCS crypto"},
+      "ncs_rota": {"position": "H8", "name": "NCS rota"},
+      "ncs_corona": {"position": "H12", "name": "NCS corona"}
+    }
+  },
+  "TOXO": {
+    "allowed": true,
+    "control_samples": {
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  },
+  "ECF18Q": {
+    "allowed": true,
+    "control_samples": {
+      "ncs": {"position": "H12", "name": "NCS"}
+    }
+  }
+}
