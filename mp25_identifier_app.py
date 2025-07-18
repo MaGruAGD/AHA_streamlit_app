@@ -250,6 +250,16 @@ def position_to_sample_number(position):
     row_num = ord(row) - ord('A')  # A=0, B=1, C=2, ..., H=7
     return (col - 1) * 8 + row_num + 1
 
+def load_logo_from_github(repo_url, branch="main", filename="logo.png"):
+    """Load logo from GitHub repository"""
+    try:
+        raw_url = f"https://raw.githubusercontent.com/{repo_url}/{branch}/{filename}"
+        response = requests.get(raw_url)
+        response.raise_for_status()
+        return response.content
+    except Exception as e:
+        return None
+
 def initialize_session_state():
     """Initialize session state variables"""
     defaults = {
@@ -782,8 +792,21 @@ def step_download_results():
             
 # Main Application
 def main():
-    st.title("🧪 AHA! - Andrew Helper App")
-    st.markdown("*CSV Processing Tool for Laboratory Data Analysis*")
+    # Load and display logo
+    logo_data = load_logo_from_github("MaGruAGD/AHA_streamlit_app", filename="logo.png")
+    
+    if logo_data:
+        # Create columns for logo and title
+        col1, col2 = st.columns([1, 3])
+        with col1:
+            st.image(logo_data, width=120)
+        with col2:
+            st.title("🧪 AHA! - Andrew Helper App")
+            st.markdown("*CSV Processing Tool for Laboratory Data Analysis*")
+    else:
+        # Fallback if logo doesn't load
+        st.title("🧪 AHA! - Andrew Helper App")
+        st.markdown("*CSV Processing Tool for Laboratory Data Analysis*")
     
     initialize_session_state()
     
