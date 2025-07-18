@@ -529,36 +529,20 @@ def volume_manager_interface(processor, allowed_codes):
         if codes:  # Only add if codes exist for this run
             selected_codes_from_runs.update(codes)
     
-    # Get codes that have been added through the "Add Rows" function
-    # by checking what MP25 codes are actually present in the current dataframe
-    added_codes_from_rows = set()
-    for col in processor.df.columns:
-        for value in processor.df[col].astype(str):
-            for code in allowed_codes:
-                pattern = r'MP25' + re.escape(code) + r'(?:\d+)?'
-                if re.search(pattern, value):
-                    added_codes_from_rows.add(code)
-    
-    # Combine both sets to get all relevant codes
-    relevant_codes = selected_codes_from_runs.union(added_codes_from_rows)
-    relevant_codes = sorted(list(relevant_codes))
+    # Only show selected codes
+    relevant_codes = sorted(list(selected_codes_from_runs))
     
     if not relevant_codes:
-        st.warning("No codes selected or added yet. Please go to 'Select Codes' or 'Add Rows' first.")
+        st.warning("No codes selected yet. Please go to 'Select Codes' first.")
         return
     
     st.subheader("Edit Volumes for Selected MP25 Codes")
-    st.write("Adjust the volumes for each MP25 code that you've selected or added:")
+    st.write("Adjust the volumes for each MP25 code that you've selected:")
     
-    # Show info about where codes came from
-    with st.expander("ℹ️ Code Sources", expanded=False):
-        if selected_codes_from_runs:
-            st.write("**From Selected Codes:**")
-            st.write(", ".join(sorted(selected_codes_from_runs)))
-        
-        if added_codes_from_rows:
-            st.write("**From Added Rows:**")
-            st.write(", ".join(sorted(added_codes_from_rows)))
+    # Show selected codes info
+    with st.expander("ℹ️ Selected Codes", expanded=False):
+        st.write("**Selected Codes:**")
+        st.write(", ".join(sorted(selected_codes_from_runs)))
     
     # Create volume inputs for each relevant MP25 code
     volume_changes = {}
@@ -567,14 +551,7 @@ def volume_manager_interface(processor, allowed_codes):
         col1, col2, col3 = st.columns([2, 1, 1])
         
         with col1:
-            # Show indicator of where this code came from
-            indicators = []
-            if code in selected_codes_from_runs:
-                indicators.append("Selected")
-            if code in added_codes_from_rows:
-                indicators.append("Added")
-            
-            st.write(f"**MP25{code}** *({', '.join(indicators)})*")
+            st.write(f"**MP25{code}**")
         
         with col2:
             # Get current volume from the dataframe or use default
