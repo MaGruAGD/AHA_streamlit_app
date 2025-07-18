@@ -500,21 +500,6 @@ with st.sidebar:
         for key in list(st.session_state.keys()):
             del st.session_state[key]
         st.rerun()
-
-                
-        # Add reset button
-        st.markdown("---")
-        if st.button(
-            "🔄 Reset Application",
-            type="secondary",
-            use_container_width=True,
-            help="Clear all data and start over"
-            ):
-            # Clear all session state
-            for key in list(st.session_state.keys()):
-                    del st.session_state[key]
-                st.rerun()
-                
     # Main content area
     step = st.session_state.current_step
     if step == "1. Upload CSV":
