@@ -349,7 +349,7 @@ def well_plate_selector_compact(key, title="Select Position", default_position="
     return position
 
 
-ef well_plate_selector(key: str, title: str = "Select Position", default_position: str = "A1"):
+def well_plate_selector(key: str, title: str = "Select Position", default_position: str = "A1"):
     rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     cols = list(range(1, 13))
 
