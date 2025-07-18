@@ -279,8 +279,9 @@ def create_sidebar():
             "2. Select Runs", 
             "3. Select Codes", 
             "4. Add Rows", 
-            "5. Process Data", 
-            "6. Download Results"
+            "5. Volume Manager",  
+            "6. Process Data", 
+            "7. Download Results"  
         ]
         
         for step_name in steps:
@@ -472,6 +473,86 @@ def add_row_interface(processor, allowed_codes, control_samples):
         st.info(f"Added: {poolplaat_entry} → {analyseplaat_entry} (Volume: {volume})")
         st.rerun()
 
+def volume_manager_interface(processor, allowed_codes):
+    """Volume Manager interface to edit volumes for all MP25 codes"""
+    st.header("Step 5: Volume Manager")
+    
+    if processor is None:
+        st.warning("Please upload a CSV file first.")
+        return
+    
+    # Get all unique MP25 codes from the current dataframe
+    mp25_codes = set()
+    for col in processor.df.columns:
+        for value in processor.df[col].astype(str):
+            for code in allowed_codes:
+                pattern = r'MP25' + re.escape(code) + r'(?:\d+)?'
+                if re.search(pattern, value):
+                    mp25_codes.add(code)
+    
+    mp25_codes = sorted(list(mp25_codes))
+    
+    if not mp25_codes:
+        st.warning("No MP25 codes found in the current data.")
+        return
+    
+    st.subheader("Edit Volumes for MP25 Codes")
+    st.write("Adjust the volumes for each MP25 code found in your data:")
+    
+    # Create volume inputs for each found MP25 code
+    volume_changes = {}
+    
+    for code in mp25_codes:
+        col1, col2, col3 = st.columns([2, 1, 1])
+        
+        with col1:
+            st.write(f"**MP25{code}**")
+        
+        with col2:
+            # Get current volume from the dataframe or use default
+            current_volume = CUSTOM_DEFAULTS.get(code, 20)
+            
+            # Check if there's already a volume set for this code
+            pattern = r'MP25' + re.escape(code) + r'(?:\d+)?'
+            mask = processor.df.astype(str).apply(
+                lambda x: x.str.contains(pattern, regex=True, na=False)
+            ).any(axis=1)
+            
+            if mask.any() and 'Step1Volume' in processor.df.columns:
+                # Get the first matching volume from the dataframe
+                existing_volumes = processor.df.loc[mask, 'Step1Volume'].dropna()
+                if not existing_volumes.empty:
+                    try:
+                        current_volume = int(existing_volumes.iloc[0])
+                    except (ValueError, TypeError):
+                        current_volume = CUSTOM_DEFAULTS.get(code, 20)
+            
+            new_volume = st.number_input(
+                "Volume (μL)",
+                min_value=1,
+                max_value=1000,
+                value=current_volume,
+                key=f"volume_manager_{code}"
+            )
+            
+            volume_changes[code] = new_volume
+        
+        with col3:
+            st.write(f"Default: {CUSTOM_DEFAULTS.get(code, 20)} μL")
+    
+    # Apply changes button
+    if st.button("🔄 Apply Volume Changes", type="primary", use_container_width=True):
+        # Apply the volume changes to the dataframe
+        updated_df = processor.apply_volumes(processor.df, volume_changes)
+        processor.df = updated_df
+        
+        st.success("✅ Volume changes applied successfully!")
+        
+        # Show summary of changes
+        st.subheader("Applied Changes:")
+        for code, volume in volume_changes.items():
+            st.write(f"• **MP25{code}**: {volume} μL")
+
 # Main Application Steps
 def step_upload_csv(allowed_codes):
     """Step 1: Upload CSV File"""
@@ -571,8 +652,8 @@ def step_select_codes():
                     st.session_state.volumes[f"{run_num}_{code}"] = volume
 
 def step_process_data():
-    """Step 5: Process Data"""
-    st.header("Step 5: Process Data")
+    """Step 6: Process Data"""
+    st.header("Step 6: Process Data")
     
     if st.session_state.processor is None:
         st.warning("Please upload a CSV file first.")
@@ -615,8 +696,8 @@ def step_process_data():
             st.dataframe(df, use_container_width=True)
 
 def step_download_results():
-    """Step 6: Download Results"""
-    st.header("Step 6: Download Results")
+    """Step 7: Download Results"""
+    st.header("Step 7: Download Results")
     
     if not st.session_state.data_processed or not st.session_state.filtered_data:
         st.warning("Please process data first.")
@@ -640,24 +721,7 @@ def step_download_results():
                 mime="text/csv",
                 use_container_width=True
             )
-    
-    else:
-        # Combine all runs
-        combined_df = pd.concat(st.session_state.filtered_data.values(), ignore_index=True)
-        # Use QUOTE_MINIMAL to only quote fields that contain special characters
-        csv_data = combined_df.to_csv(index=False, quoting=0)  # 0 = QUOTE_MINIMAL
-        st.download_button(
-            label="📥 Download Combined Results",
-            data=csv_data,
-            file_name=f"processed_combined_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-            mime="text/csv",
-            use_container_width=True
-        )
-        
-        st.subheader("Combined Results Preview")
-        st.write(f"**Total Rows:** {len(combined_df)}")
-        st.dataframe(combined_df, use_container_width=True)
-
+            
 # Main Application
 def main():
     st.title("🧪 AHA! - Andrew Helper App")
@@ -696,9 +760,11 @@ def main():
         step_select_codes()
     elif step == "4. Add Rows":
         add_row_interface(st.session_state.processor, allowed_codes, control_samples)
-    elif step == "5. Process Data":
+    elif step == "5. Volume Manager":  # Add this new step
+        volume_manager_interface(st.session_state.processor, allowed_codes)
+    elif step == "6. Process Data":  # Update step number
         step_process_data()
-    elif step == "6. Download Results":
+    elif step == "7. Download Results":  # Update step number
         step_download_results()
 
 if __name__ == "__main__":
