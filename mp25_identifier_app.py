@@ -564,20 +564,33 @@ def main():
         
         # Create checkboxes for each code and run combination
         st.subheader("Select which codes to include in each run:")
+        st.info("💡 Maximum 8 MP25 codes allowed per run")
         
         # Track selected codes across runs
         selected_in_previous_runs = set()
-
+        
         for run in range(1, st.session_state.num_runs + 1):
             st.write(f"**Run {run}:**")
+            
+            # Count currently selected codes for this run
+            current_run_count = sum(1 for code in st.session_state.processor.codes 
+                                   if st.session_state.selected_codes.get(f"code_{code}_run_{run}", False))
+            
+            # Show counter
+            if current_run_count >= 8:
+                st.error(f"⚠️ Run {run}: {current_run_count}/8 codes selected (Maximum reached)")
+            else:
+                st.success(f"✅ Run {run}: {current_run_count}/8 codes selected")
+            
             cols = st.columns(4)  # 4 columns for better layout
         
             for idx, code in enumerate(st.session_state.processor.codes):
                 col_idx = idx % 4
                 with cols[col_idx]:
                     key = f"code_{code}_run_{run}"
-                    # Disable if selected in any earlier run
-                    disabled = code in selected_in_previous_runs
+                    # Disable if selected in any earlier run OR if 8 codes already selected for this run
+                    disabled = (code in selected_in_previous_runs or 
+                               (current_run_count >= 8 and not st.session_state.selected_codes.get(key, False)))
                     current_value = st.session_state.selected_codes.get(key, False)
         
                     # Render checkbox with disable logic
