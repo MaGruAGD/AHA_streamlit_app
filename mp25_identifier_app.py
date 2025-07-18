@@ -473,25 +473,51 @@ def main():
     # Sidebar for navigation
     with st.sidebar:
         st.header("Navigation")
-        step = st.radio(
-            "Select Step:",
-            ["1. Upload CSV", "2. Select Runs", "3. Select Codes", "4. Add Rows", "5. Process Data", "6. Download Results"]
-        )
         
-        # Add some space
-        st.write("")
-        st.write("")
+        # Initialize step in session state if not exists
+        if 'current_step' not in st.session_state:
+            st.session_state.current_step = "1. Upload CSV"
         
-        # Reset button at bottom of sidebar
+        # Create navigation buttons
+        steps = ["1. Upload CSV", "2. Select Runs", "3. Select Codes", "4. Add Rows", "5. Process Data", "6. Download Results"]
+        
+        for step_name in steps:
+            is_current = st.session_state.current_step == step_name
+            if st.button(
+                step_name, 
+                key=f"nav_{step_name}",
+                type="primary" if is_current else "secondary",
+                use_container_width=True
+            ):
+                st.session_state.current_step = step_name
+                st.rerun()
+        
+        # CSS and reset button at bottom (same as before)
+        st.markdown("""
+        <style>
+        .sidebar-bottom {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: calc(100% - 40px);
+            max-width: 300px;
+            z-index: 999;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
         if st.session_state.get('processor') is not None:
-            if st.button("🔄 Reset to Original Data", key="sidebar_reset"):
+            st.markdown('<div class="sidebar-bottom">', unsafe_allow_html=True)
+            if st.button("🔄 Reset to Original Data", key="sidebar_reset", use_container_width=True):
                 st.session_state.processor.reset_data()
                 st.session_state.data_processed = False
                 st.session_state.filtered_data = {}
                 st.success("Data reset to original state!")
                 st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
                 
     # Main content area
+    step = st.session_state.current_step
     if step == "1. Upload CSV":
         st.header("Step 1: Upload CSV File")
         
