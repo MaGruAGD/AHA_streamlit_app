@@ -33,6 +33,25 @@ def get_admin_credentials():
                         credentials[username] = password_hash
     except:
         pass
+    
+    # If no secrets, try environment variables
+    if not credentials:
+        admin_users = os.getenv('ADMIN_USERS', '').split(',')
+        
+        for user in admin_users:
+            if user.strip():
+                username = user.strip()
+                password_hash = os.getenv(f'ADMIN_PASSWORD_{username.upper()}')
+                if password_hash:
+                    credentials[username] = password_hash
+    
+    # If no environment variables set, use hardcoded ones (DEVELOPMENT ONLY)
+    if not credentials:
+        if not os.getenv('PRODUCTION') and not st.secrets.get('PRODUCTION'):
+            st.warning("⚠️ Using hardcoded credentials - set environment variables for production!")
+        credentials = ADMIN_CREDENTIALS
+    
+    return credentials
 
 # GitHub configuration
 GITHUB_CONFIG = {
