@@ -768,24 +768,17 @@ def step_download_results():
         st.warning("Please process data first.")
         return
     
-    # Download options
-    download_format = st.radio(
-        "Download Format:",
-        ["Separate files for each run", "Combined file with all runs"],
-        horizontal=True
-    )
-    
-    if download_format == "Separate files for each run":
-        for run_num, df in st.session_state.filtered_data.items():
-            # Use QUOTE_MINIMAL to only quote fields that contain special characters
-            csv_data = df.to_csv(index=False, quoting=0)  # 0 = QUOTE_MINIMAL
-            st.download_button(
-                label=f"📥 Download Run {run_num}",
-                data=csv_data,
-                file_name=f"processed_run_{run_num}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                mime="text/csv",
-                use_container_width=True
-            )
+    # Simple download buttons for each run
+    for run_num, df in st.session_state.filtered_data.items():
+        # Use QUOTE_MINIMAL to only quote fields that contain special characters
+        csv_data = df.to_csv(index=False, quoting=0)  # 0 = QUOTE_MINIMAL
+        st.download_button(
+            label=f"📥 Download Run {run_num}",
+            data=csv_data,
+            file_name=f"processed_run_{run_num}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+            use_container_width=True
+        )
             
 # Main Application
 def main():
