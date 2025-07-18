@@ -307,17 +307,6 @@ def create_sidebar():
                 del st.session_state[key]
             st.rerun()
         
-        # Database info
-        st.markdown("---")
-        st.subheader("Database Info")
-        st.write("**Source:** MaGruAGD/AHA_streamlit_app")
-        if st.session_state.database:
-            allowed_codes, _ = process_database(st.session_state.database)
-            st.write(f"**Loaded codes:** {len(allowed_codes)}")
-        if st.button("🔄 Reload Database"):
-            st.session_state.database_loaded = False
-            st.rerun()
-
 def add_row_interface(processor, allowed_codes, control_samples):
     """Enhanced add row interface with regular and control samples"""
     st.header("Step 4: Add Rows")
