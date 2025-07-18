@@ -631,7 +631,8 @@ def step_download_results():
     
     if download_format == "Separate files for each run":
         for run_num, df in st.session_state.filtered_data.items():
-            csv_data = df.to_csv(index=False, quoting=1)
+            # Use QUOTE_MINIMAL to only quote fields that contain special characters
+            csv_data = df.to_csv(index=False, quoting=0)  # 0 = QUOTE_MINIMAL
             st.download_button(
                 label=f"📥 Download Run {run_num}",
                 data=csv_data,
@@ -643,7 +644,8 @@ def step_download_results():
     else:
         # Combine all runs
         combined_df = pd.concat(st.session_state.filtered_data.values(), ignore_index=True)
-        csv_data = combined_df.to_csv(index=False, quoting=1)
+        # Use QUOTE_MINIMAL to only quote fields that contain special characters
+        csv_data = combined_df.to_csv(index=False, quoting=0)  # 0 = QUOTE_MINIMAL
         st.download_button(
             label="📥 Download Combined Results",
             data=csv_data,
