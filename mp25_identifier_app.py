@@ -442,7 +442,33 @@ def add_row_interface(processor, allowed_codes, control_samples):
     # Get volume for the selected code
     volume = CUSTOM_DEFAULTS.get(selected_code, 20)
     
-    # Add sample button
+
+    # Preview section
+    if poolplaat_id and poolplaat_position and analyseplaat_id and analyseplaat_position:
+        poolplaat_entry = f'"{poolplaat_id}":{poolplaat_position}'
+        analyseplaat_entry = f'"{analyseplaat_id}":{analyseplaat_position}'
+        
+        # Preview row in CSV format
+        preview_row = [
+            poolplaat_entry,           # LabwareName
+            100,                       # Volume
+            f"Sample {sample_number}", # SolutionName
+            "Sample",                  # SolutionType
+            "1 M",                     # Concentration
+            "",                        # SampleIdentifier
+            "",                        # LabwareIdentifier
+            poolplaat_entry,           # Step1Source
+            volume,                    # Step1Volume
+            analyseplaat_entry         # Step1Destination
+        ]
+        
+        # Format as CSV string
+        preview_csv = ",".join([f'"{str(item)}"' if item else '""' for item in preview_row])
+        
+        # Display preview
+        st.code(preview_csv, language="csv")
+    
+    # Replace the existing "Add Sample" button with this:
     if st.button("➕ Add Sample", type="primary", use_container_width=True):
         # Validate inputs
         if not poolplaat_id or not poolplaat_position or not analyseplaat_id or not analyseplaat_position:
@@ -469,8 +495,19 @@ def add_row_interface(processor, allowed_codes, control_samples):
         
         processor.add_row(row_data)
         
-        st.success(f"✅ Added {sample_type.lower()[:-1]} for code {selected_code}")
-        st.info(f"Added: {poolplaat_entry} → {analyseplaat_entry} (Volume: {volume})")
+        # Determine which run this sample belongs to
+        run_for_sample = None
+        for run_num, codes in st.session_state.selected_codes.items():
+            if selected_code in codes:
+                run_for_sample = run_num
+                break
+        
+        # Show run notification
+        if run_for_sample:
+            st.success(f"✅ Sample added to Run {run_for_sample}")
+        else:
+            st.success(f"✅ Sample added successfully")
+        
         st.rerun()
 
 def volume_manager_interface(processor, allowed_codes):
