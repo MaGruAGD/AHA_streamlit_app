@@ -514,11 +514,14 @@ def add_row_interface(processor, allowed_codes, control_samples):
         else:
             st.toast(f"✅ Sample added successfully", icon="✅")
         
-        # Small delay before rerun to let toast appear
-        import time
-        time.sleep(0.1)
-        
-        st.rerun()
+        # Use JavaScript to delay the rerun
+        st.html("""
+        <script>
+        setTimeout(function() {
+            window.parent.location.reload();
+        }, 3000);
+        </script>
+        """)
 
              
         
