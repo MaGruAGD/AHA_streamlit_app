@@ -540,25 +540,35 @@ def main():
         # Create checkboxes for each code and run combination
         st.subheader("Select which codes to include in each run:")
         
+        # Track selected codes across runs
+        selected_in_previous_runs = set()
+
         for run in range(1, st.session_state.num_runs + 1):
             st.write(f"**Run {run}:**")
             cols = st.columns(4)  # 4 columns for better layout
-            
+        
             for idx, code in enumerate(st.session_state.processor.codes):
                 col_idx = idx % 4
                 with cols[col_idx]:
                     key = f"code_{code}_run_{run}"
-                    if key not in st.session_state.selected_codes:
-                        st.session_state.selected_codes[key] = False
-                    
+                    # Disable if selected in any earlier run
+                    disabled = code in selected_in_previous_runs
+                    current_value = st.session_state.selected_codes.get(key, False)
+        
+                    # Render checkbox with disable logic
                     st.session_state.selected_codes[key] = st.checkbox(
                         f"{code}",
-                        value=st.session_state.selected_codes[key],
-                        key=key
+                        value=current_value and not disabled,
+                        key=key,
+                        disabled=disabled
                     )
-            
+        
+                    # Track selected code for future runs
+                    if st.session_state.selected_codes[key]:
+                        selected_in_previous_runs.add(code)
+        
             st.write("---")
-    
+   
     elif step == "4. Add Rows":
         st.header("Step 4: Add New Rows (Optional)")
         
