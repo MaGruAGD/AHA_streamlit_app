@@ -400,7 +400,7 @@ def well_plate_selector(key: str, title: str = "Select Position", default_positi
             st.session_state[popup_key] = True
             # Sync visual selector to current dropdown selection when opening
             st.session_state[visual_state_key] = f"{st.session_state[row_key]}{st.session_state[col_key]}"
-            st.experimental_rerun()
+            st.rerun()
 
     # Show popup if active
     if st.session_state.get(popup_key, False):
