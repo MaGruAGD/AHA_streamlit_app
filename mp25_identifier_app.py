@@ -188,6 +188,18 @@ class CSVProcessor:
         
         return sorted(list(pp25_ids))
     
+    def get_plsta_ids(self):
+        """Get all PP25PLSTA IDs from the CSV"""
+        pattern = r'PP25PLSTA\d+'
+        plsta_ids = set()
+        
+        for col in self.df.columns:
+            for value in self.df[col].astype(str):
+                matches = re.findall(pattern, value)
+                plsta_ids.update(matches)
+        
+        return sorted(list(plsta_ids))
+    
     def get_mp25_ids(self, code):
         """Get all MP25 IDs for a specific code from the CSV"""
         pattern = r'MP25' + re.escape(code) + r'\d+'
@@ -254,7 +266,10 @@ class CSVProcessor:
         return df_copy
 
 def position_to_sample_number(position):
-    """Convert well position (A1, B2, etc.) to sample number (1-96)"""
+    """Convert well position (A1, B2, etc.) to sample number (1-96)
+    Logic: A1=1, B1=2, C1=3, ..., H1=8, A2=9, B2=10, ..., H12=96
+    Goes down columns first, then across rows.
+    """
     if len(position) < 2:
         return 1
     
@@ -264,8 +279,12 @@ def position_to_sample_number(position):
     except ValueError:
         return 1
     
-    row_num = ord(row) - ord('A') + 1
-    return (row_num - 1) * 12 + col
+    # Validate row (A-H) and column (1-12)
+    if row < 'A' or row > 'H' or col < 1 or col > 12:
+        return 1
+    
+    row_num = ord(row) - ord('A')  # A=0, B=1, C=2, ..., H=7
+    return (col - 1) * 8 + row_num + 1  # A1=(1-1)*8+0+1=1, B1=(1-1)*8+1+1=2, A2=(2-1)*8+0+1=9
 
 def create_plate_selector(key_prefix, selected_position="A1"):
     """Create a visual plate selector widget"""
@@ -340,20 +359,22 @@ def add_row_interface(processor, allowed_codes, control_samples):
     with col1:
         st.subheader("🧪 Poolplaat")
         
-        # Get available PP25 IDs for the selected code
-        pp25_ids = processor.get_pp25_ids(selected_code)
+        # Get available PP25PLSTA IDs from the CSV
+        plsta_ids = processor.get_plsta_ids()
         
-        if pp25_ids:
+        if plsta_ids:
             poolplaat_id = st.selectbox(
                 "Poolplaat ID:",
-                options=pp25_ids,
-                key="poolplaat_id_selector"
+                options=plsta_ids,
+                key="poolplaat_id_selector",
+                help="Select PP25PLSTA ID from the uploaded CSV"
             )
         else:
             poolplaat_id = st.text_input(
                 "Poolplaat ID:",
-                value=f"PP25{selected_code}",
-                key="poolplaat_id_input"
+                value="PP25PLSTA0001",
+                key="poolplaat_id_input",
+                help="Enter PP25PLSTA ID (format: PP25PLSTAXXXX)"
             )
         
         # Position input
@@ -371,7 +392,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
             value=str(sample_number),
             disabled=True,
             key="sample_number_display",
-            help="Automatically calculated from position"
+            help="Automatically calculated from position (A1=1, B1=2, H1=8, A2=9, B2=10, etc.)"
         )
     
     with col2:
