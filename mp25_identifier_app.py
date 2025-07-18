@@ -366,7 +366,7 @@ def well_plate_selector(key, title="Select Position", default_position="A1"):
         except ValueError:
             default_col = 1
 
-        # Use session state to allow programmatic update from visual selection
+        # Use session state to track selection
         row_key = f"{key}_row"
         col_key = f"{key}_col"
 
@@ -387,7 +387,7 @@ def well_plate_selector(key, title="Select Position", default_position="A1"):
             )
 
         with subcol2:
-            st.session_state[col_key] = st.selectbox(
+            st.selectbox(
                 "Column:",
                 options=list(range(1, 13)),
                 index=st.session_state[col_key] - 1,
@@ -401,7 +401,6 @@ def well_plate_selector(key, title="Select Position", default_position="A1"):
         st.info(f"Selected: **{position}**")
 
     with col2:
-        # Visual grid button that opens a popup
         if st.button("🔍 Visual", key=f"{key}_visual_btn", help="Open visual well plate selector"):
             st.session_state[f"{key}_show_popup"] = True
 
@@ -412,14 +411,12 @@ def well_plate_selector(key, title="Select Position", default_position="A1"):
             if visual_state_key not in st.session_state:
                 st.session_state[visual_state_key] = position
 
-            # Create the visual well plate using columns
             rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
             cols = list(range(1, 13))
 
-            # Column headers
             header_cols = st.columns([1] + [1] * 12)
             with header_cols[0]:
-                st.write("")  # Empty for row label
+                st.write("")
             for i, col_num in enumerate(cols):
                 with header_cols[i + 1]:
                     st.markdown(
@@ -427,7 +424,6 @@ def well_plate_selector(key, title="Select Position", default_position="A1"):
                         unsafe_allow_html=True
                     )
 
-            # Well grid
             for row in rows:
                 row_cols = st.columns([1] + [1] * 12)
                 with row_cols[0]:
@@ -450,10 +446,8 @@ def well_plate_selector(key, title="Select Position", default_position="A1"):
                             st.session_state[visual_state_key] = well_position
                             st.rerun()
 
-            # Show current visual selection
             st.success(f"Visual selection: **{st.session_state[visual_state_key]}**")
 
-            # Apply and close
             col_close1, col_close2, col_close3 = st.columns([1, 1, 1])
             with col_close2:
                 if st.button("✅ Apply & Close", key=f"{key}_close_popup", type="primary"):
