@@ -23,6 +23,12 @@ CUSTOM_DEFAULTS = {
     'BLT412': 10
 }
 
+# Expected CSV columns - this is the key fix
+EXPECTED_COLUMNS = [
+    'LabwareName', 'Volume', 'SolutionName', 'SolutionType', 'Concentration',
+    'SampleIdentifier', 'LabwareIdentifier', 'Step1Source', 'Step1Volume', 'Step1Destination'
+]
+
 # Database Functions
 @st.cache_data
 def load_database_from_github(repo_url, branch="main", filename="database.json"):
@@ -35,8 +41,6 @@ def load_database_from_github(repo_url, branch="main", filename="database.json")
     except Exception as e:
         st.error(f"Error loading database from GitHub: {str(e)}")
         return None
-
-
 
 def initialize_database():
     """Initialize database from GitHub"""
@@ -92,6 +96,26 @@ class CSVProcessor:
         self.allowed_codes = allowed_codes
         self.codes = self.extract_codes()
         
+        # Ensure the dataframe has the correct columns
+        self._normalize_columns()
+        
+    def _normalize_columns(self):
+        """Ensure the dataframe has exactly the expected columns"""
+        # If the uploaded CSV has different columns, try to map them or create the standard ones
+        if len(self.df.columns) != len(EXPECTED_COLUMNS):
+            # Create a new dataframe with the expected columns
+            new_df = pd.DataFrame(columns=EXPECTED_COLUMNS)
+            
+            # Try to copy data from existing columns if they match
+            for i, col in enumerate(EXPECTED_COLUMNS):
+                if i < len(self.df.columns):
+                    new_df[col] = self.df.iloc[:, i] if len(self.df) > 0 else None
+            
+            self.df = new_df
+        else:
+            # Rename columns to match expected format
+            self.df.columns = EXPECTED_COLUMNS
+    
     def extract_codes(self):
         """Extract MP25 and PP25 codes from the CSV data"""
         codes = set()
@@ -146,8 +170,21 @@ class CSVProcessor:
         return sorted(list(mp25_ids))
     
     def add_row(self, row_data):
-        """Add a new row to the dataframe"""
-        self.df = pd.concat([self.df, pd.DataFrame([row_data])], ignore_index=True)
+        """Add a new row to the dataframe with proper column mapping"""
+        # Ensure row_data has exactly the right number of elements
+        if len(row_data) != len(EXPECTED_COLUMNS):
+            # Pad or truncate to match expected columns
+            if len(row_data) < len(EXPECTED_COLUMNS):
+                row_data.extend([''] * (len(EXPECTED_COLUMNS) - len(row_data)))
+            else:
+                row_data = row_data[:len(EXPECTED_COLUMNS)]
+        
+        # Create a dictionary mapping column names to values
+        row_dict = {col: row_data[i] for i, col in enumerate(EXPECTED_COLUMNS)}
+        
+        # Add the row to the dataframe
+        new_row = pd.DataFrame([row_dict])
+        self.df = pd.concat([self.df, new_row], ignore_index=True)
     
     def filter_data(self, selected_codes, run_number):
         """Filter data based on selected codes and run number"""
@@ -189,7 +226,8 @@ class CSVProcessor:
             ).any(axis=1)
             
             if mask.any():
-                df_copy.loc[mask, df_copy.columns[8]] = volume
+                # Update the 'Step1Volume' column instead of using index
+                df_copy.loc[mask, 'Step1Volume'] = volume
         
         return df_copy
 
@@ -410,25 +448,23 @@ def add_row_interface(processor, allowed_codes, control_samples):
             st.error("Please fill in all required fields.")
             return
         
-        # Create the row data
+        # Create the row data in the correct format
         poolplaat_entry = f'"{poolplaat_id}":{poolplaat_position}'
         analyseplaat_entry = f'"{analyseplaat_id}":{analyseplaat_position}'
         
+        # Map to the exact expected columns
         row_data = [
-            poolplaat_entry,
-            100,
-            f"Sample {sample_number}",
-            "Sample",
-            "1 M",
-            "", "", "",
-            poolplaat_entry,
-            volume,
-            analyseplaat_entry
+            poolplaat_entry,           # LabwareName
+            100,                       # Volume
+            f"Sample {sample_number}", # SolutionName
+            "Sample",                  # SolutionType
+            "1 M",                     # Concentration
+            "",                        # SampleIdentifier
+            "",                        # LabwareIdentifier
+            poolplaat_entry,           # Step1Source
+            volume,                    # Step1Volume
+            analyseplaat_entry         # Step1Destination
         ]
-        
-        # Ensure we have enough columns
-        while len(row_data) < len(processor.df.columns):
-            row_data.append("")
         
         processor.add_row(row_data)
         
