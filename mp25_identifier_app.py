@@ -533,14 +533,20 @@ def add_row_interface(processor, allowed_codes, control_samples):
     if 'original_row_count' not in st.session_state:
         st.session_state.original_row_count = len(processor.original_df)
     
-    # Sample management section
-    current_row_count = len(processor.df)
-    added_rows_count = current_row_count - st.session_state.original_row_count
+    # Sample management section - moved inside a container that refreshes
+    def display_sample_status():
+        current_row_count = len(processor.df)
+        added_rows_count = current_row_count - st.session_state.original_row_count
 
-    if added_rows_count > 0:
-        st.info(f"📝 {added_rows_count} sample(s) have been added to the original data")
-    else:
-        st.info("📝 No samples have been added yet")
+        if added_rows_count > 0:
+            st.info(f"📝 {added_rows_count} sample(s) have been added to the original data")
+        else:
+            st.info("📝 No samples have been added yet")
+        
+        return added_rows_count
+
+    # Display current status
+    added_rows_count = display_sample_status()
 
     # Manage Added Samples button - now always visible
     if st.button("🗂️ Manage Added Samples", type="secondary", use_container_width=True):
@@ -551,6 +557,9 @@ def add_row_interface(processor, allowed_codes, control_samples):
     if st.session_state.get('show_sample_manager', False):
         with st.expander("🗂️ Added Samples Manager", expanded=True):
             st.subheader("Added Samples")
+            
+            # Recalculate added rows here as well to ensure freshness
+            current_added_count = len(processor.df) - st.session_state.original_row_count
             
             # Get added rows (rows beyond the original count)
             added_rows = processor.df.iloc[st.session_state.original_row_count:].copy()
@@ -617,7 +626,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
                             processor.df = processor.df.drop(samples_to_delete).reset_index(drop=True)
                             st.success(f"✅ Deleted {len(samples_to_delete)} sample(s)")
                             
-                            # Clear the sample manager display
+                            # Clear the sample manager display and force refresh
                             st.session_state.show_sample_manager = False
                             st.rerun()
                     
@@ -860,6 +869,9 @@ def add_row_interface(processor, allowed_codes, control_samples):
                 st.toast(f"✅ Control sample '{control_sample_name}' added successfully", icon="✅")
             else:
                 st.toast(f"✅ Sample added successfully", icon="✅")
+        
+        # Force a rerun to refresh the display immediately
+        st.rerun()
         
 def volume_manager_interface(processor, allowed_codes):
     """Volume Manager interface to edit volumes for selected MP25 codes only"""
