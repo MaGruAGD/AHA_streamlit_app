@@ -522,12 +522,114 @@ def create_sidebar():
             st.rerun()
         
 def add_row_interface(processor, allowed_codes, control_samples):
-    """Enhanced add row interface with regular and control samples"""
+    """Enhanced add row interface with regular and control samples + sample management"""
     st.header("Step 4: Add Rows")
     
     if processor is None:
         st.warning("Please upload a CSV file first.")
         return
+    
+    # Track original row count if not already tracked
+    if 'original_row_count' not in st.session_state:
+        st.session_state.original_row_count = len(processor.original_df)
+    
+    # Sample management section
+    current_row_count = len(processor.df)
+    added_rows_count = current_row_count - st.session_state.original_row_count
+    
+    if added_rows_count > 0:
+        st.info(f"📝 {added_rows_count} sample(s) have been added to the original data")
+        
+        # Manage Added Samples button
+        if st.button("🗂️ Manage Added Samples", type="secondary", use_container_width=True):
+            st.session_state.show_sample_manager = not st.session_state.get('show_sample_manager', False)
+            st.rerun()
+        
+        # Sample manager interface
+        if st.session_state.get('show_sample_manager', False):
+            with st.expander("🗂️ Added Samples Manager", expanded=True):
+                st.subheader("Added Samples")
+                
+                # Get added rows (rows beyond the original count)
+                added_rows = processor.df.iloc[st.session_state.original_row_count:].copy()
+                
+                if len(added_rows) > 0:
+                    # Create a list to track which samples to delete
+                    samples_to_delete = []
+                    
+                    # Display each added sample with delete option
+                    for idx, (df_idx, row) in enumerate(added_rows.iterrows()):
+                        with st.container():
+                            # Create columns for sample info and delete button
+                            col1, col2, col3, col4 = st.columns([3, 2, 2, 1])
+                            
+                            # Extract sample information
+                            solution_name = row.get('SolutionName', 'Unknown')
+                            step1_source = row.get('Step1Source', '')
+                            step1_destination = row.get('Step1Destination', '')
+                            step1_volume = row.get('Step1Volume', '')
+                            
+                            # Parse source and destination for display
+                            source_match = re.search(r'"([^"]+)"', str(step1_source))
+                            dest_match = re.search(r'"([^"]+)"', str(step1_destination))
+                            
+                            source_id = source_match.group(1) if source_match else str(step1_source)
+                            dest_id = dest_match.group(1) if dest_match else str(step1_destination)
+                            
+                            # Determine if this is a control sample
+                            is_control = "Control" in solution_name or any(
+                                control_name in solution_name 
+                                for code_controls in control_samples.values() 
+                                for control_name in code_controls.get('names', [])
+                            )
+                            
+                            # Display sample information
+                            with col1:
+                                if is_control:
+                                    st.write(f"🧪 **{solution_name}** (Control)")
+                                else:
+                                    st.write(f"🔬 **{solution_name}**")
+                                st.caption(f"From: {source_id}")
+                            
+                            with col2:
+                                st.write(f"**To:** {dest_id}")
+                            
+                            with col3:
+                                st.write(f"**Volume:** {step1_volume} μL")
+                            
+                            with col4:
+                                # Delete checkbox
+                                delete_key = f"delete_sample_{idx}_{df_idx}"
+                                if st.checkbox("🗑️", key=delete_key, help="Mark for deletion"):
+                                    samples_to_delete.append(df_idx)
+                        
+                        st.markdown("---")
+                    
+                    # Delete selected samples
+                    if samples_to_delete:
+                        col1, col2 = st.columns(2)
+                        
+                        with col1:
+                            if st.button("🗑️ Delete Selected Samples", type="secondary", use_container_width=True):
+                                # Remove selected rows from the dataframe
+                                processor.df = processor.df.drop(samples_to_delete).reset_index(drop=True)
+                                st.success(f"✅ Deleted {len(samples_to_delete)} sample(s)")
+                                
+                                # Clear the sample manager display
+                                st.session_state.show_sample_manager = False
+                                st.rerun()
+                        
+                        with col2:
+                            st.write(f"**{len(samples_to_delete)} sample(s) selected for deletion**")
+                    
+                    # Close manager button
+                    if st.button("❌ Close Manager", use_container_width=True):
+                        st.session_state.show_sample_manager = False
+                        st.rerun()
+                else:
+                    st.info("No added samples found.")
+        
+        st.markdown("---")
     
     # Sample type selection
     sample_type = st.radio(
@@ -628,6 +730,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
             )
         
         # Control sample selection (only for control samples)
+        control_sample_name = None
         if sample_type == "Control Samples":
             if selected_code in control_samples:
                 control_options = control_samples[selected_code]['names']
@@ -639,6 +742,9 @@ def add_row_interface(processor, allowed_codes, control_samples):
                     format_func=lambda x: control_options[x],
                     key="control_sample_selector"
                 )
+                
+                # Store control sample name for later use
+                control_sample_name = control_options[selected_control_idx]
                 
                 # Automatically set position based on control sample
                 analyseplaat_position = control_positions[selected_control_idx]
@@ -668,11 +774,17 @@ def add_row_interface(processor, allowed_codes, control_samples):
         poolplaat_entry = f'"{poolplaat_id}":{poolplaat_position}'
         analyseplaat_entry = f'"{analyseplaat_id}":{analyseplaat_position}'
         
+        # Determine solution name based on sample type
+        if sample_type == "Control Samples" and control_sample_name:
+            solution_name = f"Control - {control_sample_name}"
+        else:
+            solution_name = f"Sample {sample_number}"
+        
         # Preview row in CSV format
         preview_row = [
             poolplaat_entry,           # LabwareName
             100,                       # Volume
-            f"Sample {sample_number}", # SolutionName
+            solution_name,             # SolutionName (includes control name if applicable)
             "Sample",                  # SolutionType
             "1 M",                     # Concentration
             "",                        # SampleIdentifier
@@ -700,11 +812,17 @@ def add_row_interface(processor, allowed_codes, control_samples):
         poolplaat_entry = f'"{poolplaat_id}":{poolplaat_position}'
         analyseplaat_entry = f'"{analyseplaat_id}":{analyseplaat_position}'
         
+        # Determine solution name based on sample type
+        if sample_type == "Control Samples" and control_sample_name:
+            solution_name = f"Control - {control_sample_name}"
+        else:
+            solution_name = f"Sample {sample_number}"
+        
         # Map to the exact expected columns
         row_data = [
             poolplaat_entry,           # LabwareName
             100,                       # Volume
-            f"Sample {sample_number}", # SolutionName
+            solution_name,             # SolutionName (includes control name if applicable)
             "Sample",                  # SolutionType
             "1 M",                     # Concentration
             "",                        # SampleIdentifier
@@ -731,9 +849,15 @@ def add_row_interface(processor, allowed_codes, control_samples):
         
         # Show run notification with toast for 3 seconds
         if run_for_sample:
-            st.toast(f"✅ Sample added to Run {run_for_sample}", icon="✅")
+            if sample_type == "Control Samples":
+                st.toast(f"✅ Control sample '{control_sample_name}' added to Run {run_for_sample}", icon="✅")
+            else:
+                st.toast(f"✅ Sample added to Run {run_for_sample}", icon="✅")
         else:
-            st.toast(f"✅ Sample added successfully", icon="✅")
+            if sample_type == "Control Samples":
+                st.toast(f"✅ Control sample '{control_sample_name}' added successfully", icon="✅")
+            else:
+                st.toast(f"✅ Sample added successfully", icon="✅")
         
 def volume_manager_interface(processor, allowed_codes):
     """Volume Manager interface to edit volumes for selected MP25 codes only"""
