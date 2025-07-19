@@ -1411,195 +1411,314 @@ def step_download_results():
 # Main Application
 
 def main():
-    # Custom CSS for enhanced styling
+    # Professional laboratory CSS styling
     st.markdown("""
         <style>
-        /* Import modern fonts */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        /* Import professional fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
         
         /* Global styling */
         .stApp {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: 'Inter', sans-serif;
+            background: #f8f9fa;
+            font-family: 'Source Sans Pro', sans-serif;
         }
         
         /* Main container */
         .main .block-container {
             padding-top: 2rem;
             padding-bottom: 2rem;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e9ecef;
             margin: 1rem;
+            max-width: 1200px;
         }
         
-        /* Header styling */
+        /* Header styling - Clinical and professional */
         .header-container {
-            text-align: center;
-            padding: 2rem 0;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border-radius: 15px;
-            margin-bottom: 2rem;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            padding: 2rem;
+            margin: -2rem -2rem 2rem -2rem;
+            border-radius: 8px 8px 0 0;
+            border-bottom: 3px solid #2980b9;
         }
         
         .header-title {
-            font-size: 3rem;
-            font-weight: 700;
+            font-size: 2.5rem;
+            font-weight: 600;
             color: white;
             margin: 0;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            letter-spacing: -1px;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
         
         .header-subtitle {
-            font-size: 1.2rem;
+            font-size: 1rem;
             color: rgba(255, 255, 255, 0.9);
             margin: 0.5rem 0 0 0;
-            font-weight: 300;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
-        /* Step indicators */
+        /* Step indicators - More clinical */
         .step-container {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            padding: 1rem 2rem;
-            border-radius: 50px;
-            color: white;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-left: 4px solid #3498db;
+            padding: 1rem 1.5rem;
+            border-radius: 4px;
+            color: #2c3e50;
             font-weight: 600;
-            text-align: center;
             margin: 1rem 0;
-            box-shadow: 0 8px 25px rgba(240, 147, 251, 0.4);
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            font-family: 'JetBrains Mono', monospace;
         }
         
-        /* Status cards */
+        /* Status cards - Laboratory style */
         .status-card {
             background: white;
             padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            border-left: 4px solid #667eea;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
             margin: 1rem 0;
-            transition: transform 0.2s ease;
+            position: relative;
         }
         
-        .status-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        .status-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: #6c757d;
+            border-radius: 4px 0 0 4px;
         }
         
         .status-success {
-            border-left-color: #4CAF50;
-            background: linear-gradient(135deg, #f0fff4 0%, #e8f8f0 100%);
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+        
+        .status-success::before {
+            background: #28a745;
         }
         
         .status-warning {
-            border-left-color: #FF9800;
-            background: linear-gradient(135deg, #fff8e1 0%, #fff3c4 100%);
+            border-color: #ffc107;
+            background: #fffdf5;
+        }
+        
+        .status-warning::before {
+            background: #ffc107;
         }
         
         .status-error {
-            border-left-color: #f44336;
-            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+            border-color: #dc3545;
+            background: #fff8f8;
         }
         
-        /* Custom buttons */
+        .status-error::before {
+            background: #dc3545;
+        }
+        
+        .status-info {
+            border-color: #3498db;
+            background: #f8fcff;
+        }
+        
+        .status-info::before {
+            background: #3498db;
+        }
+        
+        /* Professional buttons */
         .stButton > button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #3498db;
             color: white;
-            border: none;
-            border-radius: 25px;
-            padding: 0.75rem 2rem;
-            font-weight: 600;
-            font-family: 'Inter', sans-serif;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            transition: all 0.3s ease;
+            border: 1px solid #2980b9;
+            border-radius: 4px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            font-family: 'Source Sans Pro', sans-serif;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.875rem;
         }
         
         .stButton > button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+            background: #2980b9;
+            border-color: #21618c;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
-        /* Sidebar styling */
+        .stButton > button:active {
+            transform: translateY(0);
+        }
+        
+        /* Sidebar styling - Laboratory theme */
         .css-1d391kg {
-            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            background: #2c3e50;
+            border-right: 3px solid #34495e;
         }
         
         .css-1d391kg .stSelectbox label,
         .css-1d391kg .stButton label,
-        .css-1d391kg p {
+        .css-1d391kg p,
+        .css-1d391kg h1,
+        .css-1d391kg h2,
+        .css-1d391kg h3 {
             color: white !important;
             font-weight: 500;
         }
         
-        /* Progress indicators */
-        .progress-container {
-            background: white;
-            padding: 1rem;
-            border-radius: 10px;
-            margin: 1rem 0;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        /* File uploader styling */
-        .stFileUploader {
-            border: 2px dashed #667eea;
-            border-radius: 12px;
-            padding: 2rem;
-            text-align: center;
-            background: linear-gradient(135deg, #f8f9ff 0%, #e8ebff 100%);
-        }
-        
-        /* Metrics styling */
+        /* Data display styling */
         .metric-container {
             background: white;
             padding: 1.5rem;
-            border-radius: 12px;
+            border-radius: 6px;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            border-top: 4px solid #667eea;
+            border: 1px solid #dee2e6;
             margin: 0.5rem;
         }
         
         .metric-value {
-            font-size: 2rem;
+            font-size: 2.5rem;
             font-weight: 700;
-            color: #667eea;
+            color: #2c3e50;
             margin: 0;
+            font-family: 'JetBrains Mono', monospace;
         }
         
         .metric-label {
-            font-size: 0.9rem;
-            color: #666;
+            font-size: 0.875rem;
+            color: #6c757d;
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-top: 0.5rem;
+            font-weight: 500;
+        }
+        
+        /* File uploader - Professional look */
+        .stFileUploader {
+            border: 2px dashed #dee2e6;
+            border-radius: 6px;
+            padding: 2rem;
+            text-align: center;
+            background: #f8f9fa;
+            transition: border-color 0.2s ease;
+        }
+        
+        .stFileUploader:hover {
+            border-color: #3498db;
+            background: #f8fcff;
         }
         
         /* Table styling */
         .dataframe {
-            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+        }
+        
+        .dataframe th {
+            background: #f8f9fa;
+            color: #2c3e50;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         /* Alert styling */
         .stAlert {
-            border-radius: 10px;
-            border: none;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+            font-family: 'Source Sans Pro', sans-serif;
+        }
+        
+        /* Progress bars */
+        .stProgress .css-pxxe24 {
+            background: #3498db;
+        }
+        
+        /* Input fields */
+        .stTextInput > div > div > input,
+        .stNumberInput > div > div > input,
+        .stSelectbox > div > div > select {
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-family: 'Source Sans Pro', sans-serif;
+        }
+        
+        .stTextInput > div > div > input:focus,
+        .stNumberInput > div > div > input:focus,
+        .stSelectbox > div > div > select:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+        
+        /* Navigation breadcrumb */
+        .breadcrumb-container {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        
+        /* Section headers */
+        .section-header {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #ecf0f1;
+            font-size: 1.25rem;
+        }
+        
+        /* Data validation indicators */
+        .validation-success {
+            color: #28a745;
+            font-weight: 500;
+        }
+        
+        .validation-error {
+            color: #dc3545;
+            font-weight: 500;
+        }
+        
+        .validation-warning {
+            color: #ffc107;
+            font-weight: 500;
+        }
+        
+        /* Laboratory icons styling */
+        .lab-icon {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+            vertical-align: middle;
         }
         </style>
     """, unsafe_allow_html=True)
     
-    # Enhanced header with modern design
+    # Professional laboratory header
     st.markdown(
         """
         <div class="header-container">
-            <h1 class="header-title">🧪 AHA!</h1>
-            <p class="header-subtitle">Andrew Helper App - Advanced Laboratory Data Analysis Platform</p>
+            <h1 class="header-title">
+                <span class="lab-icon">⚗️</span>
+                AHA Laboratory Analysis System
+            </h1>
+            <p class="header-subtitle">Andrew Helper App - Professional Laboratory Data Management Platform</p>
         </div>
         """,
         unsafe_allow_html=True
@@ -1607,12 +1726,13 @@ def main():
     
     initialize_session_state()
     
-    # Enhanced database setup section
+    # Professional database setup section
     if not st.session_state.database_loaded:
         st.markdown("""
             <div class="status-card status-warning">
-                <h3>🗄️ Database Setup Required</h3>
-                <p>Please configure your database connection to continue with data analysis.</p>
+                <h3><span class="lab-icon">🗄️</span>Database Configuration Required</h3>
+                <p>Please establish database connection to proceed with laboratory data analysis.</p>
+                <small><strong>Status:</strong> Awaiting database initialization</small>
             </div>
         """, unsafe_allow_html=True)
         
@@ -1621,8 +1741,9 @@ def main():
             st.session_state.database_loaded = True
             st.markdown("""
                 <div class="status-card status-success">
-                    <h4>✅ Database Connected Successfully!</h4>
-                    <p>Ready to process laboratory data.</p>
+                    <h4><span class="lab-icon">✅</span>Database Connection Established</h4>
+                    <p>Laboratory database successfully connected and validated.</p>
+                    <small><strong>Status:</strong> Ready for data processing</small>
                 </div>
             """, unsafe_allow_html=True)
             st.rerun()
@@ -1635,8 +1756,9 @@ def main():
     if not allowed_codes:
         st.markdown("""
             <div class="status-card status-error">
-                <h4>❌ Database Error</h4>
-                <p>No valid codes found in database. Please check your data source.</p>
+                <h4><span class="lab-icon">❌</span>Database Validation Failed</h4>
+                <p>No valid sample codes detected in database. Please verify data integrity.</p>
+                <small><strong>Action Required:</strong> Check database schema and data source</small>
             </div>
         """, unsafe_allow_html=True)
         st.stop()
@@ -1644,65 +1766,71 @@ def main():
     # Enhanced sidebar
     create_sidebar()
     
-    # Current step indicator with modern styling
+    # Professional breadcrumb navigation
     step = st.session_state.current_step
     st.markdown(f"""
-        <div class="step-container">
-            <h3 style="margin: 0; font-size: 1.3rem;">📍 Current Step: {step}</h3>
+        <div class="breadcrumb-container">
+            <strong>CURRENT WORKFLOW STEP:</strong> {step}
         </div>
     """, unsafe_allow_html=True)
     
-    # Enhanced step routing with improved UI for each step
+    # Enhanced step routing with professional interface
     if step == "1. Upload CSV":
         st.markdown("""
-            <div class="status-card">
-                <h3>📤 Upload Your Data</h3>
-                <p>Select and upload your CSV files for processing. Supported formats: CSV, Excel</p>
+            <div class="status-card status-info">
+                <h3 class="section-header"><span class="lab-icon">📤</span>Data Import Module</h3>
+                <p>Upload laboratory data files for processing and analysis. Supported formats include CSV and Excel files.</p>
+                <small><strong>Requirements:</strong> Files must contain valid sample identifiers and measurement data</small>
             </div>
         """, unsafe_allow_html=True)
         step_upload_csv(allowed_codes)
         
     elif step == "2. Select Runs":
         st.markdown("""
-            <div class="status-card">
-                <h3>🎯 Select Analysis Runs</h3>
-                <p>Choose which experimental runs to include in your analysis.</p>
+            <div class="status-card status-info">
+                <h3 class="section-header"><span class="lab-icon">🎯</span>Run Selection Module</h3>
+                <p>Configure which experimental runs to include in the current analysis batch.</p>
+                <small><strong>Note:</strong> Selected runs will be processed according to laboratory protocols</small>
             </div>
         """, unsafe_allow_html=True)
         step_select_runs()
         
     elif step == "3. Select Codes":
         st.markdown("""
-            <div class="status-card">
-                <h3>🔢 Configure Sample Codes</h3>
-                <p>Select and validate the sample codes for your analysis.</p>
+            <div class="status-card status-info">
+                <h3 class="section-header"><span class="lab-icon">🔢</span>Sample Code Configuration</h3>
+                <p>Validate and select sample identification codes for analysis processing.</p>
+                <small><strong>Validation:</strong> All codes must match database specifications</small>
             </div>
         """, unsafe_allow_html=True)
         step_select_codes()
         
     elif step == "4. Add Rows":
         st.markdown("""
-            <div class="status-card">
-                <h3>➕ Manage Sample Data</h3>
-                <p>Add, edit, or remove sample rows and configure control samples.</p>
+            <div class="status-card status-info">
+                <h3 class="section-header"><span class="lab-icon">➕</span>Sample Data Management</h3>
+                <p>Manage sample entries, configure control samples, and validate data integrity.</p>
+                <small><strong>Controls:</strong> Quality control samples are automatically validated</small>
             </div>
         """, unsafe_allow_html=True)
         add_row_interface(st.session_state.processor, allowed_codes, control_samples)
         
     elif step == "5. Volume Manager":
         st.markdown("""
-            <div class="status-card">
-                <h3>🧪 Volume Management</h3>
-                <p>Configure sample volumes and dilution factors for accurate analysis.</p>
+            <div class="status-card status-info">
+                <h3 class="section-header"><span class="lab-icon">🧪</span>Volume Calibration Module</h3>
+                <p>Configure sample volumes, dilution factors, and measurement parameters for precise analysis.</p>
+                <small><strong>Precision:</strong> Volume calculations follow laboratory standard protocols</small>
             </div>
         """, unsafe_allow_html=True)
         volume_manager_interface(st.session_state.processor, allowed_codes)
         
     elif step == "6. Process Data":
         st.markdown("""
-            <div class="status-card">
-                <h3>⚙️ Data Processing</h3>
-                <p>Execute analysis algorithms and generate results.</p>
+            <div class="status-card status-info">
+                <h3 class="section-header"><span class="lab-icon">⚙️</span>Data Processing Engine</h3>
+                <p>Execute analytical algorithms and generate processed results according to laboratory standards.</p>
+                <small><strong>Processing:</strong> Applying validated analytical methods and quality controls</small>
             </div>
         """, unsafe_allow_html=True)
         step_process_data()
@@ -1710,8 +1838,9 @@ def main():
     elif step == "7. Download Results":
         st.markdown("""
             <div class="status-card status-success">
-                <h3>📊 Analysis Complete</h3>
-                <p>Your data has been processed successfully. Download your results below.</p>
+                <h3 class="section-header"><span class="lab-icon">📊</span>Analysis Results</h3>
+                <p>Data processing completed successfully. Laboratory results are ready for download and review.</p>
+                <small><strong>Output:</strong> Results include processed data, quality metrics, and validation reports</small>
             </div>
         """, unsafe_allow_html=True)
         step_download_results()
