@@ -90,6 +90,7 @@ def process_database(database):
     return allowed_codes, control_samples
 
 # CSV Processing Class
+# CSV Processing Class
 class CSVProcessor:
     def __init__(self, df, allowed_codes):
         self.original_df = df.copy()
@@ -125,7 +126,8 @@ class CSVProcessor:
         sorted_codes = sorted(self.allowed_codes, key=len, reverse=True)
         
         for code in sorted_codes:
-            pattern = r'(?:MP25|PP25)' + re.escape(code) + r'(?:\d+)?'
+            # Use exact match pattern to prevent partial matches
+            pattern = r'(?:MP25|PP25)' + re.escape(code) + r'(?=\d+(?:\D|$))'
             
             for col in self.df.columns:
                 for value in self.df[col].astype(str):
@@ -136,13 +138,19 @@ class CSVProcessor:
     
     def get_pp25_ids(self, code):
         """Get all PP25 IDs for a specific code from the CSV"""
-        pattern = r'PP25' + re.escape(code) + r'\d+'
+        # Use exact match pattern to prevent partial matches
+        pattern = r'PP25' + re.escape(code) + r'(?=\d+(?:\D|$))'
         pp25_ids = set()
         
         for col in self.df.columns:
             for value in self.df[col].astype(str):
-                matches = re.findall(pattern, value)
-                pp25_ids.update(matches)
+                # Find the full PP25 ID including the digits
+                full_pattern = r'PP25' + re.escape(code) + r'\d+'
+                matches = re.findall(full_pattern, value)
+                # But only add if it matches our exact pattern
+                for match in matches:
+                    if re.search(pattern, match + ' '):  # Add space to ensure end of string check
+                        pp25_ids.add(match)
         
         return sorted(list(pp25_ids))
     
@@ -160,13 +168,19 @@ class CSVProcessor:
     
     def get_mp25_ids(self, code):
         """Get all MP25 IDs for a specific code from the CSV"""
-        pattern = r'MP25' + re.escape(code) + r'\d+'
+        # Use exact match pattern to prevent partial matches
+        pattern = r'MP25' + re.escape(code) + r'(?=\d+(?:\D|$))'
         mp25_ids = set()
         
         for col in self.df.columns:
             for value in self.df[col].astype(str):
-                matches = re.findall(pattern, value)
-                mp25_ids.update(matches)
+                # Find the full MP25 ID including the digits
+                full_pattern = r'MP25' + re.escape(code) + r'\d+'
+                matches = re.findall(full_pattern, value)
+                # But only add if it matches our exact pattern
+                for match in matches:
+                    if re.search(pattern, match + ' '):  # Add space to ensure end of string check
+                        mp25_ids.add(match)
         
         return sorted(list(mp25_ids))
     
@@ -197,9 +211,9 @@ class CSVProcessor:
             patterns = []
             
             for code in sorted_selected:
-                # Create exact match pattern - only match the exact code followed by digits
+                # Create exact match pattern - match the code followed by digits only
                 # This prevents "BLT" from matching "BLT3", "BLT8", "BLT412"
-                patterns.append(r'(?:MP25|PP25)' + re.escape(code) + r'(?=\d|$|[^A-Z0-9])')
+                patterns.append(r'(?:MP25|PP25)' + re.escape(code) + r'(?=\d+(?:\D|$))')
             
             # Combine all patterns
             combined_pattern = '|'.join(patterns)
@@ -223,7 +237,7 @@ class CSVProcessor:
         for code in sorted_codes:
             volume = volumes[code]
             # Use exact match pattern to prevent "BLT" from matching "BLT3", etc.
-            pattern = r'(?:MP25|PP25)' + re.escape(code) + r'(?=\d|$|[^A-Z0-9])'
+            pattern = r'(?:MP25|PP25)' + re.escape(code) + r'(?=\d+(?:\D|$))'
             
             mask = df_copy.astype(str).apply(
                 lambda x: x.str.contains(pattern, regex=True, na=False)
