@@ -632,7 +632,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
                 st.info("No added samples found. Add some samples using the interface below and they will appear here for management.")
 
     st.markdown("---")
-                       
+                           
     # Sample type selection
     sample_type = st.radio(
         "Sample Type:",
