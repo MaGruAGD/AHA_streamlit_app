@@ -90,6 +90,7 @@ def process_database(database):
     return allowed_codes, control_samples
 
 # CSV Processing Class
+# CSV Processing Class - FIXED VERSION
 class CSVProcessor:
     def __init__(self, df, allowed_codes):
         self.original_df = df.copy()
@@ -117,61 +118,68 @@ class CSVProcessor:
             # Rename columns to match expected format
             self.df.columns = EXPECTED_COLUMNS
     
+    def _get_exact_code_matches(self, text, target_code):
+        """
+        Get exact matches for a specific code in text.
+        This prevents BLT from matching BLT3, BLT8, BLT412, etc.
+        """
+        if not isinstance(text, str):
+            text = str(text)
+        
+        # Find all MP25/PP25 patterns in the text
+        pattern = r'(MP25|PP25)([A-Z0-9]+?)(\d+)'
+        matches = re.findall(pattern, text)
+        
+        exact_matches = []
+        for prefix, code, digits in matches:
+            if code == target_code:  # Exact match only
+                exact_matches.append(f"{prefix}{code}{digits}")
+        
+        return exact_matches
+    
     def extract_codes(self):
-        """Extract MP25 and PP25 codes from the CSV data"""
-        codes = set()
+        """Extract MP25 and PP25 codes from the CSV data with exact matching"""
+        found_codes = set()
         
-        # Sort codes by length (longest first) to handle overlapping codes correctly
-        sorted_codes = sorted(self.allowed_codes, key=len, reverse=True)
-        
-        for code in sorted_codes:
-            # Use word boundary or ensure the code is followed by digits only
-            # This prevents "BLT" from matching "BLT3", "BLT8", "BLT412"
-            pattern = r'(?:MP25|PP25)' + re.escape(code) + r'(?=\d)'
+        # Check each allowed code individually
+        for code in self.allowed_codes:
+            code_found = False
             
+            # Check all cells in the dataframe
             for col in self.df.columns:
-                for value in self.df[col].astype(str):
-                    if re.search(pattern, value):
-                        codes.add(code)
+                for value in self.df[col]:
+                    exact_matches = self._get_exact_code_matches(value, code)
+                    if exact_matches:
+                        found_codes.add(code)
+                        code_found = True
+                        break
+                if code_found:
+                    break
         
-        return sorted(list(codes))
+        return sorted(list(found_codes))
 
     def get_pp25_ids(self, code):
-        """Get all PP25 IDs for a specific code from the CSV"""
-        # Use exact match pattern - code must be followed by digits only
-        pattern = r'PP25' + re.escape(code) + r'(?=\d)'
+        """Get all PP25 IDs for a specific code from the CSV with exact matching"""
         pp25_ids = set()
         
         for col in self.df.columns:
-            for value in self.df[col].astype(str):
-                # Find the full PP25 ID including the digits
-                full_pattern = r'PP25' + re.escape(code) + r'\d+'
-                matches = re.findall(full_pattern, value)
-                # Validate each match to ensure exact code match
-                for match in matches:
-                    # Extract just the code part (without PP25 prefix and digits)
-                    code_part = match[4:-len(re.search(r'\d+$', match).group())]  # Remove 'PP25' and trailing digits
-                    if code_part == code:  # Exact match
+            for value in self.df[col]:
+                exact_matches = self._get_exact_code_matches(value, code)
+                for match in exact_matches:
+                    if match.startswith('PP25'):
                         pp25_ids.add(match)
         
         return sorted(list(pp25_ids))
     
     def get_mp25_ids(self, code):
-        """Get all MP25 IDs for a specific code from the CSV"""
-        # Use exact match pattern - code must be followed by digits only
-        pattern = r'MP25' + re.escape(code) + r'(?=\d)'
+        """Get all MP25 IDs for a specific code from the CSV with exact matching"""
         mp25_ids = set()
         
         for col in self.df.columns:
-            for value in self.df[col].astype(str):
-                # Find the full MP25 ID including the digits
-                full_pattern = r'MP25' + re.escape(code) + r'\d+'
-                matches = re.findall(full_pattern, value)
-                # Validate each match to ensure exact code match
-                for match in matches:
-                    # Extract just the code part (without MP25 prefix and digits)
-                    code_part = match[4:-len(re.search(r'\d+$', match).group())]  # Remove 'MP25' and trailing digits
-                    if code_part == code:  # Exact match
+            for value in self.df[col]:
+                exact_matches = self._get_exact_code_matches(value, code)
+                for match in exact_matches:
+                    if match.startswith('MP25'):
                         mp25_ids.add(match)
         
         return sorted(list(mp25_ids))
@@ -197,88 +205,60 @@ class CSVProcessor:
         self.df = pd.concat([self.df, new_row_df], ignore_index=True)
     
     def filter_data(self, selected_codes, run_number):
-        """Filter data based on selected codes and run number"""
+        """Filter data based on selected codes and run number with exact matching"""
         filtered_df = self.df.copy()
         
-        if selected_codes:
-            # Sort selected codes by length (longest first) to handle overlapping codes
-            sorted_selected = sorted(selected_codes, key=len, reverse=True)
-            
-            # Create individual patterns for each code to ensure exact matching
-            row_masks = []
-            
-            for code in sorted_selected:
-                # Pattern that ensures the code is followed by digits only (not letters)
-                pattern = r'(?:MP25|PP25)' + re.escape(code) + r'(?=\d)'
+        if not selected_codes:
+            return filtered_df
+        
+        # Create a mask for rows that contain any of the selected codes
+        matching_rows = set()
+        
+        for code in selected_codes:
+            # Find rows that contain this exact code
+            for idx in filtered_df.index:
+                row_matches = False
+                for col in filtered_df.columns:
+                    cell_value = filtered_df.at[idx, col]
+                    exact_matches = self._get_exact_code_matches(cell_value, code)
+                    if exact_matches:
+                        row_matches = True
+                        break
                 
-                # Create mask for this specific code
-                code_mask = filtered_df.astype(str).apply(
-                    lambda x: x.str.contains(pattern, regex=True, na=False)
-                ).any(axis=1)
-                
-                # Additional validation: check that matches are exact
-                valid_rows = []
-                for idx in filtered_df[code_mask].index:
-                    row_valid = False
-                    for col in filtered_df.columns:
-                        cell_value = str(filtered_df.at[idx, col])
-                        # Find all MP25/PP25 patterns in the cell
-                        all_matches = re.findall(r'(?:MP25|PP25)([A-Z0-9]+?)(\d+)', cell_value)
-                        for match_code, match_digits in all_matches:
-                            if match_code == code:  # Exact code match
-                                row_valid = True
-                                break
-                        if row_valid:
-                            break
-                    
-                    if row_valid:
-                        valid_rows.append(idx)
-                
-                if valid_rows:
-                    exact_mask = pd.Series([idx in valid_rows for idx in filtered_df.index], index=filtered_df.index)
-                    row_masks.append(exact_mask)
-            
-            # Combine all masks with OR operation
-            if row_masks:
-                combined_mask = row_masks[0]
-                for mask in row_masks[1:]:
-                    combined_mask = combined_mask | mask
-                
-                filtered_df = filtered_df[combined_mask]
+                if row_matches:
+                    matching_rows.add(idx)
+        
+        # Filter to only matching rows
+        if matching_rows:
+            filtered_df = filtered_df.loc[list(matching_rows)]
+        else:
+            # Return empty dataframe with same structure if no matches
+            filtered_df = filtered_df.iloc[0:0]
         
         return filtered_df
         
     def apply_volumes(self, df, volumes):
-        """Apply custom volumes to the dataframe"""
+        """Apply custom volumes to the dataframe with exact matching"""
         df_copy = df.copy()
         
-        # Sort codes by length (longest first) to handle overlapping codes
-        sorted_codes = sorted(volumes.keys(), key=len, reverse=True)
-        
-        for code in sorted_codes:
-            volume = volumes[code]
-            
+        for code, volume in volumes.items():
             # Find rows that contain this exact code
             rows_to_update = []
             
             for idx in df_copy.index:
                 row_matches = False
                 for col in df_copy.columns:
-                    cell_value = str(df_copy.at[idx, col])
-                    # Find all MP25/PP25 patterns in the cell
-                    all_matches = re.findall(r'(?:MP25|PP25)([A-Z0-9]+?)(\d+)', cell_value)
-                    for match_code, match_digits in all_matches:
-                        if match_code == code:  # Exact code match
-                            row_matches = True
-                            break
-                    if row_matches:
+                    cell_value = df_copy.at[idx, col]
+                    exact_matches = self._get_exact_code_matches(cell_value, code)
+                    if exact_matches:
+                        row_matches = True
                         break
                 
                 if row_matches:
                     rows_to_update.append(idx)
             
             # Update the 'Step1Volume' column for matching rows
-            if rows_to_update:
+            if rows_to_update and 'Step1Volume' in df_copy.columns:
                 df_copy.loc[rows_to_update, 'Step1Volume'] = volume
         
         return df_copy
