@@ -89,16 +89,25 @@ def process_database(database):
     
     return allowed_codes, control_samples
 
-# CSV Processing Class - FIXED VERSION with proper exact matching for codes + 4 digits
-# CSV Processing Class - FIXED VERSION with proper exact matching for codes + 4 digits
+# CSV Processing Class - Enhanced version with better tracking of added rows and codes
 class CSVProcessor:
     def __init__(self, df, allowed_codes):
         self.original_df = df.copy()
         self.df = df.copy()
         self.allowed_codes = allowed_codes
         self._normalize_columns()
-        # Extract codes after normalization to ensure we work with the correct structure
-        self.codes = self.extract_codes()
+        
+        # Track original codes before any modifications
+        self.original_codes = set(self.extract_codes())
+        
+        # Track codes that were added through the Add Rows functionality
+        self.added_codes = set()
+        
+        # Track row indices that were added (for sparkle display)
+        self.added_row_indices = set()
+        
+        # Current codes (will be updated as rows are added)
+        self.codes = list(self.original_codes)
 
     def _normalize_columns(self):
         """Ensure the dataframe has exactly the expected columns"""
@@ -159,6 +168,31 @@ class CSVProcessor:
 
         return sorted(list(found_codes))
 
+    def get_codes_from_added_rows_only(self):
+        """Extract codes only from rows that were added through Add Rows functionality"""
+        if not self.added_row_indices:
+            return set()
+            
+        added_codes = set()
+        
+        # Only look at rows that were added
+        for row_idx in self.added_row_indices:
+            if row_idx < len(self.df):
+                row = self.df.iloc[row_idx]
+                for col_value in row.fillna(''):
+                    value_str = str(col_value)
+                    
+                    # Check each allowed code
+                    for code in self.allowed_codes:
+                        if self._find_code_in_text(value_str, code):
+                            added_codes.add(code)
+        
+        return added_codes
+
+    def is_code_from_added_rows(self, code):
+        """Check if a specific code comes from added rows"""
+        return code in self.get_codes_from_added_rows_only()
+
     def get_pp25_ids(self, code):
         """Get all PP25 IDs for a specific code from the CSV with exact matching"""
         pp25_ids = set()
@@ -198,11 +232,56 @@ class CSVProcessor:
         return sorted(list(plsta_ids))
 
     def add_row(self, row_data):
-        """Add a new row to the dataframe and immediately update codes"""
+        """Add a new row to the dataframe and track it as an added row"""
+        # Create new row dataframe
         new_row_df = pd.DataFrame([row_data], columns=EXPECTED_COLUMNS)
+        
+        # Get the index where this row will be added
+        new_row_index = len(self.df)
+        
+        # Add the row
         self.df = pd.concat([self.df, new_row_df], ignore_index=True)
         
-        # Immediately re-extract codes to include any new ones
+        # Track this row as added
+        self.added_row_indices.add(new_row_index)
+        
+        # Extract any new codes from the added row and mark them as added
+        row_codes = set()
+        for col_value in row_data:
+            value_str = str(col_value)
+            for code in self.allowed_codes:
+                if self._find_code_in_text(value_str, code):
+                    row_codes.add(code)
+        
+        # Mark these codes as added if they weren't in the original data
+        for code in row_codes:
+            if code not in self.original_codes:
+                self.added_codes.add(code)
+        
+        # Update the current codes list
+        self.codes = self.extract_codes()
+
+    def remove_rows(self, row_indices):
+        """Remove rows and update tracking of added rows and codes"""
+        # Remove the rows
+        self.df = self.df.drop(row_indices).reset_index(drop=True)
+        
+        # Update added_row_indices to account for removed rows and reindexing
+        removed_indices = set(row_indices)
+        new_added_indices = set()
+        
+        for added_idx in self.added_row_indices:
+            if added_idx not in removed_indices:
+                # Calculate new index after removal and reset_index
+                new_idx = added_idx - sum(1 for removed_idx in removed_indices if removed_idx < added_idx)
+                new_added_indices.add(new_idx)
+        
+        self.added_row_indices = new_added_indices
+        
+        # Recalculate added codes based on remaining added rows
+        self.added_codes = self.get_codes_from_added_rows_only()
+        
+        # Update codes list
         self.codes = self.extract_codes()
 
     def filter_data(self, selected_codes, run_number):
@@ -254,6 +333,158 @@ class CSVProcessor:
                 df_copy.loc[rows_to_update, 'Step1Volume'] = volume
 
         return df_copy
+
+    def get_code_statistics(self):
+        """Get statistics about codes in the dataset"""
+        current_codes = set(self.extract_codes())
+        
+        return {
+            'total_codes': len(current_codes),
+            'original_codes': len(self.original_codes),
+            'added_codes': len(self.added_codes),
+            'added_rows': len(self.added_row_indices),
+            'original_codes_list': sorted(list(self.original_codes)),
+            'added_codes_list': sorted(list(self.added_codes)),
+            'all_codes_list': sorted(list(current_codes))
+        }
+
+
+def step_select_codes():
+    """Step 3: Select Codes and Volumes - Enhanced with sparkle indicators"""
+    st.header("Step 3: Select Codes and Volumes")
+    
+    if st.session_state.processor is None:
+        st.warning("Please upload a CSV file first.")
+        return
+    
+    # Get current codes and statistics
+    stats = st.session_state.processor.get_code_statistics()
+    
+    # Update the processor's codes by re-extracting from current dataframe
+    st.session_state.processor.codes = st.session_state.processor.extract_codes()
+    all_available_codes = sorted(st.session_state.processor.codes)
+    
+    if not all_available_codes:
+        st.warning("No codes found in the uploaded CSV file.")
+        return
+    
+    # Show enhanced info about codes with better formatting
+    with st.expander("📊 Code Information", expanded=True):
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.metric("Original Codes", stats['original_codes'])
+            if stats['original_codes_list']:
+                st.caption("From CSV: " + ", ".join(stats['original_codes_list'][:3]) + 
+                          ("..." if len(stats['original_codes_list']) > 3 else ""))
+        
+        with col2:
+            st.metric("Added Codes", stats['added_codes'])
+            if stats['added_codes_list']:
+                st.caption("✨ Added: " + ", ".join(stats['added_codes_list']))
+        
+        with col3:
+            st.metric("Total Codes", stats['total_codes'])
+            st.caption(f"From {stats['added_rows']} added rows")
+    
+    # Enhanced info messages
+    if stats['added_codes']:
+        st.success(f"✨ Found {len(stats['added_codes'])} newly added code(s): {', '.join(stats['added_codes_list'])}")
+    else:
+        st.info(f"📊 Using {stats['original_codes']} codes from original CSV")
+    
+    # Code selection for each run with enhanced display
+    for run_num in range(1, st.session_state.num_runs + 1):
+        st.subheader(f"🚀 Run {run_num}")
+        
+        # Initialize selected codes for this run
+        if run_num not in st.session_state.selected_codes:
+            st.session_state.selected_codes[run_num] = []
+        
+        selected = []
+        
+        # Get all codes that are already selected in OTHER runs
+        other_runs_codes = set()
+        for other_run in range(1, st.session_state.num_runs + 1):
+            if other_run != run_num:
+                other_runs_codes.update(st.session_state.selected_codes.get(other_run, []))
+        
+        # Create columns for better layout
+        num_cols = 3
+        cols = st.columns(num_cols)
+        
+        # Group codes by type for better organization
+        original_codes_in_run = [code for code in all_available_codes if code in stats['original_codes_list']]
+        added_codes_in_run = [code for code in all_available_codes if code in stats['added_codes_list']]
+        
+        # Display original codes first, then added codes
+        all_codes_ordered = original_codes_in_run + added_codes_in_run
+        
+        for i, code in enumerate(all_codes_ordered):
+            col_idx = i % num_cols
+            with cols[col_idx]:
+                # Check if this code is already selected for this run
+                is_selected = code in st.session_state.selected_codes[run_num]
+                
+                # Check if this code is already used in another run
+                is_used_elsewhere = code in other_runs_codes
+                
+                # Create enhanced label with sparkle for added codes and indicators
+                code_label = code
+                help_text = None
+                
+                if code in stats['added_codes_list']:
+                    code_label = f"✨ {code}"
+                    help_text = "Added via Add Rows functionality"
+                elif is_used_elsewhere:
+                    help_text = f"Already selected in another run"
+                
+                # Add volume indicator
+                default_volume = CUSTOM_DEFAULTS.get(code, 20)
+                code_label += f" ({default_volume}μL)"
+                
+                # Create checkbox with enhanced styling
+                checkbox_value = st.checkbox(
+                    code_label,
+                    value=is_selected,
+                    key=f"checkbox_{run_num}_{code}",
+                    disabled=is_used_elsewhere,
+                    help=help_text
+                )
+                
+                # Add to selected list if checked
+                if checkbox_value:
+                    selected.append(code)
+        
+        # Update session state for this specific run
+        st.session_state.selected_codes[run_num] = selected
+        
+        # Show selection summary for this run
+        if selected:
+            original_selected = [code for code in selected if code in stats['original_codes_list']]
+            added_selected = [code for code in selected if code in stats['added_codes_list']]
+            
+            summary_parts = []
+            if original_selected:
+                summary_parts.append(f"{len(original_selected)} original")
+            if added_selected:
+                summary_parts.append(f"{len(added_selected)} ✨ added")
+            
+            st.success(f"**Selected {len(selected)} codes** ({', '.join(summary_parts)})")
+            
+            # Show the actual codes in a nice format
+            with st.expander(f"View Selected Codes for Run {run_num}", expanded=False):
+                if original_selected:
+                    st.write("**Original codes:**")
+                    st.write(", ".join(original_selected))
+                
+                if added_selected:
+                    st.write("**✨ Added codes:**")
+                    st.write(", ".join(added_selected))
+        else:
+            st.info("No codes selected for this run")
+        
+        st.markdown("---")
         
 # Utility Functions
 def position_to_sample_number(position):
