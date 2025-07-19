@@ -90,7 +90,6 @@ def process_database(database):
     return allowed_codes, control_samples
 
 # CSV Processing Class
-# CSV Processing Class
 class CSVProcessor:
     def __init__(self, df, allowed_codes):
         self.original_df = df.copy()
@@ -119,23 +118,23 @@ class CSVProcessor:
             self.df.columns = EXPECTED_COLUMNS
     
     def extract_codes(self):
-    """Extract MP25 and PP25 codes from the CSV data"""
-    codes = set()
-    
-    # Sort codes by length (longest first) to handle overlapping codes correctly
-    sorted_codes = sorted(self.allowed_codes, key=len, reverse=True)
-    
-    for code in sorted_codes:
-        # Use word boundary or ensure the code is followed by digits only
-        # This prevents "BLT" from matching "BLT3", "BLT8", "BLT412"
-        pattern = r'(?:MP25|PP25)' + re.escape(code) + r'(?=\d)'
+        """Extract MP25 and PP25 codes from the CSV data"""
+        codes = set()
         
-        for col in self.df.columns:
-            for value in self.df[col].astype(str):
-                if re.search(pattern, value):
-                    codes.add(code)
-    
-    return sorted(list(codes))
+        # Sort codes by length (longest first) to handle overlapping codes correctly
+        sorted_codes = sorted(self.allowed_codes, key=len, reverse=True)
+        
+        for code in sorted_codes:
+            # Use word boundary or ensure the code is followed by digits only
+            # This prevents "BLT" from matching "BLT3", "BLT8", "BLT412"
+            pattern = r'(?:MP25|PP25)' + re.escape(code) + r'(?=\d)'
+            
+            for col in self.df.columns:
+                for value in self.df[col].astype(str):
+                    if re.search(pattern, value):
+                        codes.add(code)
+        
+        return sorted(list(codes))
 
     def get_pp25_ids(self, code):
         """Get all PP25 IDs for a specific code from the CSV"""
@@ -176,6 +175,26 @@ class CSVProcessor:
                         mp25_ids.add(match)
         
         return sorted(list(mp25_ids))
+
+    def get_plsta_ids(self):
+        """Get all PP25PLSTA IDs from the CSV"""
+        plsta_ids = set()
+        pattern = r'PP25PLSTA\d+'
+        
+        for col in self.df.columns:
+            for value in self.df[col].astype(str):
+                matches = re.findall(pattern, value)
+                plsta_ids.update(matches)
+        
+        return sorted(list(plsta_ids))
+
+    def add_row(self, row_data):
+        """Add a new row to the dataframe"""
+        # Create a new row as a DataFrame with the correct column names
+        new_row_df = pd.DataFrame([row_data], columns=EXPECTED_COLUMNS)
+        
+        # Concatenate with the existing dataframe
+        self.df = pd.concat([self.df, new_row_df], ignore_index=True)
     
     def filter_data(self, selected_codes, run_number):
         """Filter data based on selected codes and run number"""
