@@ -1132,10 +1132,12 @@ def step_select_codes():
         # Update session state for this specific run
         st.session_state.selected_codes[run_num] = selected
         
-        st.write("🐛 DEBUG INFO:")
-        st.write(f"Original codes from CSV upload: {original_codes}")
-        st.write(f"Current codes from dataframe scan: {sorted(current_codes)}")
-        st.write(f"Added codes (difference): {sorted(added_codes)}")
+        # Optional: Add debug info (commented out to avoid errors)
+        # Uncomment only if you need to debug
+        # st.write("🐛 DEBUG INFO:")
+        # st.write(f"Original codes from CSV upload: {sorted(original_codes_set)}")
+        # st.write(f"Added codes (difference): {sorted(added_codes)}")
+        # st.write(f"All available codes: {sorted(all_available_codes)}")
 
 def step_process_data():
     """Step 6: Process Data"""
