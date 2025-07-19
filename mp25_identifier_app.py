@@ -90,14 +90,15 @@ def process_database(database):
     return allowed_codes, control_samples
 
 # CSV Processing Class - FIXED VERSION with proper exact matching for codes + 4 digits
+# CSV Processing Class - FIXED VERSION with proper exact matching for codes + 4 digits
 class CSVProcessor:
     def __init__(self, df, allowed_codes):
         self.original_df = df.copy()
         self.df = df.copy()
         self.allowed_codes = allowed_codes
-        self.codes = self.extract_codes()
-
         self._normalize_columns()
+        # Extract codes after normalization to ensure we work with the correct structure
+        self.codes = self.extract_codes()
 
     def _normalize_columns(self):
         """Ensure the dataframe has exactly the expected columns"""
@@ -146,16 +147,15 @@ class CSVProcessor:
         """Extract MP25 and PP25 codes from the CSV data with exact matching"""
         found_codes = set()
 
-        for code in self.allowed_codes:
-            code_found = False
-            for col in self.df.columns:
-                for value in self.df[col]:
-                    if self._find_code_in_text(value, code):
+        # Search through all cells in the dataframe
+        for col in self.df.columns:
+            for value in self.df[col].fillna(''):  # Handle NaN values
+                value_str = str(value)
+                
+                # Check each allowed code to see if it appears in this cell
+                for code in self.allowed_codes:
+                    if self._find_code_in_text(value_str, code):
                         found_codes.add(code)
-                        code_found = True
-                        break
-                if code_found:
-                    break
 
         return sorted(list(found_codes))
 
@@ -164,8 +164,8 @@ class CSVProcessor:
         pp25_ids = set()
 
         for col in self.df.columns:
-            for value in self.df[col]:
-                exact_matches = self._get_exact_code_matches(value, code)
+            for value in self.df[col].fillna(''):
+                exact_matches = self._get_exact_code_matches(str(value), code)
                 for match in exact_matches:
                     if match.startswith('PP25'):
                         pp25_ids.add(match)
@@ -177,8 +177,8 @@ class CSVProcessor:
         mp25_ids = set()
 
         for col in self.df.columns:
-            for value in self.df[col]:
-                exact_matches = self._get_exact_code_matches(value, code)
+            for value in self.df[col].fillna(''):
+                exact_matches = self._get_exact_code_matches(str(value), code)
                 for match in exact_matches:
                     if match.startswith('MP25'):
                         mp25_ids.add(match)
@@ -188,19 +188,22 @@ class CSVProcessor:
     def get_plsta_ids(self):
         """Get all PP25PLSTA IDs from the CSV"""
         plsta_ids = set()
-        pattern = r'PP25PLSTA\d{4}'  # Changed to exactly 4 digits
+        pattern = r'\bPP25PLSTA\d{4}\b'  # Use word boundaries and exactly 4 digits
 
         for col in self.df.columns:
-            for value in self.df[col].astype(str):
-                matches = re.findall(pattern, value)
+            for value in self.df[col].fillna(''):
+                matches = re.findall(pattern, str(value))
                 plsta_ids.update(matches)
 
         return sorted(list(plsta_ids))
 
     def add_row(self, row_data):
-        """Add a new row to the dataframe"""
+        """Add a new row to the dataframe and immediately update codes"""
         new_row_df = pd.DataFrame([row_data], columns=EXPECTED_COLUMNS)
         self.df = pd.concat([self.df, new_row_df], ignore_index=True)
+        
+        # Immediately re-extract codes to include any new ones
+        self.codes = self.extract_codes()
 
     def filter_data(self, selected_codes, run_number):
         """Filter data based on selected codes and run number with exact matching"""
@@ -215,7 +218,7 @@ class CSVProcessor:
             for idx in filtered_df.index:
                 row_matches = False
                 for col in filtered_df.columns:
-                    cell_value = filtered_df.at[idx, col]
+                    cell_value = str(filtered_df.at[idx, col])
                     if self._find_code_in_text(cell_value, code):
                         row_matches = True
                         break
@@ -239,7 +242,7 @@ class CSVProcessor:
             for idx in df_copy.index:
                 row_matches = False
                 for col in df_copy.columns:
-                    cell_value = df_copy.at[idx, col]
+                    cell_value = str(df_copy.at[idx, col])
                     if self._find_code_in_text(cell_value, code):
                         row_matches = True
                         break
