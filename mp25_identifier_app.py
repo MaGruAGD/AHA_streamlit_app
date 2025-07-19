@@ -1048,27 +1048,37 @@ def step_select_codes():
         st.warning("Please upload a CSV file first.")
         return
     
-    # Get codes from both the original CSV and any added rows
-    original_codes = st.session_state.processor.codes
+    # Get codes from the original CSV upload only
+    available_codes = sorted(st.session_state.processor.codes)
     
-    # Dynamically get codes from current dataframe (includes added rows)
-    current_codes = set()
-    for col in st.session_state.processor.df.columns:
-        for value in st.session_state.processor.df[col].astype(str):
-            for code in st.session_state.processor.allowed_codes:
-                pattern = r'(?:MP25|PP25)' + re.escape(code) + r'(?:\d+)?'
-                if re.search(pattern, value):
-                    current_codes.add(code)
+    # Also check for any codes that might have been added through the "Add Rows" functionality
+    # But use the exact matching logic from CSVProcessor
+    added_codes = set()
+    original_codes_set = set(st.session_state.processor.codes)
     
-    # Combine original and current codes
-    available_codes = sorted(list(set(original_codes).union(current_codes)))
+    # Use the CSVProcessor's exact matching logic to find truly added codes
+    for code in st.session_state.processor.allowed_codes:
+        if code not in original_codes_set:
+            # Check if this code actually exists in the current dataframe using exact matching
+            code_found = False
+            for col in st.session_state.processor.df.columns:
+                for value in st.session_state.processor.df[col]:
+                    exact_matches = st.session_state.processor._get_exact_code_matches(value, code)
+                    if exact_matches:
+                        added_codes.add(code)
+                        code_found = True
+                        break
+                if code_found:
+                    break
     
-    if not available_codes:
+    # Combine original and truly added codes
+    all_available_codes = sorted(list(original_codes_set.union(added_codes)))
+    
+    if not all_available_codes:
         st.warning("No codes found in the uploaded CSV file.")
         return
     
-    # Show info about code sources if there are added codes
-    added_codes = set(available_codes) - set(original_codes)
+    # Show info about added codes only if there are actually added codes
     if added_codes:
         st.info(f"📝 Updated codes list includes {len(added_codes)} newly added code(s): {', '.join(sorted(added_codes))}")
     
@@ -1092,7 +1102,7 @@ def step_select_codes():
         num_cols = 3
         cols = st.columns(num_cols)
         
-        for i, code in enumerate(available_codes):
+        for i, code in enumerate(all_available_codes):
             col_idx = i % num_cols
             with cols[col_idx]:
                 # Check if this code is already selected for this run
