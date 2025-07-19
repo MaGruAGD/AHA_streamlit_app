@@ -633,32 +633,7 @@ if st.session_state.get('show_sample_manager', False):
 
 st.markdown("---")
                     
-                    # Delete selected samples
-                    if samples_to_delete:
-                        col1, col2 = st.columns(2)
-                        
-                        with col1:
-                            if st.button("🗑️ Delete Selected Samples", type="secondary", use_container_width=True):
-                                # Remove selected rows from the dataframe
-                                processor.df = processor.df.drop(samples_to_delete).reset_index(drop=True)
-                                st.success(f"✅ Deleted {len(samples_to_delete)} sample(s)")
-                                
-                                # Clear the sample manager display
-                                st.session_state.show_sample_manager = False
-                                st.rerun()
-                        
-                        with col2:
-                            st.write(f"**{len(samples_to_delete)} sample(s) selected for deletion**")
-                    
-                    # Close manager button
-                    if st.button("❌ Close Manager", use_container_width=True):
-                        st.session_state.show_sample_manager = False
-                        st.rerun()
-                else:
-                    st.info("No added samples found.")
-        
-        st.markdown("---")
-    
+   
     # Sample type selection
     sample_type = st.radio(
         "Sample Type:",
