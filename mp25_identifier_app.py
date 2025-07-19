@@ -1701,7 +1701,7 @@ def main():
             font-weight: 600;
         }
         
-        /* Modern file uploader */
+        /* Modern file uploader - Fixed clickable area */
         .stFileUploader {
             border: 2px dashed var(--neutral-300);
             border-radius: var(--radius-md);
@@ -1711,6 +1711,19 @@ def main():
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            cursor: pointer;
+        }
+        
+        /* Ensure file uploader button is clickable */
+        .stFileUploader > div {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .stFileUploader button {
+            pointer-events: all !important;
+            z-index: 3 !important;
+            position: relative;
         }
         
         .stFileUploader::before {
@@ -1723,6 +1736,8 @@ def main():
             background: linear-gradient(45deg, transparent 48%, rgba(0, 102, 204, 0.05) 50%, transparent 52%);
             opacity: 0;
             transition: opacity 0.3s ease;
+            pointer-events: none;
+            z-index: 1;
         }
         
         .stFileUploader:hover {
@@ -1734,6 +1749,18 @@ def main():
         
         .stFileUploader:hover::before {
             opacity: 1;
+        }
+        
+        /* Fix for file uploader drag and drop area */
+        .stFileUploader [data-testid="stFileUploaderDropzone"] {
+            pointer-events: all !important;
+            cursor: pointer;
+        }
+        
+        /* Ensure the actual file input is accessible */
+        .stFileUploader input[type="file"] {
+            pointer-events: all !important;
+            z-index: 4;
         }
         
         /* Modern table styling */
@@ -1916,9 +1943,9 @@ def main():
         <div class="header-container">
             <h1 class="header-title">
                 <span class="lab-icon">🧪</span>
-                AHA! - Andrew Helper APP
+                AHA Laboratory Analysis System
             </h1>
-            <p class="header-subtitle">Advanced Laboratory Data Management </p>
+            <p class="header-subtitle">Advanced Laboratory Data Management & Analysis Platform</p>
         </div>
         """,
         unsafe_allow_html=True
