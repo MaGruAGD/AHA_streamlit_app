@@ -769,16 +769,16 @@ def volume_manager_interface(processor, allowed_codes):
                                 # Otherwise, keep the custom default
                             except (ValueError, TypeError):
                                 current_volume = custom_default
-            
-            new_volume = st.number_input(
-                "Volume (μL)",
-                min_value=1,
-                max_value=100,
-                value=current_volume,
-                key=f"volume_manager_{code}"
-            )
-            
-            volume_changes[code] = new_volume
+                
+                    new_volume = st.number_input(
+                        "Volume (μL)",
+                        min_value=1,
+                        max_value=100,
+                        value=current_volume,
+                        key=f"volume_manager_{code}"
+                    )
+                    
+                    volume_changes[code] = new_volume
         
         with col3:
             st.write(f"Default: {CUSTOM_DEFAULTS.get(code, 20)} μL")
