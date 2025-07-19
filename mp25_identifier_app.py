@@ -89,7 +89,7 @@ def process_database(database):
     
     return allowed_codes, control_samples
 
-# CSV Processing Class - FIXED VERSION with proper exact matching
+# CSV Processing Class - FIXED VERSION with proper exact matching for codes + 4 digits
 class CSVProcessor:
     def __init__(self, df, allowed_codes):
         self.original_df = df.copy()
@@ -113,13 +113,34 @@ class CSVProcessor:
     def _get_exact_code_matches(self, text, target_code):
         """
         Get exact MP25/PP25 code matches using strict matching.
-        Only matches things like PP25BLT3 if code is exactly BLT.
+        Codes are always in format: (MP25|PP25) + CODE + exactly 4 digits
+        For example: MP25BLT0001, MP25BLT30001, MP25BLT80001, MP25BLT4120001
+        
+        This ensures that when searching for "BLT", we only match MP25BLT + 4 digits,
+        not MP25BLT3 + 4 digits or MP25BLT8 + 4 digits.
         """
         if not isinstance(text, str):
             text = str(text)
 
-        pattern = r'\b(MP25|PP25)' + re.escape(target_code) + r'(\d+)\b'
-        return [f"{prefix}{target_code}{digits}" for prefix, digits in re.findall(pattern, text)]
+        # Create pattern that matches (MP25|PP25) + exact target_code + exactly 4 digits
+        # Use word boundaries to ensure we don't match partial codes
+        pattern = r'\b(MP25|PP25)' + re.escape(target_code) + r'(\d{4})\b'
+        
+        matches = re.findall(pattern, text)
+        return [f"{prefix}{target_code}{digits}" for prefix, digits in matches]
+
+    def _find_code_in_text(self, text, target_code):
+        """
+        Check if a specific code exists in the text.
+        This method ensures exact code matching by checking that the code
+        is followed by exactly 4 digits and not part of a longer code name.
+        """
+        if not isinstance(text, str):
+            text = str(text)
+        
+        # Pattern: (MP25|PP25) + target_code + exactly 4 digits + word boundary
+        pattern = r'\b(MP25|PP25)' + re.escape(target_code) + r'\d{4}\b'
+        return bool(re.search(pattern, text))
 
     def extract_codes(self):
         """Extract MP25 and PP25 codes from the CSV data with exact matching"""
@@ -129,8 +150,7 @@ class CSVProcessor:
             code_found = False
             for col in self.df.columns:
                 for value in self.df[col]:
-                    exact_matches = self._get_exact_code_matches(value, code)
-                    if exact_matches:
+                    if self._find_code_in_text(value, code):
                         found_codes.add(code)
                         code_found = True
                         break
@@ -168,7 +188,7 @@ class CSVProcessor:
     def get_plsta_ids(self):
         """Get all PP25PLSTA IDs from the CSV"""
         plsta_ids = set()
-        pattern = r'PP25PLSTA\d+'
+        pattern = r'PP25PLSTA\d{4}'  # Changed to exactly 4 digits
 
         for col in self.df.columns:
             for value in self.df[col].astype(str):
@@ -196,8 +216,7 @@ class CSVProcessor:
                 row_matches = False
                 for col in filtered_df.columns:
                     cell_value = filtered_df.at[idx, col]
-                    exact_matches = self._get_exact_code_matches(cell_value, code)
-                    if exact_matches:
+                    if self._find_code_in_text(cell_value, code):
                         row_matches = True
                         break
                 if row_matches:
@@ -221,8 +240,7 @@ class CSVProcessor:
                 row_matches = False
                 for col in df_copy.columns:
                     cell_value = df_copy.at[idx, col]
-                    exact_matches = self._get_exact_code_matches(cell_value, code)
-                    if exact_matches:
+                    if self._find_code_in_text(cell_value, code):
                         row_matches = True
                         break
 
