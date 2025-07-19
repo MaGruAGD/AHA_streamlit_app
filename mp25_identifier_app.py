@@ -110,18 +110,21 @@ class CSVProcessor:
         self.codes = list(self.original_codes)
 
     def get_code_statistics(self):
-        """Get comprehensive statistics about codes for UI display"""
-        original_codes_list = sorted(list(self.original_codes))
-        added_codes_list = sorted(list(self.added_codes))
-        
-        return {
-            'original_codes': len(original_codes_list),
-            'original_codes_list': original_codes_list,
-            'added_codes': len(added_codes_list), 
-            'added_codes_list': added_codes_list,
-            'total_codes': len(self.codes),
-            'added_rows': len(self.added_row_indices)
-        }
+            """Get comprehensive statistics about codes for UI display"""
+            # Make sure we're using the current state
+            current_codes = set(self.extract_codes())
+            original_codes_list = sorted(list(self.original_codes))
+            added_codes_list = sorted(list(self.added_codes))
+            
+            return {
+                'original_codes': len(self.original_codes),
+                'original_codes_list': original_codes_list,
+                'added_codes': len(self.added_codes), 
+                'added_codes_list': added_codes_list,
+                'total_codes': len(current_codes),
+                'added_rows': len(self.added_row_indices),
+                'all_codes_list': sorted(list(current_codes))
+            }
 
     def _normalize_columns(self):
         """Ensure the dataframe has exactly the expected columns"""
@@ -389,7 +392,7 @@ def step_select_codes():
         st.warning("No codes found in the uploaded CSV file.")
         return
     
-    # Define default volumes (you may need to adjust this based on your actual defaults)
+    # Define default volumes
     CUSTOM_DEFAULTS = {
         # Add your custom defaults here, e.g.:
         # 'BLT': 25,
@@ -449,9 +452,13 @@ def step_select_codes():
         num_cols = 3
         cols = st.columns(num_cols)
         
+        # FIX 1: Use the added_codes set directly from processor instead of stats
+        added_codes_set = st.session_state.processor.added_codes
+        original_codes_set = st.session_state.processor.original_codes
+        
         # Group codes by type for better organization
-        original_codes_in_run = [code for code in all_available_codes if code in stats['original_codes_list']]
-        added_codes_in_run = [code for code in all_available_codes if code in stats['added_codes_list']]
+        original_codes_in_run = [code for code in all_available_codes if code in original_codes_set]
+        added_codes_in_run = [code for code in all_available_codes if code in added_codes_set]
         
         # Display original codes first, then added codes
         all_codes_ordered = original_codes_in_run + added_codes_in_run
@@ -470,8 +477,8 @@ def step_select_codes():
                 code_label = code
                 help_text = None
                 
-                # Check if this is an added code and add sparkle
-                if code in stats['added_codes_list']:
+                # FIX 2: Check against the correct added codes set
+                if code in added_codes_set:
                     code_label = f"✨ {code}"
                     help_text = "Added via Add Rows functionality"
                 elif is_used_elsewhere:
@@ -481,11 +488,14 @@ def step_select_codes():
                 default_volume = CUSTOM_DEFAULTS.get(code, 20)
                 code_label += f" ({default_volume}μL)"
                 
+                # FIX 3: Use a simpler, more reliable key generation
+                checkbox_key = f"run_{run_num}_code_{code}"
+                
                 # Create checkbox with enhanced styling
                 checkbox_value = st.checkbox(
                     code_label,
                     value=is_selected,
-                    key=f"checkbox_{run_num}_{code}_{hash(str(stats))}",  # Add hash to ensure uniqueness
+                    key=checkbox_key,
                     disabled=is_used_elsewhere,
                     help=help_text
                 )
@@ -499,8 +509,9 @@ def step_select_codes():
         
         # Show selection summary for this run
         if selected:
-            original_selected = [code for code in selected if code in stats['original_codes_list']]
-            added_selected = [code for code in selected if code in stats['added_codes_list']]
+            # FIX 4: Use the correct sets for comparison
+            original_selected = [code for code in selected if code in original_codes_set]
+            added_selected = [code for code in selected if code in added_codes_set]
             
             summary_parts = []
             if original_selected:
@@ -523,22 +534,6 @@ def step_select_codes():
             st.info("No codes selected for this run")
         
         st.markdown("---")
-
-
-# Additional helper function to manually test emoji rendering
-def test_sparkle_emoji():
-    """Test function to verify emoji rendering works"""
-    st.write("Testing emoji rendering:")
-    st.write("✨ This should show a sparkle emoji")
-    st.write("🚀 This should show a rocket emoji")
-    st.write("📊 This should show a chart emoji")
-    
-    # Test with checkbox
-    test_sparkle = st.checkbox("✨ Test sparkle checkbox")
-    if test_sparkle:
-        st.success("✨ Sparkle emoji is working in checkboxes!")
-    
-    return True
         
 # Utility Functions
 def position_to_sample_number(position):
