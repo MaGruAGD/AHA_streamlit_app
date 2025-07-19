@@ -374,16 +374,18 @@ def well_plate_selector(key: str, title: str = "Select Position", default_positi
 
     st.markdown(f"### {title}")
 
-    col1, col2 = st.columns([3, 1])
+    # Create three columns for better layout
+    col1, col2, col3 = st.columns([2, 2, 1])
 
     with col1:
-        # Compact selectors
         selected_row = st.selectbox(
             "Row:",
             options=rows,
             index=rows.index(st.session_state[row_key]),
             key=f"{key}_row_dropdown"
         )
+
+    with col2:
         selected_col = st.selectbox(
             "Column:",
             options=cols,
@@ -391,16 +393,18 @@ def well_plate_selector(key: str, title: str = "Select Position", default_positi
             key=f"{key}_col_dropdown"
         )
 
-        # Update session_state with dropdown selections
-        st.session_state[row_key] = selected_row
-        st.session_state[col_key] = selected_col
-
-    with col2:
-        if st.button("🔍 Visual", key=f"{key}_visual_btn", help="Open visual well plate selector"):
+    with col3:
+        # Add some top padding to align with the selectboxes
+        st.markdown("<div style='margin-top: 25px;'></div>", unsafe_allow_html=True)
+        if st.button("🧬 Well Selector", key=f"{key}_visual_btn", help="Open visual well plate selector", use_container_width=True):
             st.session_state[popup_key] = True
             # Sync visual selector to current dropdown selection when opening
             st.session_state[visual_state_key] = f"{st.session_state[row_key]}{st.session_state[col_key]}"
             st.rerun()
+
+    # Update session_state with dropdown selections
+    st.session_state[row_key] = selected_row
+    st.session_state[col_key] = selected_col
 
     # Show popup if active
     if st.session_state.get(popup_key, False):
@@ -441,6 +445,11 @@ def well_plate_selector(key: str, title: str = "Select Position", default_positi
                             st.rerun()
 
             st.success(f"Visual selection: **{st.session_state[visual_state_key]}**")
+
+            # Add a close button at the bottom
+            if st.button("❌ Close", key=f"{key}_close_visual", type="secondary", use_container_width=True):
+                st.session_state[popup_key] = False
+                st.rerun()
 
     # Return combined selected position string
     return f"{st.session_state[row_key]}{st.session_state[col_key]}"
