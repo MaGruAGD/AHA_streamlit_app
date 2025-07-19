@@ -96,57 +96,37 @@ class CSVProcessor:
         self.df = df.copy()
         self.allowed_codes = allowed_codes
         self.codes = self.extract_codes()
-        
-        # Ensure the dataframe has the correct columns
+
         self._normalize_columns()
-        
+
     def _normalize_columns(self):
         """Ensure the dataframe has exactly the expected columns"""
-        # If the uploaded CSV has different columns, try to map them or create the standard ones
         if len(self.df.columns) != len(EXPECTED_COLUMNS):
-            # Create a new dataframe with the expected columns
             new_df = pd.DataFrame(columns=EXPECTED_COLUMNS)
-            
-            # Try to copy data from existing columns if they match
             for i, col in enumerate(EXPECTED_COLUMNS):
                 if i < len(self.df.columns):
                     new_df[col] = self.df.iloc[:, i] if len(self.df) > 0 else None
-            
             self.df = new_df
         else:
-            # Rename columns to match expected format
             self.df.columns = EXPECTED_COLUMNS
-    
+
     def _get_exact_code_matches(self, text, target_code):
         """
-        Get exact matches for a specific code in text.
-        This prevents BLT from matching BLT3, BLT8, BLT412, etc.
-        COMPLETELY REWRITTEN for strict exact matching.
+        Get exact MP25/PP25 code matches using strict matching.
+        Only matches things like PP25BLT3 if code is exactly BLT.
         """
         if not isinstance(text, str):
             text = str(text)
-        
-        # Find ALL potential matches first
-        pattern = r'(MP25|PP25)([A-Z0-9]+?)(\d+)'
-        all_matches = re.findall(pattern, text)
-        
-        exact_matches = []
-        for prefix, found_code, digits in all_matches:
-            # EXACT string comparison - no partial matching allowed
-            if found_code == target_code:
-                exact_matches.append(f"{prefix}{found_code}{digits}")
-        
-        return exact_matches
-    
+
+        pattern = r'\b(MP25|PP25)' + re.escape(target_code) + r'(\d+)\b'
+        return [f"{prefix}{target_code}{digits}" for prefix, digits in re.findall(pattern, text)]
+
     def extract_codes(self):
         """Extract MP25 and PP25 codes from the CSV data with exact matching"""
         found_codes = set()
-        
-        # Check each allowed code individually
+
         for code in self.allowed_codes:
             code_found = False
-            
-            # Check all cells in the dataframe
             for col in self.df.columns:
                 for value in self.df[col]:
                     exact_matches = self._get_exact_code_matches(value, code)
@@ -156,67 +136,62 @@ class CSVProcessor:
                         break
                 if code_found:
                     break
-        
+
         return sorted(list(found_codes))
 
     def get_pp25_ids(self, code):
         """Get all PP25 IDs for a specific code from the CSV with exact matching"""
         pp25_ids = set()
-        
+
         for col in self.df.columns:
             for value in self.df[col]:
                 exact_matches = self._get_exact_code_matches(value, code)
                 for match in exact_matches:
                     if match.startswith('PP25'):
                         pp25_ids.add(match)
-        
+
         return sorted(list(pp25_ids))
-    
+
     def get_mp25_ids(self, code):
         """Get all MP25 IDs for a specific code from the CSV with exact matching"""
         mp25_ids = set()
-        
+
         for col in self.df.columns:
             for value in self.df[col]:
                 exact_matches = self._get_exact_code_matches(value, code)
                 for match in exact_matches:
                     if match.startswith('MP25'):
                         mp25_ids.add(match)
-        
+
         return sorted(list(mp25_ids))
 
     def get_plsta_ids(self):
         """Get all PP25PLSTA IDs from the CSV"""
         plsta_ids = set()
         pattern = r'PP25PLSTA\d+'
-        
+
         for col in self.df.columns:
             for value in self.df[col].astype(str):
                 matches = re.findall(pattern, value)
                 plsta_ids.update(matches)
-        
+
         return sorted(list(plsta_ids))
 
     def add_row(self, row_data):
         """Add a new row to the dataframe"""
-        # Create a new row as a DataFrame with the correct column names
         new_row_df = pd.DataFrame([row_data], columns=EXPECTED_COLUMNS)
-        
-        # Concatenate with the existing dataframe
         self.df = pd.concat([self.df, new_row_df], ignore_index=True)
-    
+
     def filter_data(self, selected_codes, run_number):
         """Filter data based on selected codes and run number with exact matching"""
         filtered_df = self.df.copy()
-        
+
         if not selected_codes:
             return filtered_df
-        
-        # Create a mask for rows that contain any of the selected codes
+
         matching_rows = set()
-        
+
         for code in selected_codes:
-            # Find rows that contain this exact code
             for idx in filtered_df.index:
                 row_matches = False
                 for col in filtered_df.columns:
@@ -225,27 +200,23 @@ class CSVProcessor:
                     if exact_matches:
                         row_matches = True
                         break
-                
                 if row_matches:
                     matching_rows.add(idx)
-        
-        # Filter to only matching rows
+
         if matching_rows:
             filtered_df = filtered_df.loc[list(matching_rows)]
         else:
-            # Return empty dataframe with same structure if no matches
             filtered_df = filtered_df.iloc[0:0]
-        
+
         return filtered_df
-        
+
     def apply_volumes(self, df, volumes):
         """Apply custom volumes to the dataframe with exact matching"""
         df_copy = df.copy()
-        
+
         for code, volume in volumes.items():
-            # Find rows that contain this exact code
             rows_to_update = []
-            
+
             for idx in df_copy.index:
                 row_matches = False
                 for col in df_copy.columns:
@@ -254,16 +225,15 @@ class CSVProcessor:
                     if exact_matches:
                         row_matches = True
                         break
-                
+
                 if row_matches:
                     rows_to_update.append(idx)
-            
-            # Update the 'Step1Volume' column for matching rows
+
             if rows_to_update and 'Step1Volume' in df_copy.columns:
                 df_copy.loc[rows_to_update, 'Step1Volume'] = volume
-        
-        return df_copy
 
+        return df_copy
+        
 # Utility Functions
 def position_to_sample_number(position):
     """Convert well position (A1, B2, etc.) to sample number (1-96)"""
