@@ -527,12 +527,32 @@ def add_row_interface(processor, allowed_codes, control_samples):
         key="sample_type_radio"
     )
     
-    # Code selection
-    selected_code = st.selectbox(
-        "Select Code:",
-        options=allowed_codes,
-        key="code_selector"
-    )
+    # Code selection - filter to only show codes with MP25 entries in CSV for control samples
+    if sample_type == "Control Samples":
+        # For control samples, only show codes that have MP25 entries in the CSV
+        codes_with_mp25 = []
+        for code in allowed_codes:
+            mp25_ids = processor.get_mp25_ids(code)
+            if mp25_ids:  # Only include codes that have MP25 entries
+                codes_with_mp25.append(code)
+        
+        if codes_with_mp25:
+            selected_code = st.selectbox(
+                "Select Code:",
+                options=codes_with_mp25,
+                key="code_selector",
+                help="Only showing codes with MP25 entries found in the uploaded CSV"
+            )
+        else:
+            st.warning("No codes with MP25 entries found in the uploaded CSV.")
+            selected_code = None
+    else:
+        # For regular samples, show all allowed codes
+        selected_code = st.selectbox(
+            "Select Code:",
+            options=allowed_codes,
+            key="code_selector"
+        )
     
     if not selected_code:
         st.warning("Please select a code.")
@@ -604,40 +624,22 @@ def add_row_interface(processor, allowed_codes, control_samples):
                 control_options = control_samples[selected_code]['names']
                 control_positions = control_samples[selected_code]['positions']
                 
-                # Get available MP25 IDs for the selected code FROM THE CSV
-                available_mp25_ids = processor.get_mp25_ids(selected_code)
+                selected_control_idx = st.selectbox(
+                    "Control Sample:",
+                    options=range(len(control_options)),
+                    format_func=lambda x: control_options[x],
+                    key="control_sample_selector"
+                )
                 
-                if available_mp25_ids:
-                    selected_mp25_id = st.selectbox(
-                        "Select MP25 ID:",
-                        options=available_mp25_ids,
-                        key="control_mp25_id_selector",
-                        help="Choose which MP25 plate to add control samples to"
-                    )
-                    
-                    selected_control_idx = st.selectbox(
-                        "Control Sample:",
-                        options=range(len(control_options)),
-                        format_func=lambda x: control_options[x],
-                        key="control_sample_selector"
-                    )
-                    
-                    # Automatically set position based on control sample
-                    analyseplaat_position = control_positions[selected_control_idx]
-                    st.text_input(
-                        "Positie op analyseplaat:",
-                        value=analyseplaat_position,
-                        disabled=True,
-                        key="analyseplaat_position_control",
-                        help="Position automatically set based on control sample"
-                    )
-                    
-                    # Override the analyseplaat_id with the selected MP25 ID
-                    analyseplaat_id = selected_mp25_id
-                else:
-                    st.warning(f"No MP25{selected_code} plates found in the uploaded CSV. Please add regular samples first or upload a CSV that contains MP25{selected_code} entries.")
-                    analyseplaat_position = "A1"
-                    analyseplaat_id = f"MP25{selected_code}"
+                # Automatically set position based on control sample
+                analyseplaat_position = control_positions[selected_control_idx]
+                st.text_input(
+                    "Positie op analyseplaat:",
+                    value=analyseplaat_position,
+                    disabled=True,
+                    key="analyseplaat_position_control",
+                    help="Position automatically set based on control sample"
+                )
             else:
                 st.warning(f"No control samples defined for code {selected_code}")
                 analyseplaat_position = "A1"
@@ -723,7 +725,6 @@ def add_row_interface(processor, allowed_codes, control_samples):
             st.toast(f"✅ Sample added to Run {run_for_sample}", icon="✅")
         else:
             st.toast(f"✅ Sample added successfully", icon="✅")
-
         
 def volume_manager_interface(processor, allowed_codes):
     """Volume Manager interface to edit volumes for selected MP25 codes only"""
