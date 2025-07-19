@@ -187,50 +187,53 @@ class CSVProcessor:
         new_row = pd.DataFrame([row_dict])
         self.df = pd.concat([self.df, new_row], ignore_index=True)
     
-    def filter_data(self, selected_codes, run_number):
-        """Filter data based on selected codes and run number"""
-        filtered_df = self.df.copy()
-        
-        if selected_codes:
-            # Sort selected codes by length (longest first) to handle overlapping codes
-            sorted_selected = sorted(selected_codes, key=len, reverse=True)
-            patterns = []
-            
-            for code in sorted_selected:
-                patterns.append(r'(?:MP25|PP25)' + re.escape(code) + r'(?:\d+)?')
-            
-            # Combine all patterns
-            combined_pattern = '|'.join(patterns)
-            
-            # Filter rows that contain any of the selected codes
-            mask = filtered_df.astype(str).apply(
-                lambda x: x.str.contains(combined_pattern, regex=True, na=False)
-            ).any(axis=1)
-            
-            filtered_df = filtered_df[mask]
-        
-        return filtered_df
+def filter_data(self, selected_codes, run_number):
+    """Filter data based on selected codes and run number"""
+    filtered_df = self.df.copy()
     
-    def apply_volumes(self, df, volumes):
-        """Apply custom volumes to the dataframe"""
-        df_copy = df.copy()
+    if selected_codes:
+        # Sort selected codes by length (longest first) to handle overlapping codes
+        sorted_selected = sorted(selected_codes, key=len, reverse=True)
+        patterns = []
         
-        # Sort codes by length (longest first) to handle overlapping codes
-        sorted_codes = sorted(volumes.keys(), key=len, reverse=True)
+        for code in sorted_selected:
+            # Create exact match pattern - only match the exact code followed by digits
+            # This prevents "BLT" from matching "BLT3", "BLT8", "BLT412"
+            patterns.append(r'(?:MP25|PP25)' + re.escape(code) + r'(?=\d|$|[^A-Z0-9])')
         
-        for code in sorted_codes:
-            volume = volumes[code]
-            pattern = r'(?:MP25|PP25)' + re.escape(code) + r'(?:\d+)?'
-            
-            mask = df_copy.astype(str).apply(
-                lambda x: x.str.contains(pattern, regex=True, na=False)
-            ).any(axis=1)
-            
-            if mask.any():
-                # Update the 'Step1Volume' column instead of using index
-                df_copy.loc[mask, 'Step1Volume'] = volume
+        # Combine all patterns
+        combined_pattern = '|'.join(patterns)
         
-        return df_copy
+        # Filter rows that contain any of the selected codes
+        mask = filtered_df.astype(str).apply(
+            lambda x: x.str.contains(combined_pattern, regex=True, na=False)
+        ).any(axis=1)
+        
+        filtered_df = filtered_df[mask]
+    
+    return filtered_df
+    
+def apply_volumes(self, df, volumes):
+    """Apply custom volumes to the dataframe"""
+    df_copy = df.copy()
+    
+    # Sort codes by length (longest first) to handle overlapping codes
+    sorted_codes = sorted(volumes.keys(), key=len, reverse=True)
+    
+    for code in sorted_codes:
+        volume = volumes[code]
+        # Use exact match pattern to prevent "BLT" from matching "BLT3", etc.
+        pattern = r'(?:MP25|PP25)' + re.escape(code) + r'(?=\d|$|[^A-Z0-9])'
+        
+        mask = df_copy.astype(str).apply(
+            lambda x: x.str.contains(pattern, regex=True, na=False)
+        ).any(axis=1)
+        
+        if mask.any():
+            # Update the 'Step1Volume' column instead of using index
+            df_copy.loc[mask, 'Step1Volume'] = volume
+    
+    return df_copy
 
 # Utility Functions
 def position_to_sample_number(position):
