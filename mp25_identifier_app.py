@@ -89,7 +89,7 @@ def process_database(database):
     
     return allowed_codes, control_samples
 
-# CSV Processing Class - FIXED VERSION
+# CSV Processing Class - FIXED VERSION with proper exact matching
 class CSVProcessor:
     def __init__(self, df, allowed_codes):
         self.original_df = df.copy()
@@ -121,38 +121,22 @@ class CSVProcessor:
         """
         Get exact matches for a specific code in text.
         This prevents BLT from matching BLT3, BLT8, BLT412, etc.
-        Now with strict matching for specific codes.
+        COMPLETELY REWRITTEN for strict exact matching.
         """
         if not isinstance(text, str):
             text = str(text)
         
-        # Define the exact codes that need strict matching
-        strict_codes = {'BLT', 'BLT3', 'BLT8', 'BLT412', 'SRPR', 'SRPR3'}
+        # Find ALL potential matches first
+        pattern = r'(MP25|PP25)([A-Z0-9]+?)(\d+)'
+        all_matches = re.findall(pattern, text)
         
-        if target_code in strict_codes:
-            # For strict codes, use word boundaries and exact matching
-            # This will match MP25BLT123 or PP25BLT123, but NOT MP25BLT3123 when looking for BLT
-            pattern = rf'(MP25|PP25)({re.escape(target_code)})(\d+)'
-            matches = re.findall(pattern, text)
-            
-            exact_matches = []
-            for prefix, code, digits in matches:
-                # Double-check that the code is exactly what we're looking for
-                if code == target_code:
-                    exact_matches.append(f"{prefix}{code}{digits}")
-            
-            return exact_matches
-        else:
-            # For non-strict codes, use the original logic
-            pattern = r'(MP25|PP25)([A-Z0-9]+?)(\d+)'
-            matches = re.findall(pattern, text)
-            
-            exact_matches = []
-            for prefix, code, digits in matches:
-                if code == target_code:  # Exact match only
-                    exact_matches.append(f"{prefix}{code}{digits}")
-            
-            return exact_matches
+        exact_matches = []
+        for prefix, found_code, digits in all_matches:
+            # EXACT string comparison - no partial matching allowed
+            if found_code == target_code:
+                exact_matches.append(f"{prefix}{found_code}{digits}")
+        
+        return exact_matches
     
     def extract_codes(self):
         """Extract MP25 and PP25 codes from the CSV data with exact matching"""
