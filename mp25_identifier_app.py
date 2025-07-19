@@ -1411,30 +1411,220 @@ def step_download_results():
 # Main Application
 
 def main():
-    # Centered header without custom logo
+    # Custom CSS for enhanced styling
+    st.markdown("""
+        <style>
+        /* Import modern fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        /* Global styling */
+        .stApp {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Main container */
+        .main .block-container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            margin: 1rem;
+        }
+        
+        /* Header styling */
+        .header-container {
+            text-align: center;
+            padding: 2rem 0;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        
+        .header-title {
+            font-size: 3rem;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            letter-spacing: -1px;
+        }
+        
+        .header-subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin: 0.5rem 0 0 0;
+            font-weight: 300;
+        }
+        
+        /* Step indicators */
+        .step-container {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            text-align: center;
+            margin: 1rem 0;
+            box-shadow: 0 8px 25px rgba(240, 147, 251, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Status cards */
+        .status-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #667eea;
+            margin: 1rem 0;
+            transition: transform 0.2s ease;
+        }
+        
+        .status-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .status-success {
+            border-left-color: #4CAF50;
+            background: linear-gradient(135deg, #f0fff4 0%, #e8f8f0 100%);
+        }
+        
+        .status-warning {
+            border-left-color: #FF9800;
+            background: linear-gradient(135deg, #fff8e1 0%, #fff3c4 100%);
+        }
+        
+        .status-error {
+            border-left-color: #f44336;
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+        }
+        
+        /* Custom buttons */
+        .stButton > button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .stButton > button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+        
+        /* Sidebar styling */
+        .css-1d391kg {
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .css-1d391kg .stSelectbox label,
+        .css-1d391kg .stButton label,
+        .css-1d391kg p {
+            color: white !important;
+            font-weight: 500;
+        }
+        
+        /* Progress indicators */
+        .progress-container {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* File uploader styling */
+        .stFileUploader {
+            border: 2px dashed #667eea;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8ebff 100%);
+        }
+        
+        /* Metrics styling */
+        .metric-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #667eea;
+            margin: 0.5rem;
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+            margin: 0;
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 0.5rem;
+        }
+        
+        /* Table styling */
+        .dataframe {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Alert styling */
+        .stAlert {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    
+    # Enhanced header with modern design
     st.markdown(
         """
-        <div style="text-align: center;">
-            <h1>🧪 AHA! - Andrew Helper App</h1>
-            <p style="font-style: italic; color: #666; margin-top: -10px;">
-                CSV Processing Tool for Laboratory Data Analysis
-            </p>
+        <div class="header-container">
+            <h1 class="header-title">🧪 AHA!</h1>
+            <p class="header-subtitle">Andrew Helper App - Advanced Laboratory Data Analysis Platform</p>
         </div>
         """,
         unsafe_allow_html=True
     )
     
-    # Add some spacing after the header
-    st.markdown("---")
-    
     initialize_session_state()
     
-    # Check if database is loaded
+    # Enhanced database setup section
     if not st.session_state.database_loaded:
-        st.header("Database Setup")
+        st.markdown("""
+            <div class="status-card status-warning">
+                <h3>🗄️ Database Setup Required</h3>
+                <p>Please configure your database connection to continue with data analysis.</p>
+            </div>
+        """, unsafe_allow_html=True)
+        
         database = initialize_database()
         if database:
             st.session_state.database_loaded = True
+            st.markdown("""
+                <div class="status-card status-success">
+                    <h4>✅ Database Connected Successfully!</h4>
+                    <p>Ready to process laboratory data.</p>
+                </div>
+            """, unsafe_allow_html=True)
             st.rerun()
         else:
             st.stop()
@@ -1443,29 +1633,88 @@ def main():
     allowed_codes, control_samples = process_database(st.session_state.database)
     
     if not allowed_codes:
-        st.error("No valid codes found in database")
+        st.markdown("""
+            <div class="status-card status-error">
+                <h4>❌ Database Error</h4>
+                <p>No valid codes found in database. Please check your data source.</p>
+            </div>
+        """, unsafe_allow_html=True)
         st.stop()
-
-    # Create sidebar
-    create_sidebar()
-
-    # Main content area based on current step
-    step = st.session_state.current_step
     
+    # Enhanced sidebar
+    create_sidebar()
+    
+    # Current step indicator with modern styling
+    step = st.session_state.current_step
+    st.markdown(f"""
+        <div class="step-container">
+            <h3 style="margin: 0; font-size: 1.3rem;">📍 Current Step: {step}</h3>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    # Enhanced step routing with improved UI for each step
     if step == "1. Upload CSV":
+        st.markdown("""
+            <div class="status-card">
+                <h3>📤 Upload Your Data</h3>
+                <p>Select and upload your CSV files for processing. Supported formats: CSV, Excel</p>
+            </div>
+        """, unsafe_allow_html=True)
         step_upload_csv(allowed_codes)
-    elif step == "2. Select Runs":
-        step_select_runs()
-    elif step == "3. Select Codes":
-        step_select_codes()
-    elif step == "4. Add Rows":
-        add_row_interface(st.session_state.processor, allowed_codes, control_samples)
-    elif step == "5. Volume Manager":
-        volume_manager_interface(st.session_state.processor, allowed_codes)
-    elif step == "6. Process Data":
-        step_process_data()
-    elif step == "7. Download Results":
-        step_download_results()
         
+    elif step == "2. Select Runs":
+        st.markdown("""
+            <div class="status-card">
+                <h3>🎯 Select Analysis Runs</h3>
+                <p>Choose which experimental runs to include in your analysis.</p>
+            </div>
+        """, unsafe_allow_html=True)
+        step_select_runs()
+        
+    elif step == "3. Select Codes":
+        st.markdown("""
+            <div class="status-card">
+                <h3>🔢 Configure Sample Codes</h3>
+                <p>Select and validate the sample codes for your analysis.</p>
+            </div>
+        """, unsafe_allow_html=True)
+        step_select_codes()
+        
+    elif step == "4. Add Rows":
+        st.markdown("""
+            <div class="status-card">
+                <h3>➕ Manage Sample Data</h3>
+                <p>Add, edit, or remove sample rows and configure control samples.</p>
+            </div>
+        """, unsafe_allow_html=True)
+        add_row_interface(st.session_state.processor, allowed_codes, control_samples)
+        
+    elif step == "5. Volume Manager":
+        st.markdown("""
+            <div class="status-card">
+                <h3>🧪 Volume Management</h3>
+                <p>Configure sample volumes and dilution factors for accurate analysis.</p>
+            </div>
+        """, unsafe_allow_html=True)
+        volume_manager_interface(st.session_state.processor, allowed_codes)
+        
+    elif step == "6. Process Data":
+        st.markdown("""
+            <div class="status-card">
+                <h3>⚙️ Data Processing</h3>
+                <p>Execute analysis algorithms and generate results.</p>
+            </div>
+        """, unsafe_allow_html=True)
+        step_process_data()
+        
+    elif step == "7. Download Results":
+        st.markdown("""
+            <div class="status-card status-success">
+                <h3>📊 Analysis Complete</h3>
+                <p>Your data has been processed successfully. Download your results below.</p>
+            </div>
+        """, unsafe_allow_html=True)
+        step_download_results()
+
 if __name__ == "__main__":
     main()
