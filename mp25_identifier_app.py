@@ -1040,10 +1040,9 @@ def step_select_codes():
     # Get codes from the original CSV upload
     original_codes = set(st.session_state.processor.codes)
     
-    # Get codes from the CURRENT dataframe (including added rows)
-    # Re-extract codes from the current dataframe state
-    current_processor = CSVProcessor(st.session_state.processor.df, st.session_state.processor.allowed_codes)
-    current_codes = set(current_processor.codes)
+    # Update the processor's codes by re-extracting from current dataframe
+    st.session_state.processor.codes = st.session_state.processor.extract_codes()
+    current_codes = set(st.session_state.processor.codes)
     
     # Find newly added codes
     added_codes = current_codes - original_codes
