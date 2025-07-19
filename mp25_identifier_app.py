@@ -864,21 +864,45 @@ def add_row_interface(processor, allowed_codes, control_samples):
     with col2:
         st.subheader("🔬 Analyseplaat")
         
-        # Get available MP25 IDs for the selected code
-        mp25_ids = processor.get_mp25_ids(selected_code)
+        # Function to validate Analyseplaat ID format
+        def validate_analyseplaat_id(plate_id, code):
+            """Validate that the plate ID follows MP25 + code + 4 digits format"""
+            import re
+            expected_pattern = f"^MP25{code}\\d{{4}}$"
+            return re.match(expected_pattern, plate_id) is not None
         
-        if mp25_ids:
-            analyseplaat_id = st.selectbox(
-                "Analyseplaat ID:",
-                options=mp25_ids,
-                key="analyseplaat_id_selector"
-            )
-        else:
-            analyseplaat_id = st.text_input(
-                "Analyseplaat ID:",
-                value=f"MP25{selected_code}",
-                key="analyseplaat_id_input"
-            )
+        # Function to generate default Analyseplaat ID
+        def get_default_analyseplaat_id(code):
+            """Generate default Analyseplaat ID in the required format"""
+            return f"MP25{code}0001"
+        
+        # Analyseplaat ID input with validation
+        default_analyseplaat_id = get_default_analyseplaat_id(selected_code)
+        
+        # Initialize session state for analyseplaat ID if not exists
+        analyseplaat_key = f"analyseplaat_id_{selected_code}"
+        if analyseplaat_key not in st.session_state:
+            st.session_state[analyseplaat_key] = default_analyseplaat_id
+        
+        analyseplaat_id = st.text_input(
+            "Analyseplaat ID:",
+            value=st.session_state.get(analyseplaat_key, default_analyseplaat_id),
+            key=f"analyseplaat_id_input_{selected_code}",
+            help=f"Required format: MP25{selected_code}XXXX (e.g., MP25{selected_code}0081)",
+            placeholder=f"MP25{selected_code}0001"
+        )
+        
+        # Update session state
+        st.session_state[analyseplaat_key] = analyseplaat_id
+        
+        # Validate the Analyseplaat ID format
+        is_valid_analyseplaat_id = validate_analyseplaat_id(analyseplaat_id, selected_code)
+        
+        if analyseplaat_id and not is_valid_analyseplaat_id:
+            st.error(f"⚠️ Invalid format! Must be: MP25{selected_code}XXXX (where XXXX are 4 digits)")
+            st.info(f"Example: MP25{selected_code}0081")
+        elif analyseplaat_id and is_valid_analyseplaat_id:
+            st.success("✅ Valid Analyseplaat ID format")
         
         # Control sample selection (only for control samples)
         control_sample_name = None
@@ -921,7 +945,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
     volume = CUSTOM_DEFAULTS.get(selected_code, 20)
     
     # Preview section
-    if poolplaat_id and poolplaat_position and analyseplaat_id and analyseplaat_position:
+    if poolplaat_id and poolplaat_position and analyseplaat_id and analyseplaat_position and is_valid_analyseplaat_id:
         poolplaat_entry = f'"{poolplaat_id}":{poolplaat_position}'
         analyseplaat_entry = f'"{analyseplaat_id}":{analyseplaat_position}'
         
@@ -952,11 +976,17 @@ def add_row_interface(processor, allowed_codes, control_samples):
         st.subheader("Preview")
         st.code(preview_csv, language="csv")
     
-    # Add Sample button
-    if st.button("➕ Add Sample", type="primary", use_container_width=True):
+    # Add Sample button - only enabled if Analyseplaat ID is valid
+    add_button_disabled = not (poolplaat_id and poolplaat_position and analyseplaat_id and analyseplaat_position and is_valid_analyseplaat_id)
+    
+    if st.button("➕ Add Sample", type="primary", use_container_width=True, disabled=add_button_disabled):
         # Validate inputs
         if not poolplaat_id or not poolplaat_position or not analyseplaat_id or not analyseplaat_position:
             st.error("Please fill in all required fields.")
+            return
+        
+        if not is_valid_analyseplaat_id:
+            st.error(f"Invalid Analyseplaat ID format. Must be: MP25{selected_code}XXXX")
             return
         
         # Create the row data in the correct format
