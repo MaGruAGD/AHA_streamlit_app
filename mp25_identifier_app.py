@@ -109,6 +109,20 @@ class CSVProcessor:
         # Current codes (will be updated as rows are added)
         self.codes = list(self.original_codes)
 
+    def get_code_statistics(self):
+        """Get comprehensive statistics about codes for UI display"""
+        original_codes_list = sorted(list(self.original_codes))
+        added_codes_list = sorted(list(self.added_codes))
+        
+        return {
+            'original_codes': len(original_codes_list),
+            'original_codes_list': original_codes_list,
+            'added_codes': len(added_codes_list), 
+            'added_codes_list': added_codes_list,
+            'total_codes': len(self.codes),
+            'added_rows': len(self.added_row_indices)
+        }
+
     def _normalize_columns(self):
         """Ensure the dataframe has exactly the expected columns"""
         if len(self.df.columns) != len(EXPECTED_COLUMNS):
@@ -248,10 +262,11 @@ class CSVProcessor:
         # Extract any new codes from the added row and mark them as added
         row_codes = set()
         for col_value in row_data:
-            value_str = str(col_value)
-            for code in self.allowed_codes:
-                if self._find_code_in_text(value_str, code):
-                    row_codes.add(code)
+            if col_value is not None:  # Handle None values
+                value_str = str(col_value)
+                for code in self.allowed_codes:
+                    if self._find_code_in_text(value_str, code):
+                        row_codes.add(code)
         
         # Mark these codes as added if they weren't in the original data
         for code in row_codes:
@@ -260,6 +275,12 @@ class CSVProcessor:
         
         # Update the current codes list
         self.codes = self.extract_codes()
+        
+        # Debug print
+        print(f"Added row with data: {row_data}")
+        print(f"Found codes in row: {row_codes}")
+        print(f"Current added_codes: {self.added_codes}")
+        print(f"Current added_row_indices: {self.added_row_indices}")
 
     def remove_rows(self, row_indices):
         """Remove rows and update tracking of added rows and codes"""
@@ -368,6 +389,21 @@ def step_select_codes():
         st.warning("No codes found in the uploaded CSV file.")
         return
     
+    # Define default volumes (you may need to adjust this based on your actual defaults)
+    CUSTOM_DEFAULTS = {
+        # Add your custom defaults here, e.g.:
+        # 'BLT': 25,
+        # 'XYZ': 15,
+    }
+    
+    # DEBUG: Show code tracking information (remove in production)
+    with st.expander("🔍 Debug Information", expanded=False):
+        st.write(f"**Original codes:** {sorted(list(st.session_state.processor.original_codes))}")
+        st.write(f"**Added codes:** {sorted(list(st.session_state.processor.added_codes))}")
+        st.write(f"**Added row indices:** {sorted(list(st.session_state.processor.added_row_indices))}")
+        st.write(f"**All current codes:** {all_available_codes}")
+        st.write(f"**Stats added_codes_list:** {stats['added_codes_list']}")
+    
     # Show enhanced info about codes with better formatting
     with st.expander("📊 Code Information", expanded=True):
         col1, col2, col3 = st.columns(3)
@@ -389,7 +425,7 @@ def step_select_codes():
     
     # Enhanced info messages
     if stats['added_codes']:
-        st.success(f"✨ Found {len(stats['added_codes'])} newly added code(s): {', '.join(stats['added_codes_list'])}")
+        st.success(f"✨ Found {stats['added_codes']} newly added code(s): {', '.join(stats['added_codes_list'])}")
     else:
         st.info(f"📊 Using {stats['original_codes']} codes from original CSV")
     
@@ -420,6 +456,7 @@ def step_select_codes():
         # Display original codes first, then added codes
         all_codes_ordered = original_codes_in_run + added_codes_in_run
         
+        # Display codes
         for i, code in enumerate(all_codes_ordered):
             col_idx = i % num_cols
             with cols[col_idx]:
@@ -433,6 +470,7 @@ def step_select_codes():
                 code_label = code
                 help_text = None
                 
+                # Check if this is an added code and add sparkle
                 if code in stats['added_codes_list']:
                     code_label = f"✨ {code}"
                     help_text = "Added via Add Rows functionality"
@@ -447,7 +485,7 @@ def step_select_codes():
                 checkbox_value = st.checkbox(
                     code_label,
                     value=is_selected,
-                    key=f"checkbox_{run_num}_{code}",
+                    key=f"checkbox_{run_num}_{code}_{hash(str(stats))}",  # Add hash to ensure uniqueness
                     disabled=is_used_elsewhere,
                     help=help_text
                 )
@@ -485,6 +523,22 @@ def step_select_codes():
             st.info("No codes selected for this run")
         
         st.markdown("---")
+
+
+# Additional helper function to manually test emoji rendering
+def test_sparkle_emoji():
+    """Test function to verify emoji rendering works"""
+    st.write("Testing emoji rendering:")
+    st.write("✨ This should show a sparkle emoji")
+    st.write("🚀 This should show a rocket emoji")
+    st.write("📊 This should show a chart emoji")
+    
+    # Test with checkbox
+    test_sparkle = st.checkbox("✨ Test sparkle checkbox")
+    if test_sparkle:
+        st.success("✨ Sparkle emoji is working in checkboxes!")
+    
+    return True
         
 # Utility Functions
 def position_to_sample_number(position):
