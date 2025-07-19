@@ -746,28 +746,34 @@ def volume_manager_interface(processor, allowed_codes):
             st.write(f"**MP25{code}**")
         
         with col2:
-            # Get current volume from the dataframe or use default
-            current_volume = CUSTOM_DEFAULTS.get(code, 20)
-            
-            # Check if there's already a volume set for this code
-            pattern = r'MP25' + re.escape(code) + r'(?:\d+)?'
-            mask = processor.df.astype(str).apply(
-                lambda x: x.str.contains(pattern, regex=True, na=False)
-            ).any(axis=1)
-            
-            if mask.any() and 'Step1Volume' in processor.df.columns:
-                # Get the first matching volume from the dataframe
-                existing_volumes = processor.df.loc[mask, 'Step1Volume'].dropna()
-                if not existing_volumes.empty:
-                    try:
-                        current_volume = int(existing_volumes.iloc[0])
-                    except (ValueError, TypeError):
-                        current_volume = CUSTOM_DEFAULTS.get(code, 20)
+                    # Get custom default for this code
+                    custom_default = CUSTOM_DEFAULTS.get(code, 20)
+                    current_volume = custom_default
+                    
+                    # Check if there's already a volume set for this code
+                    pattern = r'MP25' + re.escape(code) + r'(?:\d+)?'
+                    mask = processor.df.astype(str).apply(
+                        lambda x: x.str.contains(pattern, regex=True, na=False)
+                    ).any(axis=1)
+                    
+                    if mask.any() and 'Step1Volume' in processor.df.columns:
+                        # Get the first matching volume from the dataframe
+                        existing_volumes = processor.df.loc[mask, 'Step1Volume'].dropna()
+                        if not existing_volumes.empty:
+                            try:
+                                existing_volume = int(existing_volumes.iloc[0])
+                                # Only use existing volume if it's different from generic default
+                                # This preserves custom settings while using custom defaults for new codes
+                                if existing_volume != 20:  # If it's not the generic default
+                                    current_volume = existing_volume
+                                # Otherwise, keep the custom default
+                            except (ValueError, TypeError):
+                                current_volume = custom_default
             
             new_volume = st.number_input(
                 "Volume (μL)",
                 min_value=1,
-                max_value=1000,
+                max_value=100,
                 value=current_volume,
                 key=f"volume_manager_{code}"
             )
