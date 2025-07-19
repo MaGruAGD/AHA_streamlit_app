@@ -604,22 +604,40 @@ def add_row_interface(processor, allowed_codes, control_samples):
                 control_options = control_samples[selected_code]['names']
                 control_positions = control_samples[selected_code]['positions']
                 
-                selected_control_idx = st.selectbox(
-                    "Control Sample:",
-                    options=range(len(control_options)),
-                    format_func=lambda x: control_options[x],
-                    key="control_sample_selector"
-                )
+                # Get available MP25 IDs for the selected code FROM THE CSV
+                available_mp25_ids = processor.get_mp25_ids(selected_code)
                 
-                # Automatically set position based on control sample
-                analyseplaat_position = control_positions[selected_control_idx]
-                st.text_input(
-                    "Positie op analyseplaat:",
-                    value=analyseplaat_position,
-                    disabled=True,
-                    key="analyseplaat_position_control",
-                    help="Position automatically set based on control sample"
-                )
+                if available_mp25_ids:
+                    selected_mp25_id = st.selectbox(
+                        "Select MP25 ID:",
+                        options=available_mp25_ids,
+                        key="control_mp25_id_selector",
+                        help="Choose which MP25 plate to add control samples to"
+                    )
+                    
+                    selected_control_idx = st.selectbox(
+                        "Control Sample:",
+                        options=range(len(control_options)),
+                        format_func=lambda x: control_options[x],
+                        key="control_sample_selector"
+                    )
+                    
+                    # Automatically set position based on control sample
+                    analyseplaat_position = control_positions[selected_control_idx]
+                    st.text_input(
+                        "Positie op analyseplaat:",
+                        value=analyseplaat_position,
+                        disabled=True,
+                        key="analyseplaat_position_control",
+                        help="Position automatically set based on control sample"
+                    )
+                    
+                    # Override the analyseplaat_id with the selected MP25 ID
+                    analyseplaat_id = selected_mp25_id
+                else:
+                    st.warning(f"No MP25{selected_code} plates found in the uploaded CSV. Please add regular samples first or upload a CSV that contains MP25{selected_code} entries.")
+                    analyseplaat_position = "A1"
+                    analyseplaat_id = f"MP25{selected_code}"
             else:
                 st.warning(f"No control samples defined for code {selected_code}")
                 analyseplaat_position = "A1"
