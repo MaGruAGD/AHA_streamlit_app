@@ -17,7 +17,7 @@ st.set_page_config(
 # Constants
 CUSTOM_DEFAULTS = {
     'SRPR': 50,
-    'SRPR3': 40,
+    'SRPR3': 50,
     'ECORU': 50,
     'BLT3': 10,
     'BLT8': 10,
@@ -993,6 +993,61 @@ def step_download_results():
             mime="text/csv",
             use_container_width=True
         )
+# Display MP25 codes for each run with copy functionality
+    st.subheader("📋 MP25 Codes in Downloaded Files")
+    
+    for run_num, df in st.session_state.filtered_data.items():
+        with st.expander(f"Run {run_num} MP25 Codes", expanded=True):
+            # Extract MP25 codes from the dataframe
+            mp25_codes = set()
+            
+            # Look through all columns for MP25 patterns
+            for col in df.columns:
+                for value in df[col].astype(str):
+                    # Match MP25 followed by code and numbers (e.g., MP25PRRS0079)
+                    matches = re.findall(r'MP25[A-Z0-9]+\d+', str(value))
+                    mp25_codes.update(matches)
+            
+            # Sort codes for consistent display
+            sorted_codes = sorted(list(mp25_codes))
+            
+            if sorted_codes:
+                st.write(f"**Found {len(sorted_codes)} MP25 codes:**")
+                
+                # Display codes with copy buttons
+                for code in sorted_codes:
+                    col1, col2 = st.columns([4, 1])
+                    
+                    with col1:
+                        st.code(code, language=None)
+                    
+                    with col2:
+                        # Create a unique key for each copy button
+                        copy_key = f"copy_{run_num}_{code}"
+                        
+                        # JavaScript for copying to clipboard
+                        copy_script = f"""
+                        <script>
+                        function copyToClipboard_{copy_key.replace('-', '_')}() {{
+                            navigator.clipboard.writeText('{code}').then(function() {{
+                                // You could add a toast notification here if needed
+                            }});
+                        }}
+                        </script>
+                        <button onclick="copyToClipboard_{copy_key.replace('-', '_')}()" 
+                                style="padding: 4px 8px; font-size: 12px; cursor: pointer; 
+                                       border: 1px solid #ccc; background: #f8f9fa; border-radius: 3px;"
+                                title="Copy {code} to clipboard">
+                            📋
+                        </button>
+                        """
+                        
+                        # Use Streamlit's HTML component
+                        components.html(copy_script, height=30)
+            else:
+                st.info("No MP25 codes found in this run.")
+    
+        st.markdown("---")
             
 # Main Application
 
