@@ -870,7 +870,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
                 return mp25_ids[0]
             else:
                 # Fallback to default format if none found in CSV
-                return f"MP25{code}0001"
+                return f"MP25{code}XXXX"
         
         # Analyseplaat ID input with validation
         default_analyseplaat_id = get_suggested_analyseplaat_id(processor, selected_code)
