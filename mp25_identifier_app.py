@@ -861,8 +861,8 @@ def add_row_interface(processor, allowed_codes, control_samples):
             expected_pattern = f"^MP25{code}\\d{{4}}$"
             return re.match(expected_pattern, plate_id) is not None
         
-        # Function to generate default Analyseplaat ID
-         def get_suggested_analyseplaat_id(processor, code):
+        # Function to get suggested Analyseplaat ID from CSV data
+        def get_suggested_analyseplaat_id(processor, code):
             """Get suggested Analyseplaat ID from CSV data or generate default"""
             mp25_ids = processor.get_mp25_ids(code)
             if mp25_ids:
@@ -873,7 +873,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
                 return f"MP25{code}0001"
         
         # Analyseplaat ID input with validation
-        default_analyseplaat_id = get_default_analyseplaat_id(selected_code)
+        default_analyseplaat_id = get_suggested_analyseplaat_id(processor, selected_code)
         
         # Initialize session state for analyseplaat ID if not exists
         analyseplaat_key = f"analyseplaat_id_{selected_code}"
