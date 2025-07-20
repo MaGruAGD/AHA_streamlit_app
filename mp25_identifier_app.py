@@ -594,16 +594,6 @@ def well_plate_selector(key: str, title: str = "Select Position", default_positi
     # Return combined selected position string
     return f"{st.session_state[row_key]}{st.session_state[col_key]}"
 
-def load_logo_from_github(repo_url, branch="main", filename="logo.png"):
-    """Load logo from GitHub repository"""
-    try:
-        raw_url = f"https://raw.githubusercontent.com/{repo_url}/{branch}/{filename}"
-        response = requests.get(raw_url)
-        response.raise_for_status()
-        return response.content
-    except Exception as e:
-        return None
-
 def initialize_session_state():
     """Initialize session state variables"""
     defaults = {
@@ -872,9 +862,15 @@ def add_row_interface(processor, allowed_codes, control_samples):
             return re.match(expected_pattern, plate_id) is not None
         
         # Function to generate default Analyseplaat ID
-        def get_default_analyseplaat_id(code):
-            """Generate default Analyseplaat ID in the required format"""
-            return f"MP25{code}0001"
+         def get_suggested_analyseplaat_id(processor, code):
+            """Get suggested Analyseplaat ID from CSV data or generate default"""
+            mp25_ids = processor.get_mp25_ids(code)
+            if mp25_ids:
+                # Return the first found MP25 ID from the CSV
+                return mp25_ids[0]
+            else:
+                # Fallback to default format if none found in CSV
+                return f"MP25{code}0001"
         
         # Analyseplaat ID input with validation
         default_analyseplaat_id = get_default_analyseplaat_id(selected_code)
