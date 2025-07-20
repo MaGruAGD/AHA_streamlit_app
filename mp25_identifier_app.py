@@ -717,17 +717,22 @@ def add_row_interface(processor, allowed_codes, control_samples):
                         source_id = source_match.group(1) if source_match else str(step1_source)
                         dest_id = dest_match.group(1) if dest_match else str(step1_destination)
                         
-                        # Determine if this is a control sample
-                        is_control = "Control" in solution_name or any(
-                            control_name in solution_name 
-                            for code_controls in control_samples.values() 
-                            for control_name in code_controls.get('names', [])
-                        )
+                        # Determine if this is a control sample by checking the destination plate against control samples
+                        is_control = False
+                        control_type = None
+                        for code_controls in control_samples.values():
+                            for control_name in code_controls.get('names', []):
+                                if any(control_name.lower() in dest_id.lower() for dest_id_part in [dest_id]):
+                                    is_control = True
+                                    control_type = control_name
+                                    break
+                            if is_control:
+                                break
                         
                         # Display sample information
                         with col1:
                             if is_control:
-                                st.write(f"🧪 **{solution_name}** (Control)")
+                                st.write(f"🧪 **{solution_name}** (Control: {control_type})")
                             else:
                                 st.write(f"🔬 **{solution_name}**")
                             st.caption(f"From: {source_id}")
@@ -914,7 +919,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
                     key="control_sample_selector"
                 )
                 
-                # Store control sample name for later use
+                # Store control sample name for later use (for UI display only)
                 control_sample_name = control_options[selected_control_idx]
                 
                 # Automatically set position based on control sample
@@ -945,17 +950,14 @@ def add_row_interface(processor, allowed_codes, control_samples):
         poolplaat_entry = f'"{poolplaat_id}":{poolplaat_position}'
         analyseplaat_entry = f'"{analyseplaat_id}":{analyseplaat_position}'
         
-        # Determine solution name based on sample type
-        if sample_type == "Control Samples" and control_sample_name:
-            solution_name = f"Control - {control_sample_name}"
-        else:
-            solution_name = f"Sample {sample_number}"
+        # Always use the sample number format for consistent output
+        solution_name = f"Sample {sample_number}"
         
         # Preview row in CSV format
         preview_row = [
             poolplaat_entry,           # LabwareName
             100,                       # Volume
-            solution_name,             # SolutionName (includes control name if applicable)
+            solution_name,             # SolutionName (always "Sample X" format)
             "Sample",                  # SolutionType
             "1 M",                     # Concentration
             "",                        # SampleIdentifier
@@ -968,8 +970,10 @@ def add_row_interface(processor, allowed_codes, control_samples):
         # Format as CSV string
         preview_csv = ",".join([f'"{str(item)}"' if item else '""' for item in preview_row])
         
-        # Display preview
+        # Display preview with additional info for control samples
         st.subheader("Preview")
+        if sample_type == "Control Samples" and control_sample_name:
+            st.info(f"🧪 This will be added as a control sample ({control_sample_name}) but will use the standard naming format: {solution_name}")
         st.code(preview_csv, language="csv")
     
     # Add Sample button - only enabled if Analyseplaat ID is valid
@@ -989,17 +993,14 @@ def add_row_interface(processor, allowed_codes, control_samples):
         poolplaat_entry = f'"{poolplaat_id}":{poolplaat_position}'
         analyseplaat_entry = f'"{analyseplaat_id}":{analyseplaat_position}'
         
-        # Determine solution name based on sample type
-        if sample_type == "Control Samples" and control_sample_name:
-            solution_name = f"Control - {control_sample_name}"
-        else:
-            solution_name = f"Sample {sample_number}"
+        # Always use the sample number format for consistent output
+        solution_name = f"Sample {sample_number}"
         
         # Map to the exact expected columns
         row_data = [
             poolplaat_entry,           # LabwareName
             100,                       # Volume
-            solution_name,             # SolutionName (includes control name if applicable)
+            solution_name,             # SolutionName (always "Sample X" format)
             "Sample",                  # SolutionType
             "1 M",                     # Concentration
             "",                        # SampleIdentifier
