@@ -1495,226 +1495,37 @@ def apply_github_theme(
     if css_content:
         st.markdown(f"<style>{css_content}</style>", unsafe_allow_html=True)
 
-def main():
-    # Your GitHub repository details
-    GITHUB_USERNAME = "MaGruAGD"
-    GITHUB_REPO = "AHA_streamlit_app"
-    THEME_FILE = "theme.css"
-    
-    # Initialize theme selection early
-    if 'selected_theme' not in st.session_state:
-        st.session_state.selected_theme = "🧪 Light Mode"
-    
-    # Theme options mapping
-    theme_options = {
-        "🧪 Light Mode": "theme.css",
-        "🌙 Dark Mode": "dark_theme_css.css",
-        
-    }
-    
-    # Get current theme file
-    current_theme_file = theme_options.get(st.session_state.selected_theme, THEME_FILE)
-    
-    # Minimal fallback theme in case GitHub is unreachable
-    FALLBACK_THEME = """
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        .stApp { 
-            font-family: 'Inter', sans-serif; 
-            background: linear-gradient(135deg, #fafafa 0%, #fff 100%);
-        }
-        
-        .main .block-container {
-            padding: 2rem;
-            background: rgba(255,255,255,0.95);
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            margin: 1.5rem;
-            max-width: 1200px;
-        }
-        
-        .header-container {
-            background: linear-gradient(135deg, #0066cc, #00a896);
-            padding: 2rem;
-            margin: -2rem -2rem 2rem -2rem;
-            border-radius: 12px 12px 0 0;
-            color: white;
-        }
-        
-        .header-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .header-subtitle {
-            font-size: 0.875rem;
-            margin: 0.75rem 0 0 0;
-            opacity: 0.85;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        
-        .status-card {
-            background: rgba(255,255,255,0.95);
-            padding: 1.5rem;
-            border-radius: 8px;
-            border: 1px solid #e5e5e5;
-            margin: 1rem 0;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-        }
-        
-        .breadcrumb-container {
-            background: rgba(255,255,255,0.9);
-            border: 1px solid #e5e5e5;
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            margin-bottom: 1rem;
-            font-family: 'Courier New', monospace;
-            font-size: 0.8rem;
-            color: #666;
-        }
-    """
-    
-    # Apply theme from GitHub with fallback
-    apply_github_theme(
-        username=GITHUB_USERNAME,
-        repository=GITHUB_REPO,
-        file_path=current_theme_file,
-        branch="main",
-        fallback_theme=FALLBACK_THEME,
-        show_status=False  # Set to True if you want to see loading status
-    )
-    
-    # Add theme selector to sidebar (call this early)
-    add_theme_selector()
-    
-   
-    # Modern professional laboratory header
-    st.markdown(
-        """
-        <div class="header-container">
-            <h1 class="header-title">
-                <span class="lab-icon">🧪</span>
-                AHA Laboratory Analysis System
-            </h1>
-            <p class="header-subtitle">Advanced Laboratory Data Management & Analysis Platform</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-    
-    initialize_session_state()
-    
-    # Modern database setup section
-    if not st.session_state.database_loaded:
-        st.markdown("""
-            <div class="status-card status-warning">
-                <h3><span class="lab-icon">🗄️</span>Database Configuration Required</h3>
-            </div>
-        """, unsafe_allow_html=True)
-        
-        database = initialize_database()
-        if database:
-            st.session_state.database_loaded = True
-            st.markdown("""
-                <div class="status-card status-success">
-                    <h4><span class="lab-icon">✅</span>Database Connection Established</h4>
-                </div>
-            """, unsafe_allow_html=True)
-            st.rerun()
-        else:
-            st.stop()
-    
-    # Process database
-    allowed_codes, control_samples = process_database(st.session_state.database)
-    
-    if not allowed_codes:
-        st.markdown("""
-            <div class="status-card status-error">
-                <h4><span class="lab-icon">❌</span>Database Validation Failed</h4>
-            </div>
-        """, unsafe_allow_html=True)
-        st.stop()
-    
-    # Enhanced sidebar
-    create_sidebar()
-    
-    # Modern breadcrumb navigation
-    step = st.session_state.current_step
-    st.markdown(f"""
-        <div class="breadcrumb-container">
-            <strong>CURRENT WORKFLOW:</strong> {step}
-        </div>
-    """, unsafe_allow_html=True)
-    
-    # Step routing
-    if step == "1. Upload CSV":
-        step_upload_csv(allowed_codes)
-        
-    elif step == "2. Select Runs":
-        step_select_runs()
-        
-    elif step == "3. Select Codes":
-        step_select_codes()
-        
-    elif step == "4. Add Rows":
-        add_row_interface(st.session_state.processor, allowed_codes, control_samples)
-        
-    elif step == "5. Volume Manager":
-        volume_manager_interface(st.session_state.processor, allowed_codes)
-        
-    elif step == "6. Process Data":
-        step_process_data()
-        
-    elif step == "7. Download Results":
-        step_download_results()
-
-# Add this function if you want to provide theme switching capability
 def add_theme_selector():
-    """Add theme selection in sidebar with real-time switching"""
+    """Add a sun/moon toggle switch in the sidebar."""
     with st.sidebar:
-        st.markdown("### 🎨 Theme Options")
-        
-        # Available theme files in your repo
-        theme_options = {
-            "🧪 Light Mode": "theme.css",
-            "🌙 Dark Mode": "dark_theme_css.css",
-        }
-        
-        # Initialize theme selection in session state
-        if 'selected_theme' not in st.session_state:
-            st.session_state.selected_theme = "🧪 Light Mode"
-        
-        # Theme selector with callback
-        selected_theme = st.selectbox(
-            "Choose Theme",
-            options=list(theme_options.keys()),
-            index=list(theme_options.keys()).index(st.session_state.selected_theme),
-            key="theme_selector"
-        )
-        
-        # Auto-apply theme when selection changes
-        if selected_theme != st.session_state.selected_theme:
+        st.markdown("### 🎨 Theme Toggle")
+
+        # Emoji labels for UI
+        is_dark_mode = st.session_state.get('selected_theme', '🧪 Light Mode') == "🌙 Dark Mode"
+        toggle_label = "🌞 Light Mode" if not is_dark_mode else "🌙 Dark Mode"
+
+        # Render toggle
+        toggle = st.toggle(toggle_label, value=is_dark_mode, key="theme_toggle")
+
+        # Determine selected theme
+        selected_theme = "🌙 Dark Mode" if toggle else "🧪 Light Mode"
+
+        if selected_theme != st.session_state.get('selected_theme'):
             st.session_state.selected_theme = selected_theme
-            
-            # Clear theme cache to force reload
-            cache_keys = [k for k in st.session_state.keys() if k.startswith("github_theme_")]
+
+            # Clear cached theme if any
+            cache_keys = [k for k in st.session_state if k.startswith("github_theme_")]
             for key in cache_keys:
                 del st.session_state[key]
-            
-            # Apply new theme
+
+            # Apply the new theme
             apply_github_theme(
                 username="MaGruAGD",
                 repository="AHA_streamlit_app",
-                file_path=theme_options[selected_theme],
+                file_path={
+                    "🧪 Light Mode": "theme.css",
+                    "🌙 Dark Mode": "dark_theme_css.css"
+                }[selected_theme],
                 show_status=False
             )
             st.rerun()
-
-
-if __name__ == "__main__":
-    main()
