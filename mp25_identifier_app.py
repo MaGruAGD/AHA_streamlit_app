@@ -1503,7 +1503,7 @@ def main():
     
     # Initialize theme selection early
     if 'selected_theme' not in st.session_state:
-        st.session_state.selected_theme = "🧪 Light Mode"
+        st.session_state.selected_theme = "☀️ Light Mode"
     
     # Theme options mapping
     theme_options = {
@@ -1677,7 +1677,6 @@ def main():
 def add_theme_selector():
     """Add theme selection in sidebar with real-time switching"""
     with st.sidebar:
-        st.markdown("### 🎨 Theme Options")
         
         # Available theme files in your repo
         theme_options = {
