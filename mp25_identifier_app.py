@@ -1719,5 +1719,19 @@ def add_theme_selector():
                 show_status=False
             )
             st.rerun()
+        
+        # Manual refresh button
+        if st.button("🔄 Refresh Current Theme"):
+            # Clear only current theme cache
+            current_file = theme_options[st.session_state.selected_theme]
+            cache_key = f"github_theme_MaGruAGD_AHA_streamlit_app_{current_file}_main"
+            if cache_key in st.session_state:
+                del st.session_state[cache_key]
+            st.rerun()
+        
+        # Theme info
+        current_file = theme_options[st.session_state.selected_theme]
+        st.caption(f"📁 Current: [{current_file}](https://github.com/MaGruAGD/AHA_streamlit_app/blob/main/{current_file})")
+
 if __name__ == "__main__":
     main()
