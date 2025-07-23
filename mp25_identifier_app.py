@@ -1503,7 +1503,7 @@ def main():
     
     # Initialize theme selection early
     if 'selected_theme' not in st.session_state:
-        st.session_state.selected_theme = "🧪 Laboratory (Default)"
+        st.session_state.selected_theme = "🧪 Light Mode"
     
     # Theme options mapping
     theme_options = {
@@ -1687,7 +1687,7 @@ def add_theme_selector():
         
         # Initialize theme selection in session state
         if 'selected_theme' not in st.session_state:
-            st.session_state.selected_theme = "🧪 Laboratory (Default)"
+            st.session_state.selected_theme = "🧪 Light Mode"
         
         # Theme selector with callback
         selected_theme = st.selectbox(
