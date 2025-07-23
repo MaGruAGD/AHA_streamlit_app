@@ -1943,8 +1943,6 @@ def main():
         st.markdown("""
             <div class="status-card status-warning">
                 <h3><span class="lab-icon">🗄️</span>Database Configuration Required</h3>
-                <p>Please establish database connection to proceed with laboratory data analysis.</p>
-                <small><strong>Status:</strong> Awaiting database initialization</small>
             </div>
         """, unsafe_allow_html=True)
         
@@ -1954,8 +1952,6 @@ def main():
             st.markdown("""
                 <div class="status-card status-success">
                     <h4><span class="lab-icon">✅</span>Database Connection Established</h4>
-                    <p>Laboratory database successfully connected and validated.</p>
-                    <small><strong>Status:</strong> Ready for data processing</small>
                 </div>
             """, unsafe_allow_html=True)
             st.rerun()
@@ -1969,8 +1965,6 @@ def main():
         st.markdown("""
             <div class="status-card status-error">
                 <h4><span class="lab-icon">❌</span>Database Validation Failed</h4>
-                <p>No valid sample codes detected in database. Please verify data integrity.</p>
-                <small><strong>Action Required:</strong> Check database schema and data source</small>
             </div>
         """, unsafe_allow_html=True)
         st.stop()
@@ -1986,74 +1980,46 @@ def main():
         </div>
     """, unsafe_allow_html=True)
     
-    # Enhanced step routing with modern interface
+    # Enhanced step routing with clean headers
     if step == "1. Upload CSV":
         st.markdown("""
-            <div class="status-card status-info">
-                <h3 class="section-header"><span class="lab-icon">📤</span>Data Import Module</h3>
-                <p>Upload laboratory data files for processing and analysis. Supported formats include CSV and Excel files with automated validation.</p>
-                <small><strong>Requirements:</strong> Files must contain valid sample identifiers and measurement data</small>
-            </div>
+            <h3 class="section-header"><span class="lab-icon">📤</span>Data Import Module</h3>
         """, unsafe_allow_html=True)
         step_upload_csv(allowed_codes)
         
     elif step == "2. Select Runs":
         st.markdown("""
-            <div class="status-card status-info">
-                <h3 class="section-header"><span class="lab-icon">🎯</span>Run Selection Module</h3>
-                <p>Configure which experimental runs to include in the current analysis batch with intelligent filtering.</p>
-                <small><strong>Note:</strong> Selected runs will be processed according to laboratory protocols</small>
-            </div>
+            <h3 class="section-header"><span class="lab-icon">🎯</span>Run Selection Module</h3>
         """, unsafe_allow_html=True)
         step_select_runs()
         
     elif step == "3. Select Codes":
         st.markdown("""
-            <div class="status-card status-info">
-                <h3 class="section-header"><span class="lab-icon">🔢</span>Sample Code Configuration</h3>
-                <p>Validate and select sample identification codes for analysis processing with real-time verification.</p>
-                <small><strong>Validation:</strong> All codes must match database specifications</small>
-            </div>
+            <h3 class="section-header"><span class="lab-icon">🔢</span>Sample Code Configuration</h3>
         """, unsafe_allow_html=True)
         step_select_codes()
         
     elif step == "4. Add Rows":
         st.markdown("""
-            <div class="status-card status-info">
-                <h3 class="section-header"><span class="lab-icon">➕</span>Sample Data Management</h3>
-                <p>Manage sample entries, configure control samples, and validate data integrity with advanced quality controls.</p>
-                <small><strong>Controls:</strong> Quality control samples are automatically validated</small>
-            </div>
+            <h3 class="section-header"><span class="lab-icon">➕</span>Sample Data Management</h3>
         """, unsafe_allow_html=True)
         add_row_interface(st.session_state.processor, allowed_codes, control_samples)
         
     elif step == "5. Volume Manager":
         st.markdown("""
-            <div class="status-card status-info">
-                <h3 class="section-header"><span class="lab-icon">🧪</span>Volume Calibration Module</h3>
-                <p>Configure sample volumes, dilution factors, and measurement parameters for precise analysis with automated calculations.</p>
-                <small><strong>Precision:</strong> Volume calculations follow laboratory standard protocols</small>
-            </div>
+            <h3 class="section-header"><span class="lab-icon">🧪</span>Volume Calibration Module</h3>
         """, unsafe_allow_html=True)
         volume_manager_interface(st.session_state.processor, allowed_codes)
         
     elif step == "6. Process Data":
         st.markdown("""
-            <div class="status-card status-info">
-                <h3 class="section-header"><span class="lab-icon">⚙️</span>Data Processing Engine</h3>
-                <p>Execute analytical algorithms and generate processed results according to laboratory standards with real-time progress tracking.</p>
-                <small><strong>Processing:</strong> Applying validated analytical methods and quality controls</small>
-            </div>
+            <h3 class="section-header"><span class="lab-icon">⚙️</span>Data Processing Engine</h3>
         """, unsafe_allow_html=True)
         step_process_data()
         
     elif step == "7. Download Results":
         st.markdown("""
-            <div class="status-card status-success">
-                <h3 class="section-header"><span class="lab-icon">📊</span>Analysis Results</h3>
-                <p>Data processing completed successfully. Laboratory results are ready for download and comprehensive review.</p>
-                <small><strong>Output:</strong> Results include processed data, quality metrics, and validation reports</small>
-            </div>
+            <h3 class="section-header"><span class="lab-icon">📊</span>Analysis Results</h3>
         """, unsafe_allow_html=True)
         step_download_results()
 
