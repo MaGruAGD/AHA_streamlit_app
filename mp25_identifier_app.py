@@ -1756,6 +1756,742 @@ def step_download_results():
     st.info("Download your processed results...")
     # Your existing download functionality here
 
+import streamlit as st
+import requests
+import time
+from typing import Optional
+
+def load_theme_from_github(
+    username: str, 
+    repository: str, 
+    file_path: str, 
+    branch: str = "main",
+    cache_duration: int = 3600  # Cache for 1 hour
+) -> Optional[str]:
+    """
+    Load CSS theme from a GitHub repository
+    
+    Args:
+        username: GitHub username
+        repository: Repository name
+        file_path: Path to CSS file (e.g., 'theme.css')
+        branch: Branch name (default: 'main')
+        cache_duration: Cache duration in seconds
+    
+    Returns:
+        CSS content as string or None if failed
+    """
+    
+    # Create cache key
+    cache_key = f"github_theme_{username}_{repository}_{file_path}_{branch}"
+    
+    # Check if theme is cached and still valid
+    if cache_key in st.session_state:
+        cached_data = st.session_state[cache_key]
+        if time.time() - cached_data['timestamp'] < cache_duration:
+            return cached_data['css']
+    
+    try:
+        # Construct raw GitHub URL
+        url = f"https://raw.githubusercontent.com/{username}/{repository}/{branch}/{file_path}"
+        
+        # Show loading indicator
+        with st.spinner("Loading theme..."):
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+        
+        css_content = response.text
+        
+        # Cache the CSS content
+        st.session_state[cache_key] = {
+            'css': css_content,
+            'timestamp': time.time()
+        }
+        
+        return css_content
+        
+    except requests.exceptions.RequestException as e:
+        st.warning(f"Could not load theme from GitHub: {e}")
+        return None
+    except Exception as e:
+        st.error(f"Unexpected error loading theme: {e}")
+        return None
+
+def apply_github_theme(
+    username: str,
+    repository: str, 
+    file_path: str,
+    branch: str = "main",
+    fallback_theme: Optional[str] = None,
+    show_status: bool = False
+):
+    """
+    Apply CSS theme from GitHub repository to Streamlit app
+    
+    Args:
+        username: GitHub username
+        repository: Repository name
+        file_path: Path to CSS file
+        branch: Branch name
+        fallback_theme: Fallback CSS if GitHub load fails
+        show_status: Whether to show theme loading status
+    """
+    
+    # Load theme from GitHub
+    css_content = load_theme_from_github(username, repository, file_path, branch)
+    
+    # Use fallback if GitHub load failed
+    if css_content is None:
+        if fallback_theme is not None:
+            css_content = fallback_theme
+            if show_status:
+                st.info("💡 Using fallback theme - GitHub theme could not be loaded")
+        else:
+            if show_status:
+                st.error("❌ No theme could be loaded")
+            return
+    else:
+        if show_status:
+            st.success(f"✅ Theme loaded from GitHub: {username}/{repository}")
+    
+    # Apply the theme
+    if css_content:
+        st.markdown(f"<style>{css_content}</style>", unsafe_allow_html=True)
+
+def create_streamlit_cloud_theme_toggle():
+    """
+    Beautiful theme toggle that works on Streamlit Cloud
+    Drop-in replacement for add_theme_selector()
+    """
+    
+    # Initialize theme state
+    if "selected_theme" not in st.session_state:
+        st.session_state.selected_theme = "☀️ Light Mode"
+    
+    is_dark_mode = st.session_state.selected_theme == "🌙 Dark Mode"
+    
+    # Custom CSS for the toggle
+    toggle_css = f"""
+    <style>
+    .theme-toggle-container {{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 20px 0;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }}
+    
+    .theme-toggle-wrapper {{
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        background: {'#2d2d2d' if is_dark_mode else '#f0f0f0'};
+        padding: 8px 20px;
+        border-radius: 50px;
+        box-shadow: 0 4px 12px rgba(0,0,0,{'0.3' if is_dark_mode else '0.15'});
+        transition: all 0.3s ease;
+        user-select: none;
+        margin-bottom: 15px;
+    }}
+    
+    .theme-label {{
+        font-size: 14px;
+        font-weight: 600;
+        color: {'#999' if is_dark_mode else '#666'};
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        min-width: 50px;
+        text-align: center;
+        transition: color 0.3s ease;
+    }}
+    
+    .theme-label.active {{
+        color: {'#fff' if is_dark_mode else '#333'};
+    }}
+    
+    .toggle-display {{
+        position: relative;
+        width: 70px;
+        height: 35px;
+        background: {'#4a4a4a' if is_dark_mode else '#ddd'};
+        border-radius: 50px;
+        transition: all 0.3s ease;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        cursor: pointer;
+    }}
+    
+    .toggle-slider {{
+        position: absolute;
+        top: 3px;
+        left: {'38px' if is_dark_mode else '3px'};
+        width: 29px;
+        height: 29px;
+        background: {'#333' if is_dark_mode else 'white'};
+        color: {'white' if is_dark_mode else '#333'};
+        border-radius: 50%;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+    }}
+    
+    .mode-text {{
+        font-size: 18px;
+        font-weight: 700;
+        margin: 0 0 5px 0;
+        text-align: center;
+        color: {'#fff' if is_dark_mode else '#333'};
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }}
+    
+    .toggle-description {{
+        font-size: 12px;
+        color: {'#999' if is_dark_mode else '#666'};
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 15px;
+    }}
+    
+    /* Style the Streamlit button to blend with design */
+    .theme-button-container .stButton > button {{
+        background: {'linear-gradient(135deg, #4a4a4a, #333)' if is_dark_mode else 'linear-gradient(135deg, #f8f9fa, #e9ecef)'} !important;
+        color: {'#fff' if is_dark_mode else '#333'} !important;
+        border: 2px solid {'#555' if is_dark_mode else '#ddd'} !important;
+        border-radius: 25px !important;
+        padding: 8px 20px !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1px !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,{'0.3' if is_dark_mode else '0.1'}) !important;
+        width: 100% !important;
+    }}
+    
+    .theme-button-container .stButton > button:hover {{
+        background: {'linear-gradient(135deg, #555, #444)' if is_dark_mode else 'linear-gradient(135deg, #e9ecef, #dee2e6)'} !important;
+        border-color: {'#777' if is_dark_mode else '#aaa'} !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,{'0.4' if is_dark_mode else '0.2'}) !important;
+    }}
+    
+    .theme-button-container .stButton > button:active {{
+        transform: translateY(0px) !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,{'0.3' if is_dark_mode else '0.1'}) !important;
+    }}
+    
+    .theme-button-container {{
+        width: 200px;
+        margin-top: 10px;
+    }}
+    </style>
+    """
+    
+    st.markdown(toggle_css, unsafe_allow_html=True)
+    
+    # Create the visual toggle display
+    toggle_html = f"""
+    <div class="theme-toggle-container">
+        <div class="mode-text">
+            {'DARK' if is_dark_mode else 'LIGHT'} MODE
+        </div>
+        <div class="toggle-description">
+            TOGGLE BUTTON
+        </div>
+        <div class="theme-toggle-wrapper">
+            <span class="theme-label {'active' if not is_dark_mode else ''}">LIGHT</span>
+            <div class="toggle-display">
+                <div class="toggle-slider">
+                    {'🌙' if is_dark_mode else '☀️'}
+                </div>
+            </div>
+            <span class="theme-label {'active' if is_dark_mode else ''}">DARK</span>
+        </div>
+    </div>
+    """
+    
+    st.markdown(toggle_html, unsafe_allow_html=True)
+    
+    # Streamlit button for functionality
+    st.markdown('<div class="theme-button-container">', unsafe_allow_html=True)
+    
+    if st.button("🔄 Switch Theme", key="theme_toggle_btn", help="Click to toggle between light and dark mode"):
+        # Toggle the theme
+        new_theme = "☀️ Light Mode" if is_dark_mode else "🌙 Dark Mode"
+        st.session_state.selected_theme = new_theme
+        
+        # Clear theme cache
+        for k in list(st.session_state.keys()):
+            if k.startswith("github_theme_"):
+                del st.session_state[k]
+        
+        st.rerun()
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+
+def initialize_session_state():
+    """Initialize session state variables"""
+    if 'database_loaded' not in st.session_state:
+        st.session_state.database_loaded = False
+    if 'current_step' not in st.session_state:
+        st.session_state.current_step = "1. Upload CSV"
+    if 'processor' not in st.session_state:
+        st.session_state.processor = None
+    if 'database' not in st.session_state:
+        st.session_state.database = None
+
+def initialize_database():
+    """Placeholder for database initialization"""
+    # Your existing database initialization code
+    return "database_object"  # Replace with your actual database object
+
+def process_database(database):
+    """Placeholder for database processing"""
+    # Your existing database processing code
+    allowed_codes = ["CODE1", "CODE2", "CODE3"]  # Replace with actual codes
+    control_samples = ["CTRL1", "CTRL2"]  # Replace with actual control samples
+    return allowed_codes, control_samples
+
+def create_sidebar():
+    """Create the application sidebar"""
+    with st.sidebar:
+        st.markdown("### 🎨 Theme Settings")
+        create_streamlit_cloud_theme_toggle()
+        
+        st.markdown("---")
+        st.markdown("### 📋 Navigation")
+        
+        steps = [
+            "1. Upload CSV",
+            "2. Select Runs", 
+            "3. Select Codes",
+            "4. Add Rows",
+            "5. Volume Manager",
+            "6. Process Data",
+            "7. Download Results"
+        ]
+        
+        for step in steps:
+            if st.button(step, key=f"nav_{step}"):
+                st.session_state.current_step = step
+                st.rerun()
+
+def step_upload_csv(allowed_codes):
+    """Placeholder for CSV upload step"""
+    st.subheader("📁 Upload CSV File")
+    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+    if uploaded_file is not None:
+        st.success("File uploaded successfully!")
+        # Your existing CSV processing code here
+
+def step_select_runs():
+    """Placeholder for run selection step"""
+    st.subheader("🔄 Select Runs")
+    st.info("Select the runs you want to process...")
+    # Your existing run selection code here
+
+def step_select_codes():
+    """Placeholder for code selection step"""
+    st.subheader("🏷️ Select Codes")
+    st.info("Select the codes for processing...")
+    # Your existing code selection logic here
+
+def add_row_interface(processor, allowed_codes, control_samples):
+    """Placeholder for add row interface"""
+    st.subheader("➕ Add Rows")
+    st.info("Add new rows to your data...")
+    # Your existing add row functionality here
+
+def volume_manager_interface(processor, allowed_codes):
+    """Placeholder for volume manager"""
+    st.subheader("📊 Volume Manager") 
+    st.info("Manage sample volumes...")
+    # Your existing volume manager code here
+
+def step_process_data():
+    """Placeholder for data processing step"""
+    st.subheader("⚙️ Process Data")
+    st.info("Processing your data...")
+    # Your existing data processing code here
+
+def step_download_results():
+    """Placeholder for download results step"""
+    st.subheader("📥 Download Results")
+    st.info("Download your processed results...")
+    # Your existing download functionality here
+
+import streamlit as st
+import requests
+import time
+from typing import Optional
+
+def load_theme_from_github(
+    username: str, 
+    repository: str, 
+    file_path: str, 
+    branch: str = "main",
+    cache_duration: int = 3600  # Cache for 1 hour
+) -> Optional[str]:
+    """
+    Load CSS theme from a GitHub repository
+    
+    Args:
+        username: GitHub username
+        repository: Repository name
+        file_path: Path to CSS file (e.g., 'theme.css')
+        branch: Branch name (default: 'main')
+        cache_duration: Cache duration in seconds
+    
+    Returns:
+        CSS content as string or None if failed
+    """
+    
+    # Create cache key
+    cache_key = f"github_theme_{username}_{repository}_{file_path}_{branch}"
+    
+    # Check if theme is cached and still valid
+    if cache_key in st.session_state:
+        cached_data = st.session_state[cache_key]
+        if time.time() - cached_data['timestamp'] < cache_duration:
+            return cached_data['css']
+    
+    try:
+        # Construct raw GitHub URL
+        url = f"https://raw.githubusercontent.com/{username}/{repository}/{branch}/{file_path}"
+        
+        # Show loading indicator
+        with st.spinner("Loading theme..."):
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+        
+        css_content = response.text
+        
+        # Cache the CSS content
+        st.session_state[cache_key] = {
+            'css': css_content,
+            'timestamp': time.time()
+        }
+        
+        return css_content
+        
+    except requests.exceptions.RequestException as e:
+        st.warning(f"Could not load theme from GitHub: {e}")
+        return None
+    except Exception as e:
+        st.error(f"Unexpected error loading theme: {e}")
+        return None
+
+def apply_github_theme(
+    username: str,
+    repository: str, 
+    file_path: str,
+    branch: str = "main",
+    fallback_theme: Optional[str] = None,
+    show_status: bool = False
+):
+    """
+    Apply CSS theme from GitHub repository to Streamlit app
+    
+    Args:
+        username: GitHub username
+        repository: Repository name
+        file_path: Path to CSS file
+        branch: Branch name
+        fallback_theme: Fallback CSS if GitHub load fails
+        show_status: Whether to show theme loading status
+    """
+    
+    # Load theme from GitHub
+    css_content = load_theme_from_github(username, repository, file_path, branch)
+    
+    # Use fallback if GitHub load failed
+    if css_content is None:
+        if fallback_theme is not None:
+            css_content = fallback_theme
+            if show_status:
+                st.info("💡 Using fallback theme - GitHub theme could not be loaded")
+        else:
+            if show_status:
+                st.error("❌ No theme could be loaded")
+            return
+    else:
+        if show_status:
+            st.success(f"✅ Theme loaded from GitHub: {username}/{repository}")
+    
+    # Apply the theme
+    if css_content:
+        st.markdown(f"<style>{css_content}</style>", unsafe_allow_html=True)
+
+def create_streamlit_cloud_theme_toggle():
+    """
+    Beautiful theme toggle that works on Streamlit Cloud
+    Drop-in replacement for add_theme_selector()
+    """
+    
+    # Initialize theme state
+    if "selected_theme" not in st.session_state:
+        st.session_state.selected_theme = "☀️ Light Mode"
+    
+    is_dark_mode = st.session_state.selected_theme == "🌙 Dark Mode"
+    
+    # Custom CSS for the toggle
+    toggle_css = f"""
+    <style>
+    .theme-toggle-container {{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 20px 0;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }}
+    
+    .theme-toggle-wrapper {{
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        background: {'#2d2d2d' if is_dark_mode else '#f0f0f0'};
+        padding: 8px 20px;
+        border-radius: 50px;
+        box-shadow: 0 4px 12px rgba(0,0,0,{'0.3' if is_dark_mode else '0.15'});
+        transition: all 0.3s ease;
+        user-select: none;
+        margin-bottom: 15px;
+    }}
+    
+    .theme-label {{
+        font-size: 14px;
+        font-weight: 600;
+        color: {'#999' if is_dark_mode else '#666'};
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        min-width: 50px;
+        text-align: center;
+        transition: color 0.3s ease;
+    }}
+    
+    .theme-label.active {{
+        color: {'#fff' if is_dark_mode else '#333'};
+    }}
+    
+    .toggle-display {{
+        position: relative;
+        width: 70px;
+        height: 35px;
+        background: {'#4a4a4a' if is_dark_mode else '#ddd'};
+        border-radius: 50px;
+        transition: all 0.3s ease;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        cursor: pointer;
+    }}
+    
+    .toggle-slider {{
+        position: absolute;
+        top: 3px;
+        left: {'38px' if is_dark_mode else '3px'};
+        width: 29px;
+        height: 29px;
+        background: {'#333' if is_dark_mode else 'white'};
+        color: {'white' if is_dark_mode else '#333'};
+        border-radius: 50%;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+    }}
+    
+    .mode-text {{
+        font-size: 18px;
+        font-weight: 700;
+        margin: 0 0 5px 0;
+        text-align: center;
+        color: {'#fff' if is_dark_mode else '#333'};
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }}
+    
+    .toggle-description {{
+        font-size: 12px;
+        color: {'#999' if is_dark_mode else '#666'};
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 15px;
+    }}
+    
+    /* Style the Streamlit button to blend with design */
+    .theme-button-container .stButton > button {{
+        background: {'linear-gradient(135deg, #4a4a4a, #333)' if is_dark_mode else 'linear-gradient(135deg, #f8f9fa, #e9ecef)'} !important;
+        color: {'#fff' if is_dark_mode else '#333'} !important;
+        border: 2px solid {'#555' if is_dark_mode else '#ddd'} !important;
+        border-radius: 25px !important;
+        padding: 8px 20px !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1px !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,{'0.3' if is_dark_mode else '0.1'}) !important;
+        width: 100% !important;
+    }}
+    
+    .theme-button-container .stButton > button:hover {{
+        background: {'linear-gradient(135deg, #555, #444)' if is_dark_mode else 'linear-gradient(135deg, #e9ecef, #dee2e6)'} !important;
+        border-color: {'#777' if is_dark_mode else '#aaa'} !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,{'0.4' if is_dark_mode else '0.2'}) !important;
+    }}
+    
+    .theme-button-container .stButton > button:active {{
+        transform: translateY(0px) !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,{'0.3' if is_dark_mode else '0.1'}) !important;
+    }}
+    
+    .theme-button-container {{
+        width: 200px;
+        margin-top: 10px;
+    }}
+    </style>
+    """
+    
+    st.markdown(toggle_css, unsafe_allow_html=True)
+    
+    # Create the visual toggle display
+    toggle_html = f"""
+    <div class="theme-toggle-container">
+        <div class="mode-text">
+            {'DARK' if is_dark_mode else 'LIGHT'} MODE
+        </div>
+        <div class="toggle-description">
+            TOGGLE BUTTON
+        </div>
+        <div class="theme-toggle-wrapper">
+            <span class="theme-label {'active' if not is_dark_mode else ''}">LIGHT</span>
+            <div class="toggle-display">
+                <div class="toggle-slider">
+                    {'🌙' if is_dark_mode else '☀️'}
+                </div>
+            </div>
+            <span class="theme-label {'active' if is_dark_mode else ''}">DARK</span>
+        </div>
+    </div>
+    """
+    
+    st.markdown(toggle_html, unsafe_allow_html=True)
+    
+    # Streamlit button for functionality
+    st.markdown('<div class="theme-button-container">', unsafe_allow_html=True)
+    
+    if st.button("🔄 Switch Theme", key="theme_toggle_btn", help="Click to toggle between light and dark mode"):
+        # Toggle the theme
+        new_theme = "☀️ Light Mode" if is_dark_mode else "🌙 Dark Mode"
+        st.session_state.selected_theme = new_theme
+        
+        # Clear theme cache
+        for k in list(st.session_state.keys()):
+            if k.startswith("github_theme_"):
+                del st.session_state[k]
+        
+        st.rerun()
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+
+def initialize_session_state():
+    """Initialize session state variables"""
+    if 'database_loaded' not in st.session_state:
+        st.session_state.database_loaded = False
+    if 'current_step' not in st.session_state:
+        st.session_state.current_step = "1. Upload CSV"
+    if 'processor' not in st.session_state:
+        st.session_state.processor = None
+    if 'database' not in st.session_state:
+        st.session_state.database = None
+
+def initialize_database():
+    """Placeholder for database initialization"""
+    # Your existing database initialization code
+    return "database_object"  # Replace with your actual database object
+
+def process_database(database):
+    """Placeholder for database processing"""
+    # Your existing database processing code
+    allowed_codes = ["CODE1", "CODE2", "CODE3"]  # Replace with actual codes
+    control_samples = ["CTRL1", "CTRL2"]  # Replace with actual control samples
+    return allowed_codes, control_samples
+
+def create_sidebar():
+    """Create the application sidebar"""
+    with st.sidebar:
+        st.markdown("### 🎨 Theme Settings")
+        create_streamlit_cloud_theme_toggle()
+        
+        st.markdown("---")
+        st.markdown("### 📋 Navigation")
+        
+        steps = [
+            "1. Upload CSV",
+            "2. Select Runs", 
+            "3. Select Codes",
+            "4. Add Rows",
+            "5. Volume Manager",
+            "6. Process Data",
+            "7. Download Results"
+        ]
+        
+        for step in steps:
+            if st.button(step, key=f"nav_{step}"):
+                st.session_state.current_step = step
+                st.rerun()
+
+def step_upload_csv(allowed_codes):
+    """Placeholder for CSV upload step"""
+    st.subheader("📁 Upload CSV File")
+    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+    if uploaded_file is not None:
+        st.success("File uploaded successfully!")
+        # Your existing CSV processing code here
+
+def step_select_runs():
+    """Placeholder for run selection step"""
+    st.subheader("🔄 Select Runs")
+    st.info("Select the runs you want to process...")
+    # Your existing run selection code here
+
+def step_select_codes():
+    """Placeholder for code selection step"""
+    st.subheader("🏷️ Select Codes")
+    st.info("Select the codes for processing...")
+    # Your existing code selection logic here
+
+def add_row_interface(processor, allowed_codes, control_samples):
+    """Placeholder for add row interface"""
+    st.subheader("➕ Add Rows")
+    st.info("Add new rows to your data...")
+    # Your existing add row functionality here
+
+def volume_manager_interface(processor, allowed_codes):
+    """Placeholder for volume manager"""
+    st.subheader("📊 Volume Manager") 
+    st.info("Manage sample volumes...")
+    # Your existing volume manager code here
+
+def step_process_data():
+    """Placeholder for data processing step"""
+    st.subheader("⚙️ Process Data")
+    st.info("Processing your data...")
+    # Your existing data processing code here
+
+def step_download_results():
+    """Placeholder for download results step"""
+    st.subheader("📥 Download Results")
+    st.info("Download your processed results...")
+    # Your existing download functionality here
+
 def main():
     """
     Main application function with beautiful theme toggle
