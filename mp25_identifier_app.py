@@ -1687,14 +1687,14 @@ def add_theme_selector():
         if "selected_theme" not in st.session_state:
             st.session_state.selected_theme = "☀️ Light Mode"
 
-        # Toggle UI
-        toggle = st.checkbox(
-            "🌗 Dark Mode",
+        # Create toggle
+        is_dark_mode = st.toggle(
+            "🌗 Enable Dark Mode",
             value=(st.session_state.selected_theme == "🌙 Dark Mode")
         )
 
         # Determine selected theme
-        new_theme = "🌙 Dark Mode" if toggle else "☀️ Light Mode"
+        new_theme = "🌙 Dark Mode" if is_dark_mode else "☀️ Light Mode"
 
         # Apply only if changed
         if new_theme != st.session_state.selected_theme:
