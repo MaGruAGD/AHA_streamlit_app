@@ -346,13 +346,9 @@ def step_select_codes():
                 # Generate unique key for checkbox
                 checkbox_key = f"run_{run_num}_code_{code}"
                 
-                # Get the current value from session state or default to previously selected
-                default_value = code in st.session_state.selected_codes[run_num]
-                
-                # Create checkbox - let Streamlit handle the state completely
+                # Create checkbox - don't use value parameter, let it be purely controlled by key
                 checkbox_value = st.checkbox(
                     code_label,
-                    value=default_value,
                     key=checkbox_key,
                     disabled=is_used_elsewhere,
                     help=help_text
