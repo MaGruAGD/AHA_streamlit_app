@@ -1692,7 +1692,6 @@ def add_theme_selector():
         theme_options = {
             "🧪 Laboratory (Default)": "theme.css",
             "🌙 Dark Mode": "dark_theme_css.css",
-            "💼 Minimal": "theme-minimal.css"  # If you create this later
         }
         
         # Initialize theme selection in session state
