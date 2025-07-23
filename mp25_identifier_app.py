@@ -5,6 +5,8 @@ import json
 import requests
 from datetime import datetime
 import streamlit.components.v1 as components
+from typing import Optional
+
 
 # Page configuration
 st.set_page_config(
