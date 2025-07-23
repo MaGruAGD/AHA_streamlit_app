@@ -1675,8 +1675,8 @@ def main():
 
 # Add this function if you want to provide theme switching capability
 def add_theme_selector():
-    """Custom sun/moon toggle using Streamlit only — no FastAPI or middleware required"""
-    import streamlit.components.v1 as components
+    """Styled toggle switch with sun/moon icons for light/dark mode"""
+    import streamlit as st
 
     theme_options = {
         "☀️ Light Mode": "theme.css",
@@ -1686,100 +1686,28 @@ def add_theme_selector():
     if "selected_theme" not in st.session_state:
         st.session_state.selected_theme = "☀️ Light Mode"
 
-    is_dark_mode = st.session_state.selected_theme == "🌙 Dark Mode"
+    # Render styled toggle
+    col1, col2 = st.sidebar.columns([1, 2])
+    with col1:
+        st.write("☀️")
+    with col2:
+        toggle = st.toggle("Dark Mode", value=st.session_state.selected_theme == "🌙 Dark Mode")
 
-    toggle_html = f"""
-    <style>
-    .switch {{
-      position: relative;
-      display: inline-block;
-      width: 70px;
-      height: 34px;
-    }}
+    # Update theme if toggled
+    new_theme = "🌙 Dark Mode" if toggle else "☀️ Light Mode"
+    if new_theme != st.session_state.selected_theme:
+        st.session_state.selected_theme = new_theme
 
-    .switch input {{
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }}
-
-    .slider {{
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      transition: 0.4s;
-      border-radius: 34px;
-    }}
-
-    .slider:before {{
-      position: absolute;
-      content: "{'🌙' if is_dark_mode else '☀️'}";
-      height: 26px;
-      width: 26px;
-      left: 4px;
-      bottom: 4px;
-      background-color: white;
-      transition: 0.4s;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-    }}
-
-    input:checked + .slider {{
-      background-color: #333;
-    }}
-
-    input:checked + .slider:before {{
-      transform: translateX(36px);
-      content: "🌙";
-    }}
-
-    input:not(:checked) + .slider:before {{
-      content: "☀️";
-    }}
-    </style>
-
-    <label class="switch">
-      <input type="checkbox" id="theme-toggle" {'checked' if is_dark_mode else ''}>
-      <span class="slider"></span>
-    </label>
-
-    <script>
-    const toggle = window.parent.document.getElementById("theme-toggle");
-    if (toggle) {{
-        toggle.addEventListener('change', function() {{
-            const newTheme = this.checked ? "🌙 Dark Mode" : "☀️ Light Mode";
-            window.parent.postMessage({{ type: 'setTheme', theme: newTheme }}, "*");
-        }});
-    }}
-    </script>
-    """
-
-    # Listen to postMessage and update session_state via Streamlit
-    components.html(toggle_html, height=60)
-
-    # Update theme based on postMessage event
-    import streamlit_js_eval
-
-    selected_theme = streamlit_js_eval.get("window.lastSetTheme", default=None)
-    if selected_theme and selected_theme != st.session_state.selected_theme:
-        st.session_state.selected_theme = selected_theme
-
-        # Clear cache
+        # Clear theme cache
         for k in list(st.session_state.keys()):
             if k.startswith("github_theme_"):
                 del st.session_state[k]
 
+        # Apply new theme
         apply_github_theme(
             username="MaGruAGD",
             repository="AHA_streamlit_app",
-            file_path=theme_options[selected_theme],
+            file_path=theme_options[new_theme],
             show_status=False
         )
         st.rerun()
