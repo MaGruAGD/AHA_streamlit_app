@@ -1721,7 +1721,7 @@ def add_theme_selector():
                 username="MaGruAGD",
                 repository="AHA_streamlit_app",
                 file_path=theme_options[selected_theme],
-                show_status=True
+                show_status=False
             )
             st.rerun()
         
@@ -1737,13 +1737,6 @@ def add_theme_selector():
         # Theme info
         current_file = theme_options[st.session_state.selected_theme]
         st.caption(f"📁 Current: [{current_file}](https://github.com/MaGruAGD/AHA_streamlit_app/blob/main/{current_file})")
-        
-        # Theme status indicator
-        cache_key = f"github_theme_MaGruAGD_AHA_streamlit_app_{current_file}_main"
-        if cache_key in st.session_state:
-            st.success("✅ Theme loaded from cache")
-        else:
-            st.info("⏳ Theme will load from GitHub")
 
 if __name__ == "__main__":
     main()
