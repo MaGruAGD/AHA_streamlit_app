@@ -1675,41 +1675,41 @@ def main():
 
 # Add this function if you want to provide theme switching capability
 def add_theme_selector():
-    """Add theme selection in sidebar with real-time switching"""
+    """Add theme toggle in sidebar with real-time switching"""
     with st.sidebar:
-        
-        # Available theme files in your repo
+        # Theme mapping
         theme_options = {
             "☀️ Light Mode": "theme.css",
             "🌙 Dark Mode": "dark_theme_css.css",
         }
-        
-        # Initialize theme selection in session state
-        if 'selected_theme' not in st.session_state:
+
+        # Initialize theme selection
+        if "selected_theme" not in st.session_state:
             st.session_state.selected_theme = "☀️ Light Mode"
-        
-        # Theme selector with callback
-        selected_theme = st.selectbox(
-            "Choose Theme",
-            options=list(theme_options.keys()),
-            index=list(theme_options.keys()).index(st.session_state.selected_theme),
-            key="theme_selector"
+
+        # Toggle UI
+        toggle = st.checkbox(
+            "🌗 Dark Mode",
+            value=(st.session_state.selected_theme == "🌙 Dark Mode")
         )
-        
-        # Auto-apply theme when selection changes
-        if selected_theme != st.session_state.selected_theme:
-            st.session_state.selected_theme = selected_theme
-            
-            # Clear theme cache to force reload
+
+        # Determine selected theme
+        new_theme = "🌙 Dark Mode" if toggle else "☀️ Light Mode"
+
+        # Apply only if changed
+        if new_theme != st.session_state.selected_theme:
+            st.session_state.selected_theme = new_theme
+
+            # Clear theme cache
             cache_keys = [k for k in st.session_state.keys() if k.startswith("github_theme_")]
             for key in cache_keys:
                 del st.session_state[key]
-            
-            # Apply new theme
+
+            # Apply theme
             apply_github_theme(
                 username="MaGruAGD",
                 repository="AHA_streamlit_app",
-                file_path=theme_options[selected_theme],
+                file_path=theme_options[new_theme],
                 show_status=False
             )
             st.rerun()
