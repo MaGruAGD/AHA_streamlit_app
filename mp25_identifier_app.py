@@ -1079,27 +1079,9 @@ def volume_manager_interface(processor, allowed_codes):
             st.write(f"**MP25{code}**")
         
         with col2:
-            # Get custom default for this code (20µL for all except CUSTOM_DEFAULTS)
-            custom_default = CUSTOM_DEFAULTS.get(code, 20)
-            current_volume = custom_default
-            
-            # Check if there's already a volume set for this code in the dataframe
-            pattern = r'MP25' + re.escape(code) + r'(?:\d+)?'
-            mask = processor.df.astype(str).apply(
-                lambda x: x.str.contains(pattern, regex=True, na=False)
-            ).any(axis=1)
-            
-            if mask.any() and 'Step1Volume' in processor.df.columns:
-                # Get the first matching volume from the dataframe
-                existing_volumes = processor.df.loc[mask, 'Step1Volume'].dropna()
-                if not existing_volumes.empty:
-                    try:
-                        existing_volume = int(existing_volumes.iloc[0])
-                        # Use existing volume if it exists and is valid
-                        current_volume = existing_volume
-                    except (ValueError, TypeError):
-                        # If existing volume is invalid, use the custom default
-                        current_volume = custom_default
+            # Always use custom default for this code (20µL for all except CUSTOM_DEFAULTS)
+            # Ignore the imported data volume and use our custom defaults instead
+            current_volume = CUSTOM_DEFAULTS.get(code, 20)
             
             new_volume = st.number_input(
                 "Volume (μL)",
