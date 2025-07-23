@@ -1394,163 +1394,323 @@ def step_download_results():
         st.markdown("---")
             
 import streamlit as st
+import requests
+import time
+from typing import Optional
+
+def load_theme_from_github(
+    username: str, 
+    repository: str, 
+    file_path: str, 
+    branch: str = "main",
+    cache_duration: int = 3600  # Cache for 1 hour
+) -> Optional[str]:
+    """
+    Load CSS theme from a GitHub repository
+    
+    Args:
+        username: GitHub username
+        repository: Repository name
+        file_path: Path to CSS file (e.g., 'theme.css')
+        branch: Branch name (default: 'main')
+        cache_duration: Cache duration in seconds
+    
+    Returns:
+        CSS content as string or None if failed
+    """
+    
+    # Create cache key
+    cache_key = f"github_theme_{username}_{repository}_{file_path}_{branch}"
+    
+    # Check if theme is cached and still valid
+    if cache_key in st.session_state:
+        cached_data = st.session_state[cache_key]
+        if time.time() - cached_data['timestamp'] < cache_duration:
+            return cached_data['css']
+    
+    try:
+        # Construct raw GitHub URL
+        url = f"https://raw.githubusercontent.com/{username}/{repository}/{branch}/{file_path}"
+        
+        # Show loading indicator
+        with st.spinner("Loading theme..."):
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+        
+        css_content = response.text
+        
+        # Cache the CSS content
+        st.session_state[cache_key] = {
+            'css': css_content,
+            'timestamp': time.time()
+        }
+        
+        return css_content
+        
+    except requests.exceptions.RequestException as e:
+        st.warning(f"Could not load theme from GitHub: {e}")
+        return None
+    except Exception as e:
+        st.error(f"Unexpected error loading theme: {e}")
+        return None
+
+def apply_github_theme(
+    username: str,
+    repository: str, 
+    file_path: str,
+    branch: str = "main",
+    fallback_theme: Optional[str] = None,
+    show_status: bool = False
+):
+    """
+    Apply CSS theme from GitHub repository to Streamlit app
+    
+    Args:
+        username: GitHub username
+        repository: Repository name
+        file_path: Path to CSS file
+        branch: Branch name
+        fallback_theme: Fallback CSS if GitHub load fails
+        show_status: Whether to show theme loading status
+    """
+    
+    # Load theme from GitHub
+    css_content = load_theme_from_github(username, repository, file_path, branch)
+    
+    # Use fallback if GitHub load failed
+    if css_content is None:
+        if fallback_theme is not None:
+            css_content = fallback_theme
+            if show_status:
+                st.info("💡 Using fallback theme - GitHub theme could not be loaded")
+        else:
+            if show_status:
+                st.error("❌ No theme could be loaded")
+            return
+    else:
+        if show_status:
+            st.success(f"✅ Theme loaded from GitHub: {username}/{repository}")
+    
+    # Apply the theme
+    if css_content:
+        st.markdown(f"<style>{css_content}</style>", unsafe_allow_html=True)
 
 def main():
-    # GitHub repo info
+    # Your GitHub repository details
     GITHUB_USERNAME = "MaGruAGD"
     GITHUB_REPO = "AHA_streamlit_app"
-
-    # Fallback theme (in case GitHub theme file can't load)
-    FALLBACK_THEME = """
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        .stApp { font-family: 'Inter', sans-serif; background: #f9f9f9; }
-        .main .block-container {
-            padding: 2rem; background: #fff; border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin: 1.5rem;
-        }
-        .header-container {
-            background: linear-gradient(135deg, #0066cc, #00a896);
-            padding: 2rem; margin: -2rem -2rem 2rem -2rem;
-            border-radius: 12px 12px 0 0; color: white;
-        }
-        .header-title {
-            font-size: 2rem; font-weight: 700; margin: 0;
-            display: flex; align-items: center; gap: 1rem;
-        }
-        .header-subtitle {
-            font-size: 0.875rem; margin-top: 0.75rem;
-            text-transform: uppercase; opacity: 0.85;
-        }
-        .status-card {
-            background: #fff; padding: 1.5rem; border-radius: 8px;
-            border: 1px solid #e5e5e5; margin: 1rem 0;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-        }
-        .breadcrumb-container {
-            background: #f5f5f5; padding: 0.75rem 1rem;
-            border-radius: 8px; margin-bottom: 1rem;
-            font-family: 'Courier New', monospace;
-            font-size: 0.8rem; color: #666;
-        }
-    """
-
-    # Step 1: Init theme state
+    THEME_FILE = "theme.css"
+    
+    # Initialize theme selection early
     if 'selected_theme' not in st.session_state:
         st.session_state.selected_theme = "🧪 Light Mode"
-
-    # Step 2: Apply selected theme
-    theme_map = {
+    
+    # Theme options mapping
+    theme_options = {
         "🧪 Light Mode": "theme.css",
-        "🌙 Dark Mode": "dark_theme_css.css"
+        "🌙 Dark Mode": "dark_theme_css.css",
+        
     }
-
+    
+    # Get current theme file
+    current_theme_file = theme_options.get(st.session_state.selected_theme, THEME_FILE)
+    
+    # Minimal fallback theme in case GitHub is unreachable
+    FALLBACK_THEME = """
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        .stApp { 
+            font-family: 'Inter', sans-serif; 
+            background: linear-gradient(135deg, #fafafa 0%, #fff 100%);
+        }
+        
+        .main .block-container {
+            padding: 2rem;
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            margin: 1.5rem;
+            max-width: 1200px;
+        }
+        
+        .header-container {
+            background: linear-gradient(135deg, #0066cc, #00a896);
+            padding: 2rem;
+            margin: -2rem -2rem 2rem -2rem;
+            border-radius: 12px 12px 0 0;
+            color: white;
+        }
+        
+        .header-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .header-subtitle {
+            font-size: 0.875rem;
+            margin: 0.75rem 0 0 0;
+            opacity: 0.85;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .status-card {
+            background: rgba(255,255,255,0.95);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #e5e5e5;
+            margin: 1rem 0;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        
+        .breadcrumb-container {
+            background: rgba(255,255,255,0.9);
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: #666;
+        }
+    """
+    
+    # Apply theme from GitHub with fallback
     apply_github_theme(
         username=GITHUB_USERNAME,
         repository=GITHUB_REPO,
-        file_path=theme_map[st.session_state.selected_theme],
+        file_path=current_theme_file,
         branch="main",
         fallback_theme=FALLBACK_THEME,
-        show_status=False
+        show_status=False  # Set to True if you want to see loading status
     )
-
-    # Step 3: Render compact theme toggle
+    
+    # Add theme selector to sidebar (call this early)
     add_theme_selector()
-
-    # Step 4: Header UI
-    st.markdown("""
+    
+   
+    # Modern professional laboratory header
+    st.markdown(
+        """
         <div class="header-container">
-            <h1 class="header-title">🧪 AHA Laboratory Analysis System</h1>
+            <h1 class="header-title">
+                <span class="lab-icon">🧪</span>
+                AHA Laboratory Analysis System
+            </h1>
             <p class="header-subtitle">Advanced Laboratory Data Management & Analysis Platform</p>
         </div>
-    """, unsafe_allow_html=True)
-
-    # Step 5: Session state setup
+        """,
+        unsafe_allow_html=True
+    )
+    
     initialize_session_state()
-
-    # Step 6: Database setup
+    
+    # Modern database setup section
     if not st.session_state.database_loaded:
         st.markdown("""
             <div class="status-card status-warning">
-                <h3>🗄️ Database Configuration Required</h3>
+                <h3><span class="lab-icon">🗄️</span>Database Configuration Required</h3>
             </div>
         """, unsafe_allow_html=True)
-
+        
         database = initialize_database()
         if database:
             st.session_state.database_loaded = True
             st.markdown("""
                 <div class="status-card status-success">
-                    <h4>✅ Database Connection Established</h4>
+                    <h4><span class="lab-icon">✅</span>Database Connection Established</h4>
                 </div>
             """, unsafe_allow_html=True)
             st.rerun()
         else:
             st.stop()
-
-    # Step 7: Process database
+    
+    # Process database
     allowed_codes, control_samples = process_database(st.session_state.database)
-
+    
     if not allowed_codes:
         st.markdown("""
             <div class="status-card status-error">
-                <h4>❌ Database Validation Failed</h4>
+                <h4><span class="lab-icon">❌</span>Database Validation Failed</h4>
             </div>
         """, unsafe_allow_html=True)
         st.stop()
-
-    # Step 8: Sidebar & breadcrumb
+    
+    # Enhanced sidebar
     create_sidebar()
-
+    
+    # Modern breadcrumb navigation
+    step = st.session_state.current_step
     st.markdown(f"""
         <div class="breadcrumb-container">
-            <strong>CURRENT WORKFLOW:</strong> {st.session_state.current_step}
+            <strong>CURRENT WORKFLOW:</strong> {step}
         </div>
     """, unsafe_allow_html=True)
-
-    # Step 9: Step routing
-    step = st.session_state.current_step
-
+    
+    # Step routing
     if step == "1. Upload CSV":
         step_upload_csv(allowed_codes)
-
+        
     elif step == "2. Select Runs":
         step_select_runs()
-
+        
     elif step == "3. Select Codes":
         step_select_codes()
-
+        
     elif step == "4. Add Rows":
         add_row_interface(st.session_state.processor, allowed_codes, control_samples)
-
+        
     elif step == "5. Volume Manager":
         volume_manager_interface(st.session_state.processor, allowed_codes)
-
+        
     elif step == "6. Process Data":
         step_process_data()
-
+        
     elif step == "7. Download Results":
         step_download_results()
 
-
+# Add this function if you want to provide theme switching capability
 def add_theme_selector():
-    """Minimal emoji toggle for light/dark theme."""
+    """Add theme selection in sidebar with real-time switching"""
     with st.sidebar:
-        is_dark = st.session_state.get('selected_theme', '🧪 Light Mode') == "🌙 Dark Mode"
-        toggle = st.toggle("🌞 / 🌙", value=is_dark, label_visibility="collapsed")
-        new_theme = "🌙 Dark Mode" if toggle else "🧪 Light Mode"
-
-        if new_theme != st.session_state.get('selected_theme'):
-            st.session_state.selected_theme = new_theme
-            for k in list(st.session_state.keys()):
-                if k.startswith("github_theme_"):
-                    del st.session_state[k]
+        st.markdown("### 🎨 Theme Options")
+        
+        # Available theme files in your repo
+        theme_options = {
+            "🧪 Light Mode": "theme.css",
+            "🌙 Dark Mode": "dark_theme_css.css",
+        }
+        
+        # Initialize theme selection in session state
+        if 'selected_theme' not in st.session_state:
+            st.session_state.selected_theme = "🧪 Light Mode"
+        
+        # Theme selector with callback
+        selected_theme = st.selectbox(
+            "Choose Theme",
+            options=list(theme_options.keys()),
+            index=list(theme_options.keys()).index(st.session_state.selected_theme),
+            key="theme_selector"
+        )
+        
+        # Auto-apply theme when selection changes
+        if selected_theme != st.session_state.selected_theme:
+            st.session_state.selected_theme = selected_theme
+            
+            # Clear theme cache to force reload
+            cache_keys = [k for k in st.session_state.keys() if k.startswith("github_theme_")]
+            for key in cache_keys:
+                del st.session_state[key]
+            
+            # Apply new theme
             apply_github_theme(
                 username="MaGruAGD",
                 repository="AHA_streamlit_app",
-                file_path={
-                    "🧪 Light Mode": "theme.css",
-                    "🌙 Dark Mode": "dark_theme_css.css"
-                }[new_theme],
+                file_path=theme_options[selected_theme],
                 show_status=False
             )
             st.rerun()
