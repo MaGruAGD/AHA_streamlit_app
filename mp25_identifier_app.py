@@ -2230,27 +2230,17 @@ def apply_github_theme(
 
 def create_streamlit_cloud_theme_toggle():
     """
-    Beautiful theme toggle that works on Streamlit Cloud
-    Drop-in replacement for add_theme_selector()
+    Clean theme toggle switch that toggles theme with a click (no buttons or headings)
     """
-    
     # Initialize theme state
     if "selected_theme" not in st.session_state:
         st.session_state.selected_theme = "☀️ Light Mode"
-    
+
     is_dark_mode = st.session_state.selected_theme == "🌙 Dark Mode"
-    
-    # Custom CSS for the toggle
+
+    # CSS styling
     toggle_css = f"""
     <style>
-    .theme-toggle-container {{
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin: 20px 0;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    }}
-    
     .theme-toggle-wrapper {{
         display: flex;
         align-items: center;
@@ -2261,9 +2251,14 @@ def create_streamlit_cloud_theme_toggle():
         box-shadow: 0 4px 12px rgba(0,0,0,{'0.3' if is_dark_mode else '0.15'});
         transition: all 0.3s ease;
         user-select: none;
-        margin-bottom: 15px;
+        justify-content: center;
+        cursor: pointer;
+        width: fit-content;
+        margin: auto;
+        margin-top: 20px;
+        margin-bottom: 20px;
     }}
-    
+
     .theme-label {{
         font-size: 14px;
         font-weight: 600;
@@ -2274,11 +2269,11 @@ def create_streamlit_cloud_theme_toggle():
         text-align: center;
         transition: color 0.3s ease;
     }}
-    
+
     .theme-label.active {{
         color: {'#fff' if is_dark_mode else '#333'};
     }}
-    
+
     .toggle-display {{
         position: relative;
         width: 70px;
@@ -2287,9 +2282,8 @@ def create_streamlit_cloud_theme_toggle():
         border-radius: 50px;
         transition: all 0.3s ease;
         box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
-        cursor: pointer;
     }}
-    
+
     .toggle-slider {{
         position: absolute;
         top: 3px;
@@ -2306,99 +2300,36 @@ def create_streamlit_cloud_theme_toggle():
         justify-content: center;
         font-size: 16px;
     }}
-    
-    .mode-text {{
-        font-size: 18px;
-        font-weight: 700;
-        margin: 0 0 5px 0;
-        text-align: center;
-        color: {'#fff' if is_dark_mode else '#333'};
-        text-transform: uppercase;
-        letter-spacing: 2px;
-    }}
-    
-    .toggle-description {{
-        font-size: 12px;
-        color: {'#999' if is_dark_mode else '#666'};
-        text-align: center;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 15px;
-    }}
-    
-    /* Style the Streamlit button to blend with design */
-    .theme-button-container .stButton > button {{
-        background: {'linear-gradient(135deg, #4a4a4a, #333)' if is_dark_mode else 'linear-gradient(135deg, #f8f9fa, #e9ecef)'} !important;
-        color: {'#fff' if is_dark_mode else '#333'} !important;
-        border: 2px solid {'#555' if is_dark_mode else '#ddd'} !important;
-        border-radius: 25px !important;
-        padding: 8px 20px !important;
-        font-size: 12px !important;
-        font-weight: 600 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 1px !important;
-        transition: all 0.3s ease !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,{'0.3' if is_dark_mode else '0.1'}) !important;
-        width: 100% !important;
-    }}
-    
-    .theme-button-container .stButton > button:hover {{
-        background: {'linear-gradient(135deg, #555, #444)' if is_dark_mode else 'linear-gradient(135deg, #e9ecef, #dee2e6)'} !important;
-        border-color: {'#777' if is_dark_mode else '#aaa'} !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,{'0.4' if is_dark_mode else '0.2'}) !important;
-    }}
-    
-    .theme-button-container .stButton > button:active {{
-        transform: translateY(0px) !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,{'0.3' if is_dark_mode else '0.1'}) !important;
-    }}
-    
-    .theme-button-container {{
-        width: 200px;
-        margin-top: 10px;
-    }}
     </style>
     """
-    
     st.markdown(toggle_css, unsafe_allow_html=True)
-    
-    # Create the visual toggle display
+
+    # Generate clickable toggle and simulate button press with HTML
     toggle_html = f"""
-    <div class="theme-toggle-container">
-        <div class="mode-text">
-            {'DARK' if is_dark_mode else 'LIGHT'} MODE
+    <div class="theme-toggle-wrapper" onclick="fetch('', {{method: 'POST'}}).then(() => window.location.reload());">
+        <span class="theme-label {'active' if not is_dark_mode else ''}">LIGHT</span>
+        <div class="toggle-display">
+            <div class="toggle-slider">{'🌙' if is_dark_mode else '☀️'}</div>
         </div>
-        <div class="toggle-description">
-            TOGGLE BUTTON
-        </div>
-        <div class="theme-toggle-wrapper">
-            <span class="theme-label {'active' if not is_dark_mode else ''}">LIGHT</span>
-            <div class="toggle-display">
-                <div class="toggle-slider">
-                    {'🌙' if is_dark_mode else '☀️'}
-                </div>
-            </div>
-            <span class="theme-label {'active' if is_dark_mode else ''}">DARK</span>
-        </div>
+        <span class="theme-label {'active' if is_dark_mode else ''}">DARK</span>
     </div>
     """
-    
     st.markdown(toggle_html, unsafe_allow_html=True)
-    
-    # Streamlit button for functionality
-    st.markdown('<div class="theme-button-container">', unsafe_allow_html=True)
-    
-    if st.button("🔄 Switch Theme", key="theme_toggle_btn", help="Click to toggle between light and dark mode"):
-        # Toggle the theme
-        new_theme = "☀️ Light Mode" if is_dark_mode else "🌙 Dark Mode"
-        st.session_state.selected_theme = new_theme
-        
-        # Clear theme cache
+
+    # Toggle the theme internally when rerun occurs
+    if "theme_toggled" not in st.session_state:
+        st.session_state.theme_toggled = False
+
+    # Detect rerun caused by this interaction (Streamlit workaround using form POST)
+    if not st.session_state.theme_toggled:
+        st.session_state.theme_toggled = True
+    else:
+        st.session_state.theme_toggled = False
+        st.session_state.selected_theme = "☀️ Light Mode" if is_dark_mode else "🌙 Dark Mode"
+        # Clear cached theme
         for k in list(st.session_state.keys()):
             if k.startswith("github_theme_"):
                 del st.session_state[k]
-        
         st.rerun()
     
     st.markdown('</div>', unsafe_allow_html=True)
