@@ -304,30 +304,22 @@ def step_select_codes():
     # Show basic info about codes
     st.info(f"📊 Found {stats['total_codes']} codes in the CSV file")
     
-    # Initialize selected_codes if it doesn't exist
-    if 'selected_codes' not in st.session_state:
-        st.session_state.selected_codes = {}
-    
     # Code selection for each run
     for run_num in range(1, st.session_state.num_runs + 1):
         st.subheader(f"🚀 Run {run_num}")
         
-        # Initialize selected codes for this run if not exists
-        if run_num not in st.session_state.selected_codes:
-            st.session_state.selected_codes[run_num] = []
-        
-        # Get all codes that are already selected in OTHER runs
+        # Get all codes that are currently selected in OTHER runs by checking checkbox states
         other_runs_codes = set()
         for other_run in range(1, st.session_state.num_runs + 1):
             if other_run != run_num:
-                other_runs_codes.update(st.session_state.selected_codes.get(other_run, []))
+                for code in all_available_codes:
+                    checkbox_key = f"run_{other_run}_code_{code}"
+                    if st.session_state.get(checkbox_key, False):
+                        other_runs_codes.add(code)
         
         # Create columns for better layout
         num_cols = 3
         cols = st.columns(num_cols)
-        
-        # Track selected codes for this run
-        current_run_selected = []
         
         # Display codes
         for i, code in enumerate(all_available_codes):
@@ -346,19 +338,24 @@ def step_select_codes():
                 # Generate unique key for checkbox
                 checkbox_key = f"run_{run_num}_code_{code}"
                 
-                # Create checkbox - don't use value parameter, let it be purely controlled by key
-                checkbox_value = st.checkbox(
+                # Create checkbox - let Streamlit handle state completely
+                st.checkbox(
                     code_label,
                     key=checkbox_key,
                     disabled=is_used_elsewhere,
                     help=help_text
                 )
-                
-                # Add to selected list if checked and not disabled
-                if checkbox_value and not is_used_elsewhere:
-                    current_run_selected.append(code)
         
-        # Update session state for this specific run with the current selections
+        # Build selected codes list by reading current checkbox states
+        current_run_selected = []
+        for code in all_available_codes:
+            checkbox_key = f"run_{run_num}_code_{code}"
+            if st.session_state.get(checkbox_key, False):
+                current_run_selected.append(code)
+        
+        # Update the selected_codes for compatibility with other parts of your app
+        if 'selected_codes' not in st.session_state:
+            st.session_state.selected_codes = {}
         st.session_state.selected_codes[run_num] = current_run_selected
         
         # Show selection summary for this run
