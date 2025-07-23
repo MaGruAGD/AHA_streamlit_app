@@ -1675,7 +1675,7 @@ def main():
 
 # Add this function if you want to provide theme switching capability
 def add_theme_selector():
-    """Add a custom left/right toggle with sun and moon icons for theme switching"""
+    """Custom sun/moon toggle using Streamlit only — no FastAPI or middleware required"""
     import streamlit.components.v1 as components
 
     theme_options = {
@@ -1688,8 +1688,7 @@ def add_theme_selector():
 
     is_dark_mode = st.session_state.selected_theme == "🌙 Dark Mode"
 
-    # Display custom HTML toggle switch
-    toggle_code = f"""
+    toggle_html = f"""
     <style>
     .switch {{
       position: relative;
@@ -1698,7 +1697,7 @@ def add_theme_selector():
       height: 34px;
     }}
 
-    .switch input {{ 
+    .switch input {{
       opacity: 0;
       width: 0;
       height: 0;
@@ -1744,65 +1743,46 @@ def add_theme_selector():
     input:not(:checked) + .slider:before {{
       content: "☀️";
     }}
-
     </style>
 
     <label class="switch">
-      <input type="checkbox" id="theme-toggle" {"checked" if is_dark_mode else ""}>
+      <input type="checkbox" id="theme-toggle" {'checked' if is_dark_mode else ''}>
       <span class="slider"></span>
     </label>
 
     <script>
-    const streamlitToggle = window.parent.document.getElementById("theme-toggle");
-    if (streamlitToggle) {{
-        streamlitToggle.onclick = function() {{
-            const theme = this.checked ? "🌙 Dark Mode" : "☀️ Light Mode";
-            fetch("/_set_theme", {{
-                method: "POST",
-                headers: {{ "Content-Type": "application/json" }},
-                body: JSON.stringify({{ theme }})
-            }}).then(() => window.location.reload());
-        }}
+    const toggle = window.parent.document.getElementById("theme-toggle");
+    if (toggle) {{
+        toggle.addEventListener('change', function() {{
+            const newTheme = this.checked ? "🌙 Dark Mode" : "☀️ Light Mode";
+            window.parent.postMessage({{ type: 'setTheme', theme: newTheme }}, "*");
+        }});
     }}
     </script>
     """
 
-    components.html(toggle_code, height=60)
+    # Listen to postMessage and update session_state via Streamlit
+    components.html(toggle_html, height=60)
 
-    # Handle backend switch via simple API
-    from fastapi import Request
-    from streamlit.web.server import Server
-    from starlette.middleware.base import BaseHTTPMiddleware
+    # Update theme based on postMessage event
+    import streamlit_js_eval
 
-    async def theme_switch_middleware(request: Request, call_next):
-        if request.url.path == "/_set_theme":
-            data = await request.json()
-            theme = data.get("theme", "☀️ Light Mode")
-            st.session_state.selected_theme = theme
+    selected_theme = streamlit_js_eval.get("window.lastSetTheme", default=None)
+    if selected_theme and selected_theme != st.session_state.selected_theme:
+        st.session_state.selected_theme = selected_theme
 
-            # Clear theme cache
-            for k in list(st.session_state.keys()):
-                if k.startswith("github_theme_"):
-                    del st.session_state[k]
+        # Clear cache
+        for k in list(st.session_state.keys()):
+            if k.startswith("github_theme_"):
+                del st.session_state[k]
 
-            # Apply the theme
-            apply_github_theme(
-                username="MaGruAGD",
-                repository="AHA_streamlit_app",
-                file_path=theme_options[theme],
-                show_status=False,
-            )
-            return st.Response(status_code=204)
-        return await call_next(request)
-
-    # Register middleware only once
-    ctx = st.runtime.scriptrunner.script_run_context.get_script_run_ctx()
-    if ctx:
-        session_id = ctx.session_id
-        session_info = Server.get_current()._get_session_info(session_id)
-        if session_info and not hasattr(session_info.session, "_theme_middleware_added"):
-            st.web._add_middleware(BaseHTTPMiddleware, dispatch=theme_switch_middleware)
-            session_info.session._theme_middleware_added = True
+        apply_github_theme(
+            username="MaGruAGD",
+            repository="AHA_streamlit_app",
+            file_path=theme_options[selected_theme],
+            show_status=False
+        )
+        st.rerun()
 
 
 if __name__ == "__main__":
