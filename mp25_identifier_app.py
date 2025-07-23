@@ -355,11 +355,10 @@ def step_select_codes():
                     disabled=is_used_elsewhere,
                     help=help_text
                 )
-
-# Add to selected list if checked and not disabled
-if checkbox_value and not is_used_elsewhere:
-    selected.append(code)
-
+                
+                # Add to selected list if checked and not disabled
+                if checkbox_value and not is_used_elsewhere:
+                    selected.append(code)
         
         # Update session state for this specific run
         st.session_state.selected_codes[run_num] = selected
