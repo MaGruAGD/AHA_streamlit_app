@@ -304,11 +304,9 @@ def step_select_codes():
     # Show basic info about codes
     st.info(f"📊 Found {stats['total_codes']} codes in the CSV file")
     
-    # Code selection for each run
+    # Pre-calculate conflicts for all runs to avoid dynamic updates during rendering
+    run_conflicts = {}
     for run_num in range(1, st.session_state.num_runs + 1):
-        st.subheader(f"🚀 Run {run_num}")
-        
-        # Get all codes that are currently selected in OTHER runs by checking checkbox states
         other_runs_codes = set()
         for other_run in range(1, st.session_state.num_runs + 1):
             if other_run != run_num:
@@ -316,6 +314,14 @@ def step_select_codes():
                     checkbox_key = f"run_{other_run}_code_{code}"
                     if st.session_state.get(checkbox_key, False):
                         other_runs_codes.add(code)
+        run_conflicts[run_num] = other_runs_codes
+    
+    # Code selection for each run
+    for run_num in range(1, st.session_state.num_runs + 1):
+        st.subheader(f"🚀 Run {run_num}")
+        
+        # Use pre-calculated conflicts
+        other_runs_codes = run_conflicts[run_num]
         
         # Create columns for better layout
         num_cols = 3
@@ -345,7 +351,13 @@ def step_select_codes():
                     disabled=is_used_elsewhere,
                     help=help_text
                 )
-        
+    
+    # After all checkboxes are created, update selected_codes for compatibility
+    if 'selected_codes' not in st.session_state:
+        st.session_state.selected_codes = {}
+    
+    # Update selected codes and show summaries for each run
+    for run_num in range(1, st.session_state.num_runs + 1):
         # Build selected codes list by reading current checkbox states
         current_run_selected = []
         for code in all_available_codes:
@@ -354,21 +366,22 @@ def step_select_codes():
                 current_run_selected.append(code)
         
         # Update the selected_codes for compatibility with other parts of your app
-        if 'selected_codes' not in st.session_state:
-            st.session_state.selected_codes = {}
         st.session_state.selected_codes[run_num] = current_run_selected
         
-        # Show selection summary for this run
+        # Show selection summary for this run (moved outside the main loop)
+        if run_num < st.session_state.num_runs:  # Don't show separator after last run
+            st.markdown("---")
+    
+    # Show final summary
+    st.subheader("📋 Selection Summary")
+    for run_num in range(1, st.session_state.num_runs + 1):
+        current_run_selected = st.session_state.selected_codes.get(run_num, [])
         if current_run_selected:
-            st.success(f"**Selected {len(current_run_selected)} codes**")
-            
-            # Show the actual codes in a nice format
+            st.success(f"**Run {run_num}: {len(current_run_selected)} codes selected**")
             with st.expander(f"View Selected Codes for Run {run_num}", expanded=False):
                 st.write(", ".join(current_run_selected))
         else:
-            st.info("No codes selected for this run")
-        
-        st.markdown("---")
+            st.info(f"Run {run_num}: No codes selected")
         
 # Utility Functions
 def position_to_sample_number(position):
