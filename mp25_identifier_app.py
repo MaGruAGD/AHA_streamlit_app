@@ -1592,16 +1592,7 @@ def main():
     # Add theme selector to sidebar (call this early)
     add_theme_selector()
     
-    # Add theme refresh button in sidebar (keep existing functionality)
-    with st.sidebar:
-        st.markdown("---")
-        if st.button("🎨 Refresh All Themes"):
-            # Clear all theme cache to force reload
-            cache_keys = [k for k in st.session_state.keys() if k.startswith("github_theme_")]
-            for key in cache_keys:
-                del st.session_state[key]
-            st.rerun()
-    
+   
     # Modern professional laboratory header
     st.markdown(
         """
