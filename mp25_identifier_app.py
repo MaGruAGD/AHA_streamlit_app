@@ -1395,263 +1395,194 @@ def step_download_results():
             
 # Main Application
 
-def main():
-    # Compact professional laboratory CSS styling
-    st.markdown("""
-        <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+def load_theme_from_github(
+    username: str, 
+    repository: str, 
+    file_path: str, 
+    branch: str = "main",
+    cache_duration: int = 3600  # Cache for 1 hour
+) -> Optional[str]:
+    """
+    Load CSS theme from a GitHub repository
+    
+    Args:
+        username: GitHub username
+        repository: Repository name
+        file_path: Path to CSS file (e.g., 'theme.css')
+        branch: Branch name (default: 'main')
+        cache_duration: Cache duration in seconds
+    
+    Returns:
+        CSS content as string or None if failed
+    """
+    
+    # Create cache key
+    cache_key = f"github_theme_{username}_{repository}_{file_path}_{branch}"
+    
+    # Check if theme is cached and still valid
+    if cache_key in st.session_state:
+        cached_data = st.session_state[cache_key]
+        if time.time() - cached_data['timestamp'] < cache_duration:
+            return cached_data['css']
+    
+    try:
+        # Construct raw GitHub URL
+        url = f"https://raw.githubusercontent.com/{username}/{repository}/{branch}/{file_path}"
         
-        :root {
-            --primary: #0066cc;
-            --primary-dark: #0052a3;
-            --accent: #00a896;
-            --success: #16a34a;
-            --warning: #f59e0b;
-            --error: #dc2626;
-            --bg: #fafafa;
-            --card: rgba(255,255,255,0.95);
-            --border: #e5e5e5;
-            --text: #262626;
-            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        # Show loading indicator
+        with st.spinner("Loading theme..."):
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+        
+        css_content = response.text
+        
+        # Cache the CSS content
+        st.session_state[cache_key] = {
+            'css': css_content,
+            'timestamp': time.time()
         }
         
-        .stApp {
-            background: linear-gradient(135deg, var(--bg) 0%, #fff 100%);
-            font-family: 'Inter', sans-serif;
-            color: var(--text);
+        return css_content
+        
+    except requests.exceptions.RequestException as e:
+        st.warning(f"Could not load theme from GitHub: {e}")
+        return None
+    except Exception as e:
+        st.error(f"Unexpected error loading theme: {e}")
+        return None
+
+def apply_github_theme(
+    username: str,
+    repository: str, 
+    file_path: str,
+    branch: str = "main",
+    fallback_theme: Optional[str] = None,
+    show_status: bool = False
+):
+    """
+    Apply CSS theme from GitHub repository to Streamlit app
+    
+    Args:
+        username: GitHub username
+        repository: Repository name
+        file_path: Path to CSS file
+        branch: Branch name
+        fallback_theme: Fallback CSS if GitHub load fails
+        show_status: Whether to show theme loading status
+    """
+    
+    # Load theme from GitHub
+    css_content = load_theme_from_github(username, repository, file_path, branch)
+    
+    # Use fallback if GitHub load failed
+    if css_content is None:
+        if fallback_theme is not None:
+            css_content = fallback_theme
+            if show_status:
+                st.info("💡 Using fallback theme - GitHub theme could not be loaded")
+        else:
+            if show_status:
+                st.error("❌ No theme could be loaded")
+            return
+    else:
+        if show_status:
+            st.success(f"✅ Theme loaded from GitHub: {username}/{repository}")
+    
+    # Apply the theme
+    if css_content:
+        st.markdown(f"<style>{css_content}</style>", unsafe_allow_html=True)
+
+def main():
+    # Your GitHub repository details
+    GITHUB_USERNAME = "MaGruAGD"
+    GITHUB_REPO = "AHA_streamlit_app"
+    THEME_FILE = "theme.css"
+    
+    # Minimal fallback theme in case GitHub is unreachable
+    FALLBACK_THEME = """
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        .stApp { 
+            font-family: 'Inter', sans-serif; 
+            background: linear-gradient(135deg, #fafafa 0%, #fff 100%);
         }
         
         .main .block-container {
             padding: 2rem;
-            background: var(--card);
-            backdrop-filter: blur(20px);
+            background: rgba(255,255,255,0.95);
             border-radius: 12px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
             margin: 1.5rem;
             max-width: 1200px;
-            transition: all 0.3s ease;
         }
         
         .header-container {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
+            background: linear-gradient(135deg, #0066cc, #00a896);
             padding: 2rem;
             margin: -2rem -2rem 2rem -2rem;
             border-radius: 12px 12px 0 0;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .header-container::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-            opacity: 0.3;
+            color: white;
         }
         
         .header-title {
-            font-size: clamp(1.75rem, 4vw, 2.5rem);
+            font-size: 2rem;
             font-weight: 700;
-            color: white;
             margin: 0;
             display: flex;
             align-items: center;
             gap: 1rem;
-            position: relative;
-            z-index: 1;
         }
         
         .header-subtitle {
             font-size: 0.875rem;
-            color: rgba(255,255,255,0.85);
             margin: 0.75rem 0 0 0;
-            font-weight: 500;
+            opacity: 0.85;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            position: relative;
-            z-index: 1;
         }
-        
-        .step-container {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-left: 4px solid var(--primary);
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            color: var(--text);
-            font-weight: 600;
-            margin: 1rem 0;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.875rem;
-            transition: transform 0.2s ease;
-        }
-        
-        .step-container:hover { transform: translateY(-1px); }
         
         .status-card {
-            background: var(--card);
-            backdrop-filter: blur(10px);
+            background: rgba(255,255,255,0.95);
             padding: 1.5rem;
             border-radius: 8px;
-            border: 1px solid var(--border);
+            border: 1px solid #e5e5e5;
             margin: 1rem 0;
-            position: relative;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow);
-        }
-        
-        .status-card:hover { transform: translateY(-2px); }
-        
-        .status-card::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 4px;
-            background: var(--border);
-            border-radius: 4px 0 0 4px;
-            transition: all 0.3s ease;
-        }
-        
-        .status-success { border-color: rgba(22,163,74,0.2); background: rgba(240,253,244,0.8); }
-        .status-success::before { background: var(--success); box-shadow: 0 0 20px rgba(22,163,74,0.3); }
-        
-        .status-warning { border-color: rgba(245,158,11,0.2); background: rgba(255,251,235,0.8); }
-        .status-warning::before { background: var(--warning); box-shadow: 0 0 20px rgba(245,158,11,0.3); }
-        
-        .status-error { border-color: rgba(220,38,38,0.2); background: rgba(254,242,242,0.8); }
-        .status-error::before { background: var(--error); box-shadow: 0 0 20px rgba(220,38,38,0.3); }
-        
-        .status-info { border-color: rgba(0,102,204,0.2); background: rgba(232,242,255,0.8); }
-        .status-info::before { background: var(--primary); box-shadow: 0 0 20px rgba(0,102,204,0.3); }
-        
-        .stButton > button {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 0.75rem 1.5rem;
-            font-weight: 600;
-            font-family: 'Inter', sans-serif;
-            transition: all 0.2s ease;
-            box-shadow: var(--shadow);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .stButton > button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-        }
-        
-        .metric-container {
-            background: var(--card);
-            backdrop-filter: blur(10px);
-            padding: 1.5rem;
-            border-radius: 8px;
-            text-align: center;
-            border: 1px solid var(--border);
-            margin: 0.5rem;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow);
-        }
-        
-        .metric-container:hover { transform: translateY(-2px); }
-        
-        .metric-value {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin: 0;
-            font-family: 'JetBrains Mono', monospace;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .metric-label {
-            font-size: 0.75rem;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-top: 0.5rem;
-            font-weight: 600;
-        }
-        
-        .stFileUploader {
-            border: 2px dashed var(--border);
-            border-radius: 8px;
-            padding: 2rem;
-            text-align: center;
-            background: var(--bg);
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .stFileUploader:hover {
-            border-color: var(--primary);
-            background: rgba(232,242,255,0.8);
-            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
         
         .breadcrumb-container {
-            background: var(--card);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.9);
+            border: 1px solid #e5e5e5;
             border-radius: 8px;
             padding: 0.75rem 1rem;
             margin-bottom: 1rem;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Courier New', monospace;
             font-size: 0.8rem;
             color: #666;
-            box-shadow: var(--shadow);
         }
+    """
+    
+    # Apply theme from GitHub with fallback
+    apply_github_theme(
+        username=GITHUB_USERNAME,
+        repository=GITHUB_REPO,
+        file_path=THEME_FILE,
+        branch="main",
+        fallback_theme=FALLBACK_THEME,
+        show_status=False  # Set to True if you want to see loading status
+    )
+    
+    # Add theme refresh button in sidebar (optional)
+    with st.sidebar:
+        st.markdown("---")
+        if st.button("🎨 Refresh Theme"):
+            # Clear theme cache to force reload
+            cache_keys = [k for k in st.session_state.keys() if k.startswith("github_theme_")]
+            for key in cache_keys:
+                del st.session_state[key]
+            st.rerun()
         
-        .section-header {
-            color: var(--text);
-            font-weight: 700;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 3px solid var(--primary);
-            font-size: 1.25rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .lab-icon {
-            font-size: 1.5rem;
-            margin-right: 0.5rem;
-            vertical-align: middle;
-            transition: transform 0.2s ease;
-        }
-        
-        .header-title .lab-icon {
-            font-size: 2rem;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
-        .validation-success { color: var(--success); font-weight: 600; }
-        .validation-error { color: var(--error); font-weight: 600; }
-        .validation-warning { color: var(--warning); font-weight: 600; }
-        
-        @media (max-width: 768px) {
-            .main .block-container {
-                margin: 0.75rem;
-                padding: 1rem;
-            }
-            .header-container { padding: 1.5rem; }
-            .metric-container { margin: 0.25rem; }
-        }
-        </style>
-    """, unsafe_allow_html=True)
+        st.caption(f"Theme: [{GITHUB_USERNAME}/{GITHUB_REPO}]({f'https://github.com/{GITHUB_USERNAME}/{GITHUB_REPO}/blob/main/{THEME_FILE}'})")
     
     # Modern professional laboratory header
     st.markdown(
@@ -1711,7 +1642,7 @@ def main():
         </div>
     """, unsafe_allow_html=True)
     
-    # Step routing without section headers
+    # Step routing
     if step == "1. Upload CSV":
         step_upload_csv(allowed_codes)
         
@@ -1732,6 +1663,39 @@ def main():
         
     elif step == "7. Download Results":
         step_download_results()
+
+# Add this function if you want to provide theme switching capability
+def add_theme_selector():
+    """Optional: Add theme selection in sidebar"""
+    with st.sidebar:
+        st.markdown("### 🎨 Theme Options")
+        
+        # You can add multiple theme files to your repo
+        theme_options = {
+            "Laboratory (Default)": "theme.css",
+            "Dark Mode": "theme-dark.css",  # If you create this
+            "Minimal": "theme-minimal.css"   # If you create this
+        }
+        
+        selected_theme = st.selectbox(
+            "Choose Theme",
+            options=list(theme_options.keys()),
+            index=0
+        )
+        
+        if st.button("Apply Theme"):
+            # Clear cache and apply new theme
+            cache_keys = [k for k in st.session_state.keys() if k.startswith("github_theme_")]
+            for key in cache_keys:
+                del st.session_state[key]
+            
+            apply_github_theme(
+                username="MaGruAGD",
+                repository="AHA_streamlit_app",
+                file_path=theme_options[selected_theme],
+                show_status=True
+            )
+            st.rerun()
 
 if __name__ == "__main__":
     main()
