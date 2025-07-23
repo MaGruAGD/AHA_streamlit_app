@@ -1,0 +1,366 @@
+/* Dark Laboratory Theme for AHA Streamlit App */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Main App Background */
+.stApp { 
+    font-family: 'Inter', sans-serif; 
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+    color: #e0e0e0;
+}
+
+/* Main Container */
+.main .block-container {
+    padding: 2rem;
+    background: rgba(20, 20, 20, 0.95);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 1.5rem;
+    max-width: 1200px;
+    backdrop-filter: blur(10px);
+}
+
+/* Header Container */
+.header-container {
+    background: linear-gradient(135deg, #1e3a8a, #059669);
+    padding: 2rem;
+    margin: -2rem -2rem 2rem -2rem;
+    border-radius: 12px 12px 0 0;
+    color: white;
+    box-shadow: 0 4px 20px rgba(30, 58, 138, 0.3);
+}
+
+.header-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.header-subtitle {
+    font-size: 0.875rem;
+    margin: 0.75rem 0 0 0;
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Status Cards */
+.status-card {
+    background: rgba(30, 30, 30, 0.9);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 1rem 0;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.status-card.status-success {
+    border-left: 4px solid #10b981;
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.status-card.status-warning {
+    border-left: 4px solid #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.status-card.status-error {
+    border-left: 4px solid #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* Breadcrumb Navigation */
+.breadcrumb-container {
+    background: rgba(30, 30, 30, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: #a0a0a0;
+    backdrop-filter: blur(5px);
+}
+
+/* Sidebar Styling */
+.css-1d391kg {
+    background: rgba(15, 15, 15, 0.95);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Sidebar Header */
+section[data-testid="stSidebar"] .css-1d391kg {
+    background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
+}
+
+/* Input Fields */
+.stTextInput > div > div > input,
+.stTextArea > div > div > textarea,
+.stSelectbox > div > div > select {
+    background: rgba(40, 40, 40, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #e0e0e0;
+    border-radius: 6px;
+}
+
+.stTextInput > div > div > input:focus,
+.stTextArea > div > div > textarea:focus,
+.stSelectbox > div > div > select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* Buttons */
+.stButton > button {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.stButton > button:hover {
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+}
+
+/* Download Button */
+.stDownloadButton > button {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.stDownloadButton > button:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+}
+
+/* File Uploader */
+.stFileUploader > div {
+    background: rgba(40, 40, 40, 0.6);
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+}
+
+.stFileUploader > div:hover {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+}
+
+/* DataFrames */
+.stDataFrame {
+    background: rgba(30, 30, 30, 0.9);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Tables */
+table {
+    background: rgba(30, 30, 30, 0.9);
+    color: #e0e0e0;
+}
+
+th {
+    background: rgba(50, 50, 50, 0.9) !important;
+    color: #f0f0f0 !important;
+    font-weight: 600;
+}
+
+td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Metrics */
+.metric-container {
+    background: rgba(30, 30, 30, 0.8);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+}
+
+/* Progress Bars */
+.stProgress .st-bo {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.stProgress .st-bp {
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+}
+
+/* Alerts and Messages */
+.stAlert {
+    background: rgba(40, 40, 40, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+}
+
+.stSuccess {
+    background: rgba(16, 185, 129, 0.15);
+    border-left: 4px solid #10b981;
+    color: #d1fae5;
+}
+
+.stWarning {
+    background: rgba(245, 158, 11, 0.15);
+    border-left: 4px solid #f59e0b;
+    color: #fef3c7;
+}
+
+.stError {
+    background: rgba(239, 68, 68, 0.15);
+    border-left: 4px solid #ef4444;
+    color: #fecaca;
+}
+
+.stInfo {
+    background: rgba(59, 130, 246, 0.15);
+    border-left: 4px solid #3b82f6;
+    color: #dbeafe;
+}
+
+/* Spinner */
+.stSpinner {
+    color: #3b82f6;
+}
+
+/* Tabs */
+.stTabs [data-baseweb="tab-list"] {
+    background: rgba(30, 30, 30, 0.8);
+    border-radius: 8px;
+    padding: 0.25rem;
+}
+
+.stTabs [data-baseweb="tab"] {
+    background: transparent;
+    color: #a0a0a0;
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+}
+
+.stTabs [aria-selected="true"] {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+}
+
+/* Expander */
+.streamlit-expanderHeader {
+    background: rgba(40, 40, 40, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #e0e0e0;
+}
+
+.streamlit-expanderContent {
+    background: rgba(30, 30, 30, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+}
+
+/* Selectbox */
+.stSelectbox > div > div {
+    background: rgba(40, 40, 40, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+}
+
+/* Multiselect */
+.stMultiSelect > div > div {
+    background: rgba(40, 40, 40, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+}
+
+/* Checkbox */
+.stCheckbox > label {
+    color: #e0e0e0;
+}
+
+/* Radio */
+.stRadio > label {
+    color: #e0e0e0;
+}
+
+/* Slider */
+.stSlider > div {
+    color: #e0e0e0;
+}
+
+/* Custom Lab Icons Glow Effect */
+.lab-icon {
+    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.6));
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.6));
+    }
+    50% {
+        filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.8));
+    }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(59, 130, 246, 0.6);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(59, 130, 246, 0.8);
+}
+
+/* Custom Dark Theme Enhancements */
+.dark-card {
+    background: rgba(20, 20, 20, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.glow-text {
+    text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+.glass-effect {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+}
+
+/* Hide Streamlit Branding in Dark Mode */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
