@@ -344,18 +344,22 @@ def step_select_codes():
                 # Generate unique key for checkbox
                 checkbox_key = f"run_{run_num}_code_{code}"
                 
-                # Create checkbox
+                # Initialize checkbox state if not already in session_state
+                if checkbox_key not in st.session_state:
+                    st.session_state[checkbox_key] = is_selected
+                
+                # Create checkbox using persistent session state
                 checkbox_value = st.checkbox(
                     code_label,
-                    value=is_selected,
                     key=checkbox_key,
                     disabled=is_used_elsewhere,
                     help=help_text
                 )
-                
-                # Add to selected list if checked
-                if checkbox_value:
-                    selected.append(code)
+
+# Add to selected list if checked and not disabled
+if checkbox_value and not is_used_elsewhere:
+    selected.append(code)
+
         
         # Update session state for this specific run
         st.session_state.selected_codes[run_num] = selected
