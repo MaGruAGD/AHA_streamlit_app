@@ -1,0 +1,252 @@
+/* Laboratory Theme - GitHub Repository Version */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+    --primary: #0066cc;
+    --primary-dark: #0052a3;
+    --accent: #00a896;
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --error: #dc2626;
+    --bg: #fafafa;
+    --card: rgba(255,255,255,0.95);
+    --border: #e5e5e5;
+    --text: #262626;
+    --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+}
+
+.stApp {
+    background: linear-gradient(135deg, var(--bg) 0%, #fff 100%);
+    font-family: 'Inter', sans-serif;
+    color: var(--text);
+}
+
+.main .block-container {
+    padding: 2rem;
+    background: var(--card);
+    backdrop-filter: blur(20px);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    margin: 1.5rem;
+    max-width: 1200px;
+    transition: all 0.3s ease;
+}
+
+.header-container {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    padding: 2rem;
+    margin: -2rem -2rem 2rem -2rem;
+    border-radius: 12px 12px 0 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.header-container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+    opacity: 0.3;
+}
+
+.header-title {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 700;
+    color: white;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.header-subtitle {
+    font-size: 0.875rem;
+    color: rgba(255,255,255,0.85);
+    margin: 0.75rem 0 0 0;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    position: relative;
+    z-index: 1;
+}
+
+.step-container {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--primary);
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    color: var(--text);
+    font-weight: 600;
+    margin: 1rem 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875rem;
+    transition: transform 0.2s ease;
+}
+
+.step-container:hover { transform: translateY(-1px); }
+
+.status-card {
+    background: var(--card);
+    backdrop-filter: blur(10px);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    margin: 1rem 0;
+    position: relative;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow);
+}
+
+.status-card:hover { transform: translateY(-2px); }
+
+.status-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background: var(--border);
+    border-radius: 4px 0 0 4px;
+    transition: all 0.3s ease;
+}
+
+.status-success { border-color: rgba(22,163,74,0.2); background: rgba(240,253,244,0.8); }
+.status-success::before { background: var(--success); box-shadow: 0 0 20px rgba(22,163,74,0.3); }
+
+.status-warning { border-color: rgba(245,158,11,0.2); background: rgba(255,251,235,0.8); }
+.status-warning::before { background: var(--warning); box-shadow: 0 0 20px rgba(245,158,11,0.3); }
+
+.status-error { border-color: rgba(220,38,38,0.2); background: rgba(254,242,242,0.8); }
+.status-error::before { background: var(--error); box-shadow: 0 0 20px rgba(220,38,38,0.3); }
+
+.status-info { border-color: rgba(0,102,204,0.2); background: rgba(232,242,255,0.8); }
+.status-info::before { background: var(--primary); box-shadow: 0 0 20px rgba(0,102,204,0.3); }
+
+.stButton > button {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.stButton > button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+}
+
+.metric-container {
+    background: var(--card);
+    backdrop-filter: blur(10px);
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid var(--border);
+    margin: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow);
+}
+
+.metric-container:hover { transform: translateY(-2px); }
+
+.metric-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin: 0;
+    font-family: 'JetBrains Mono', monospace;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.metric-label {
+    font-size: 0.75rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.5rem;
+    font-weight: 600;
+}
+
+.stFileUploader {
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    background: var(--bg);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.stFileUploader:hover {
+    border-color: var(--primary);
+    background: rgba(232,242,255,0.8);
+    transform: translateY(-2px);
+}
+
+.breadcrumb-container {
+    background: var(--card);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: #666;
+    box-shadow: var(--shadow);
+}
+
+.section-header {
+    color: var(--text);
+    font-weight: 700;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 3px solid var(--primary);
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.lab-icon {
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+    transition: transform 0.2s ease;
+}
+
+.header-title .lab-icon {
+    font-size: 2rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.validation-success { color: var(--success); font-weight: 600; }
+.validation-error { color: var(--error); font-weight: 600; }
+.validation-warning { color: var(--warning); font-weight: 600; }
+
+@media (max-width: 768px) {
+    .main .block-container {
+        margin: 0.75rem;
+        padding: 1rem;
+    }
+    .header-container { padding: 1.5rem; }
+    .metric-container { margin: 0.25rem; }
+}
