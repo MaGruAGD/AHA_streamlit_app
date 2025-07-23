@@ -1396,68 +1396,48 @@ def step_download_results():
 # Main Application
 
 def main():
-    # Modern professional laboratory CSS styling
+    # Compact professional laboratory CSS styling
     st.markdown("""
         <style>
-        /* Import modern fonts */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
         
-        /* CSS Variables for consistent theming */
         :root {
-            --primary-blue: #0066cc;
-            --primary-blue-dark: #0052a3;
-            --secondary-blue: #e8f2ff;
-            --accent-teal: #00a896;
+            --primary: #0066cc;
+            --primary-dark: #0052a3;
+            --accent: #00a896;
             --success: #16a34a;
             --warning: #f59e0b;
             --error: #dc2626;
-            --neutral-50: #fafafa;
-            --neutral-100: #f5f5f5;
-            --neutral-200: #e5e5e5;
-            --neutral-300: #d4d4d4;
-            --neutral-600: #525252;
-            --neutral-800: #262626;
-            --neutral-900: #171717;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --radius-sm: 6px;
-            --radius-md: 8px;
-            --radius-lg: 12px;
-            --spacing-xs: 0.5rem;
-            --spacing-sm: 0.75rem;
-            --spacing-md: 1rem;
-            --spacing-lg: 1.5rem;
-            --spacing-xl: 2rem;
+            --bg: #fafafa;
+            --card: rgba(255,255,255,0.95);
+            --border: #e5e5e5;
+            --text: #262626;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
         
-        /* Global styling with modern approach */
         .stApp {
-            background: linear-gradient(135deg, var(--neutral-50) 0%, #ffffff 100%);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            color: var(--neutral-800);
-            line-height: 1.6;
+            background: linear-gradient(135deg, var(--bg) 0%, #fff 100%);
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
         }
         
-        /* Main container with modern card design */
         .main .block-container {
-            padding: var(--spacing-xl);
-            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            background: var(--card);
             backdrop-filter: blur(20px);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--neutral-200);
-            margin: var(--spacing-lg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            margin: 1.5rem;
             max-width: 1200px;
             transition: all 0.3s ease;
         }
         
-        /* Modern header design */
         .header-container {
-            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-teal) 100%);
-            padding: var(--spacing-xl) var(--spacing-xl);
-            margin: calc(-1 * var(--spacing-xl)) calc(-1 * var(--spacing-xl)) var(--spacing-xl) calc(-1 * var(--spacing-xl));
-            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            padding: 2rem;
+            margin: -2rem -2rem 2rem -2rem;
+            border-radius: 12px 12px 0 0;
             position: relative;
             overflow: hidden;
         }
@@ -1465,10 +1445,7 @@ def main():
         .header-container::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            inset: 0;
             background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
             opacity: 0.3;
         }
@@ -1478,18 +1455,17 @@ def main():
             font-weight: 700;
             color: white;
             margin: 0;
-            letter-spacing: -0.025em;
             display: flex;
             align-items: center;
-            gap: var(--spacing-md);
+            gap: 1rem;
             position: relative;
             z-index: 1;
         }
         
         .header-subtitle {
             font-size: 0.875rem;
-            color: rgba(255, 255, 255, 0.85);
-            margin: var(--spacing-sm) 0 0 0;
+            color: rgba(255,255,255,0.85);
+            margin: 0.75rem 0 0 0;
             font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -1497,44 +1473,35 @@ def main():
             z-index: 1;
         }
         
-        /* Modern step indicators */
         .step-container {
-            background: var(--neutral-50);
-            border: 1px solid var(--neutral-200);
-            border-left: 4px solid var(--primary-blue);
-            padding: var(--spacing-md) var(--spacing-lg);
-            border-radius: var(--radius-md);
-            color: var(--neutral-800);
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: var(--text);
             font-weight: 600;
-            margin: var(--spacing-md) 0;
+            margin: 1rem 0;
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.875rem;
-            box-shadow: var(--shadow-sm);
-            transition: all 0.2s ease;
+            transition: transform 0.2s ease;
         }
         
-        .step-container:hover {
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-md);
-        }
+        .step-container:hover { transform: translateY(-1px); }
         
-        /* Modern status cards with glassmorphism */
         .status-card {
-            background: rgba(255, 255, 255, 0.8);
+            background: var(--card);
             backdrop-filter: blur(10px);
-            padding: var(--spacing-lg);
-            border-radius: var(--radius-md);
-            border: 1px solid var(--neutral-200);
-            margin: var(--spacing-md) 0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin: 1rem 0;
             position: relative;
             transition: all 0.3s ease;
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--shadow);
         }
         
-        .status-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
+        .status-card:hover { transform: translateY(-2px); }
         
         .status-card::before {
             content: '';
@@ -1543,135 +1510,62 @@ def main():
             top: 0;
             height: 100%;
             width: 4px;
-            background: var(--neutral-300);
-            border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+            background: var(--border);
+            border-radius: 4px 0 0 4px;
             transition: all 0.3s ease;
         }
         
-        /* Status card variations with modern colors */
-        .status-success {
-            border-color: rgba(22, 163, 74, 0.2);
-            background: rgba(240, 253, 244, 0.8);
-        }
+        .status-success { border-color: rgba(22,163,74,0.2); background: rgba(240,253,244,0.8); }
+        .status-success::before { background: var(--success); box-shadow: 0 0 20px rgba(22,163,74,0.3); }
         
-        .status-success::before {
-            background: var(--success);
-            box-shadow: 0 0 20px rgba(22, 163, 74, 0.3);
-        }
+        .status-warning { border-color: rgba(245,158,11,0.2); background: rgba(255,251,235,0.8); }
+        .status-warning::before { background: var(--warning); box-shadow: 0 0 20px rgba(245,158,11,0.3); }
         
-        .status-warning {
-            border-color: rgba(245, 158, 11, 0.2);
-            background: rgba(255, 251, 235, 0.8);
-        }
+        .status-error { border-color: rgba(220,38,38,0.2); background: rgba(254,242,242,0.8); }
+        .status-error::before { background: var(--error); box-shadow: 0 0 20px rgba(220,38,38,0.3); }
         
-        .status-warning::before {
-            background: var(--warning);
-            box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
-        }
+        .status-info { border-color: rgba(0,102,204,0.2); background: rgba(232,242,255,0.8); }
+        .status-info::before { background: var(--primary); box-shadow: 0 0 20px rgba(0,102,204,0.3); }
         
-        .status-error {
-            border-color: rgba(220, 38, 38, 0.2);
-            background: rgba(254, 242, 242, 0.8);
-        }
-        
-        .status-error::before {
-            background: var(--error);
-            box-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
-        }
-        
-        .status-info {
-            border-color: rgba(0, 102, 204, 0.2);
-            background: rgba(232, 242, 255, 0.8);
-        }
-        
-        .status-info::before {
-            background: var(--primary-blue);
-            box-shadow: 0 0 20px rgba(0, 102, 204, 0.3);
-        }
-        
-        /* Modern button design */
         .stButton > button {
-            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
             border: none;
-            border-radius: var(--radius-md);
-            padding: var(--spacing-sm) var(--spacing-lg);
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
             font-weight: 600;
             font-family: 'Inter', sans-serif;
             transition: all 0.2s ease;
-            text-transform: none;
-            letter-spacing: 0;
-            font-size: 0.875rem;
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--shadow);
             position: relative;
             overflow: hidden;
         }
         
-        .stButton > button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s ease;
-        }
-        
         .stButton > button:hover {
             transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
         }
         
-        .stButton > button:hover::before {
-            left: 100%;
-        }
-        
-        .stButton > button:active {
-            transform: translateY(0);
-        }
-        
-        /* Modern sidebar with dark theme */
-        .css-1d391kg {
-            background: linear-gradient(180deg, var(--neutral-900) 0%, var(--neutral-800) 100%);
-            border-right: 1px solid var(--neutral-600);
-        }
-        
-        .css-1d391kg .stSelectbox label,
-        .css-1d391kg .stButton label,
-        .css-1d391kg p,
-        .css-1d391kg h1,
-        .css-1d391kg h2,
-        .css-1d391kg h3 {
-            color: white !important;
-            font-weight: 500;
-        }
-        
-        /* Modern metric containers */
         .metric-container {
-            background: rgba(255, 255, 255, 0.9);
+            background: var(--card);
             backdrop-filter: blur(10px);
-            padding: var(--spacing-lg);
-            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            border-radius: 8px;
             text-align: center;
-            border: 1px solid var(--neutral-200);
-            margin: var(--spacing-sm);
+            border: 1px solid var(--border);
+            margin: 0.5rem;
             transition: all 0.3s ease;
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--shadow);
         }
         
-        .metric-container:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
+        .metric-container:hover { transform: translateY(-2px); }
         
         .metric-value {
             font-size: 2.5rem;
             font-weight: 800;
-            color: var(--primary-blue);
             margin: 0;
             font-family: 'JetBrains Mono', monospace;
-            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-teal) 100%);
+            background: linear-gradient(135deg, var(--primary), var(--accent));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -1679,193 +1573,58 @@ def main():
         
         .metric-label {
             font-size: 0.75rem;
-            color: var(--neutral-600);
+            color: #666;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            margin-top: var(--spacing-sm);
+            margin-top: 0.5rem;
             font-weight: 600;
         }
         
-        /* Modern file uploader - Fixed clickable area */
         .stFileUploader {
-            border: 2px dashed var(--neutral-300);
-            border-radius: var(--radius-md);
-            padding: var(--spacing-xl);
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 2rem;
             text-align: center;
-            background: var(--neutral-50);
+            background: var(--bg);
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
             cursor: pointer;
-        }
-        
-        /* Ensure file uploader button is clickable */
-        .stFileUploader > div {
-            position: relative;
-            z-index: 2;
-        }
-        
-        .stFileUploader button {
-            pointer-events: all !important;
-            z-index: 3 !important;
-            position: relative;
-        }
-        
-        .stFileUploader::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg, transparent 48%, rgba(0, 102, 204, 0.05) 50%, transparent 52%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: none;
-            z-index: 1;
         }
         
         .stFileUploader:hover {
-            border-color: var(--primary-blue);
-            background: var(--secondary-blue);
+            border-color: var(--primary);
+            background: rgba(232,242,255,0.8);
             transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
         }
         
-        .stFileUploader:hover::before {
-            opacity: 1;
-        }
-        
-        /* Fix for file uploader drag and drop area */
-        .stFileUploader [data-testid="stFileUploaderDropzone"] {
-            pointer-events: all !important;
-            cursor: pointer;
-        }
-        
-        /* Ensure the actual file input is accessible */
-        .stFileUploader input[type="file"] {
-            pointer-events: all !important;
-            z-index: 4;
-        }
-        
-        /* Modern table styling */
-        .dataframe {
-            border: 1px solid var(--neutral-200);
-            border-radius: var(--radius-md);
-            overflow: hidden;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.875rem;
-            box-shadow: var(--shadow-sm);
-        }
-        
-        .dataframe th {
-            background: linear-gradient(135deg, var(--neutral-100) 0%, var(--neutral-50) 100%);
-            color: var(--neutral-800);
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.025em;
-            padding: var(--spacing-md);
-            border-bottom: 2px solid var(--neutral-200);
-        }
-        
-        .dataframe td {
-            padding: var(--spacing-sm) var(--spacing-md);
-            transition: background-color 0.2s ease;
-        }
-        
-        .dataframe tbody tr:hover td {
-            background-color: var(--secondary-blue);
-        }
-        
-        /* Modern alert styling */
-        .stAlert {
-            border-radius: var(--radius-md);
-            border: 1px solid var(--neutral-200);
-            font-family: 'Inter', sans-serif;
-            box-shadow: var(--shadow-sm);
-            backdrop-filter: blur(10px);
-        }
-        
-        /* Modern progress bars */
-        .stProgress .css-pxxe24 {
-            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-teal) 100%);
-            border-radius: var(--radius-sm);
-            box-shadow: 0 0 10px rgba(0, 102, 204, 0.3);
-        }
-        
-        /* Modern input fields */
-        .stTextInput > div > div > input,
-        .stNumberInput > div > div > input,
-        .stSelectbox > div > div > select {
-            border: 1px solid var(--neutral-300);
-            border-radius: var(--radius-md);
-            font-family: 'Inter', sans-serif;
-            transition: all 0.2s ease;
-            padding: var(--spacing-sm) var(--spacing-md);
-            font-size: 0.875rem;
-        }
-        
-        .stTextInput > div > div > input:focus,
-        .stNumberInput > div > div > input:focus,
-        .stSelectbox > div > div > select:focus {
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
-            outline: none;
-        }
-        
-        /* Modern breadcrumb navigation */
         .breadcrumb-container {
-            background: rgba(255, 255, 255, 0.8);
+            background: var(--card);
             backdrop-filter: blur(10px);
-            border: 1px solid var(--neutral-200);
-            border-radius: var(--radius-md);
-            padding: var(--spacing-sm) var(--spacing-md);
-            margin-bottom: var(--spacing-md);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.8rem;
-            color: var(--neutral-600);
-            box-shadow: var(--shadow-sm);
+            color: #666;
+            box-shadow: var(--shadow);
         }
         
-        /* Modern section headers */
         .section-header {
-            color: var(--neutral-900);
+            color: var(--text);
             font-weight: 700;
-            margin-bottom: var(--spacing-md);
-            padding-bottom: var(--spacing-sm);
-            border-bottom: 3px solid var(--primary-blue);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid var(--primary);
             font-size: 1.25rem;
             display: flex;
             align-items: center;
-            gap: var(--spacing-sm);
-            background: linear-gradient(135deg, var(--neutral-900) 0%, var(--neutral-600) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            gap: 0.5rem;
         }
         
-        /* Validation indicators with modern colors */
-        .validation-success {
-            color: var(--success);
-            font-weight: 600;
-        }
-        
-        .validation-error {
-            color: var(--error);
-            font-weight: 600;
-        }
-        
-        .validation-warning {
-            color: var(--warning);
-            font-weight: 600;
-        }
-        
-        /* Modern lab icons with subtle animations */
         .lab-icon {
             font-size: 1.5rem;
-            margin-right: var(--spacing-sm);
+            margin-right: 0.5rem;
             vertical-align: middle;
-            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
             transition: transform 0.2s ease;
         }
         
@@ -1879,45 +1638,17 @@ def main():
             50% { transform: scale(1.05); }
         }
         
-        /* Loading states and micro-interactions */
-        .loading-shimmer {
-            background: linear-gradient(90deg, var(--neutral-200) 25%, var(--neutral-100) 50%, var(--neutral-200) 75%);
-            background-size: 200% 100%;
-            animation: shimmer 2s infinite;
-        }
+        .validation-success { color: var(--success); font-weight: 600; }
+        .validation-error { color: var(--error); font-weight: 600; }
+        .validation-warning { color: var(--warning); font-weight: 600; }
         
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-        
-        /* Responsive design improvements */
         @media (max-width: 768px) {
             .main .block-container {
-                margin: var(--spacing-sm);
-                padding: var(--spacing-md);
+                margin: 0.75rem;
+                padding: 1rem;
             }
-            
-            .header-container {
-                padding: var(--spacing-lg);
-            }
-            
-            .metric-container {
-                margin: var(--spacing-xs);
-            }
-        }
-        
-        /* Dark mode considerations */
-        @media (prefers-color-scheme: dark) {
-            .stApp {
-                background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            }
-            
-            .main .block-container {
-                background: rgba(40, 40, 40, 0.95);
-                border-color: #404040;
-                color: #e5e5e5;
-            }
+            .header-container { padding: 1.5rem; }
+            .metric-container { margin: 0.25rem; }
         }
         </style>
     """, unsafe_allow_html=True)
