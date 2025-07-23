@@ -1507,9 +1507,9 @@ def main():
     
     # Theme options mapping
     theme_options = {
-        "🧪 Laboratory (Default)": "theme.css",
+        "🧪 Light Mode": "theme.css",
         "🌙 Dark Mode": "dark_theme_css.css",
-        "💼 Minimal": "theme-minimal.css"
+        
     }
     
     # Get current theme file
