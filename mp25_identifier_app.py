@@ -304,15 +304,17 @@ def step_select_codes():
     # Show basic info about codes
     st.info(f"📊 Found {stats['total_codes']} codes in the CSV file")
     
+    # Initialize selected_codes if it doesn't exist
+    if 'selected_codes' not in st.session_state:
+        st.session_state.selected_codes = {}
+    
     # Code selection for each run
     for run_num in range(1, st.session_state.num_runs + 1):
         st.subheader(f"🚀 Run {run_num}")
         
-        # Initialize selected codes for this run
+        # Initialize selected codes for this run if not exists
         if run_num not in st.session_state.selected_codes:
             st.session_state.selected_codes[run_num] = []
-        
-        selected = []
         
         # Get all codes that are already selected in OTHER runs
         other_runs_codes = set()
@@ -324,13 +326,13 @@ def step_select_codes():
         num_cols = 3
         cols = st.columns(num_cols)
         
+        # Track selected codes for this run
+        current_run_selected = []
+        
         # Display codes
         for i, code in enumerate(all_available_codes):
             col_idx = i % num_cols
             with cols[col_idx]:
-                # Check if this code is already selected for this run
-                is_selected = code in st.session_state.selected_codes[run_num]
-                
                 # Check if this code is already used in another run
                 is_used_elsewhere = code in other_runs_codes
                 
@@ -344,13 +346,13 @@ def step_select_codes():
                 # Generate unique key for checkbox
                 checkbox_key = f"run_{run_num}_code_{code}"
                 
-                # Initialize checkbox state if not already in session_state
-                if checkbox_key not in st.session_state:
-                    st.session_state[checkbox_key] = is_selected
+                # Get the current value from session state or default to previously selected
+                default_value = code in st.session_state.selected_codes[run_num]
                 
-                # Create checkbox using persistent session state
+                # Create checkbox - let Streamlit handle the state completely
                 checkbox_value = st.checkbox(
                     code_label,
+                    value=default_value,
                     key=checkbox_key,
                     disabled=is_used_elsewhere,
                     help=help_text
@@ -358,18 +360,18 @@ def step_select_codes():
                 
                 # Add to selected list if checked and not disabled
                 if checkbox_value and not is_used_elsewhere:
-                    selected.append(code)
+                    current_run_selected.append(code)
         
-        # Update session state for this specific run
-        st.session_state.selected_codes[run_num] = selected
+        # Update session state for this specific run with the current selections
+        st.session_state.selected_codes[run_num] = current_run_selected
         
         # Show selection summary for this run
-        if selected:
-            st.success(f"**Selected {len(selected)} codes**")
+        if current_run_selected:
+            st.success(f"**Selected {len(current_run_selected)} codes**")
             
             # Show the actual codes in a nice format
             with st.expander(f"View Selected Codes for Run {run_num}", expanded=False):
-                st.write(", ".join(selected))
+                st.write(", ".join(current_run_selected))
         else:
             st.info("No codes selected for this run")
         
