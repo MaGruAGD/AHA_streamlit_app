@@ -1980,47 +1980,26 @@ def main():
         </div>
     """, unsafe_allow_html=True)
     
-    # Enhanced step routing with clean headers
+    # Step routing without section headers
     if step == "1. Upload CSV":
-        st.markdown("""
-            <h3 class="section-header"><span class="lab-icon">📤</span>Data Import Module</h3>
-        """, unsafe_allow_html=True)
         step_upload_csv(allowed_codes)
         
     elif step == "2. Select Runs":
-        st.markdown("""
-            <h3 class="section-header"><span class="lab-icon">🎯</span>Run Selection Module</h3>
-        """, unsafe_allow_html=True)
         step_select_runs()
         
     elif step == "3. Select Codes":
-        st.markdown("""
-            <h3 class="section-header"><span class="lab-icon">🔢</span>Sample Code Configuration</h3>
-        """, unsafe_allow_html=True)
         step_select_codes()
         
     elif step == "4. Add Rows":
-        st.markdown("""
-            <h3 class="section-header"><span class="lab-icon">➕</span>Sample Data Management</h3>
-        """, unsafe_allow_html=True)
         add_row_interface(st.session_state.processor, allowed_codes, control_samples)
         
     elif step == "5. Volume Manager":
-        st.markdown("""
-            <h3 class="section-header"><span class="lab-icon">🧪</span>Volume Calibration Module</h3>
-        """, unsafe_allow_html=True)
         volume_manager_interface(st.session_state.processor, allowed_codes)
         
     elif step == "6. Process Data":
-        st.markdown("""
-            <h3 class="section-header"><span class="lab-icon">⚙️</span>Data Processing Engine</h3>
-        """, unsafe_allow_html=True)
         step_process_data()
         
     elif step == "7. Download Results":
-        st.markdown("""
-            <h3 class="section-header"><span class="lab-icon">📊</span>Analysis Results</h3>
-        """, unsafe_allow_html=True)
         step_download_results()
 
 if __name__ == "__main__":
