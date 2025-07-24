@@ -587,7 +587,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
 
     # Sample manager interface
     if st.session_state.get('show_sample_manager', False):
-        with st.expander("🗂️ Toegevoegde monsters", expanded=True):
+        with st.expander("🗂️ Toegevoegde monsters:", expanded=True):
             
             # Recalculate added rows here as well to ensure freshness
             current_added_count = len(processor.df) - st.session_state.original_row_count
@@ -670,7 +670,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
                         st.write(f"**{len(samples_to_delete)} sample(s) selected for deletion**")
                 
                 # Close manager button
-                if st.button("❌ Close Manager", use_container_width=True):
+                if st.button("❌ Sluiten", use_container_width=True):
                     st.session_state.show_sample_manager = False
                     st.rerun()
             else:
