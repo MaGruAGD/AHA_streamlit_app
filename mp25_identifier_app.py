@@ -596,12 +596,19 @@ def add_row_interface(processor, allowed_codes, control_samples):
             added_rows = processor.df.iloc[original_count:].copy()
             
             if len(added_rows) > 0:
-                # Create a list to track which samples to delete
-                samples_to_delete = []
-                metadata_indices_to_delete = []
+                # Show total count
+                st.markdown(f"**Total samples: {len(added_rows)}**")
+                
+                # Limit display to prevent screen overflow
+                max_display = 5
+                if len(added_rows) > max_display:
+                    show_all = st.checkbox(f"Show all {len(added_rows)} samples (currently showing first {max_display})", key="show_all_samples")
+                    display_rows = added_rows if show_all else added_rows.head(max_display)
+                else:
+                    display_rows = added_rows
                 
                 # Display each added sample with delete option
-                for idx, (df_idx, row) in enumerate(added_rows.iterrows()):
+                for idx, (df_idx, row) in enumerate(display_rows.iterrows()):
                     # Get the metadata for this sample
                     metadata = None
                     if 'added_samples_metadata' in st.session_state and idx < len(st.session_state.added_samples_metadata):
