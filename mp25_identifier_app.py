@@ -612,10 +612,12 @@ def add_row_interface(processor, allowed_codes, control_samples):
                         col1, col2, col3, col4, col5 = st.columns([2, 1.5, 1.5, 2, 1])
                         
                         # Extract sample information from the row
-                        # Debug: Let's see what the actual values look like
-                        st.write("🔍 DEBUG - Raw values:")
-                        st.write(f"Step1Source: {step1_source}")
-                        st.write(f"Step1Destination: {step1_destination}")
+                        solution_name = row.get('SolutionName', 'Unknown')
+                        step1_source = row.get('Step1Source', '')
+                        step1_destination = row.get('Step1Destination', '')
+                        step1_volume = row.get('Step1Volume', '')
+                        
+                        # REPLACE THE PARSING SECTION WITH THIS (remove the debug st.write lines):
                         
                         # Parse source and destination for display
                         source_match = re.search(r'"([^"]+)"', str(step1_source))
@@ -624,33 +626,37 @@ def add_row_interface(processor, allowed_codes, control_samples):
                         source_id = source_match.group(1) if source_match else str(step1_source)
                         dest_id = dest_match.group(1) if dest_match else str(step1_destination)
                         
-                        st.write(f"Parsed source_id: {source_id}")
-                        st.write(f"Parsed dest_id: {dest_id}")
-                        
                         # Try multiple patterns for extracting positions
                         # Pattern 1: :A1, :B2, etc. at the end
                         source_pos_match = re.search(r':([A-H]\d{1,2})$', source_id)
                         dest_pos_match = re.search(r':([A-H]\d{1,2})$', dest_id)
                         
-                        # Pattern 2: Just A1, B2, etc. at the end
+                        # Pattern 2: Just A1, B2, etc. at the end (if Pattern 1 fails)
                         if not source_pos_match:
                             source_pos_match = re.search(r'([A-H]\d{1,2})$', source_id)
                         if not dest_pos_match:
                             dest_pos_match = re.search(r'([A-H]\d{1,2})$', dest_id)
                         
-                        # Pattern 3: Any A1, B2 pattern anywhere in the string
+                        # Pattern 3: Any A1, B2 pattern anywhere in the string (if Pattern 2 fails)
                         if not source_pos_match:
                             source_pos_match = re.search(r'([A-H]\d{1,2})', source_id)
                         if not dest_pos_match:
                             dest_pos_match = re.search(r'([A-H]\d{1,2})', dest_id)
                         
-                        source_position = source_pos_match.group(1) if source_pos_match else f"Unknown ({source_id})"
-                        dest_position = dest_pos_match.group(1) if dest_pos_match else f"Unknown ({dest_id})"
+                        # Extract the position or show what we have for debugging
+                        if source_pos_match:
+                            source_position = source_pos_match.group(1)
+                        else:
+                            # Show the actual value for debugging
+                            source_position = f"? ({source_id[:20]}...)" if len(source_id) > 20 else f"? ({source_id})"
                         
-                        st.write(f"Final source_position: {source_position}")
-                        st.write(f"Final dest_position: {dest_position}")
+                        if dest_pos_match:
+                            dest_position = dest_pos_match.group(1)
+                        else:
+                            # Show the actual value for debugging  
+                            dest_position = f"? ({dest_id[:20]}...)" if len(dest_id) > 20 else f"? ({dest_id})"
                         
-                        # Get MP25 code
+                        # Get MP25 code (keep existing logic)
                         mp25_match = re.search(r'MP25([A-Z0-9]+)\d{4}', dest_id)
                         mp25_code = mp25_match.group(1) if mp25_match else "Unknown"
                         
