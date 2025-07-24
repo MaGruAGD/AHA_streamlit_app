@@ -1025,9 +1025,9 @@ def step_upload_csv(allowed_codes):
     st.header("Stap 1: Upload Werklijst - Andrew.csv")
     
     uploaded_file = st.file_uploader(
-        "Choose a CSV file",
+        "Kies een CSV file",
         type="csv",
-        help="Upload your laboratory data CSV file"
+        help="Upload je Werklijst - Andrew.csv verkregen uit Labo++"
     )
     
     if uploaded_file is not None:
