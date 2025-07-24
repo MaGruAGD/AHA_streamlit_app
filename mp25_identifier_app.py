@@ -1487,9 +1487,9 @@ def main():
         <div class="header-container">
             <h1 class="header-title">
                 <span class="lab-icon">🧪</span>
-                AHA Laboratory Analysis System
+                AHA!
             </h1>
-            <p class="header-subtitle">Advanced Laboratory Data Management & Analysis Platform</p>
+            <p class="header-subtitle">Andrew Helper App</p>
         </div>
         """,
         unsafe_allow_html=True
@@ -1573,7 +1573,7 @@ def add_theme_selector():
         
         # Theme selector with callback
         selected_theme = st.selectbox(
-            "Choose Theme",
+            "Thema kiezen",
             options=list(theme_options.keys()),
             index=list(theme_options.keys()).index(st.session_state.selected_theme),
             key="theme_selector"
