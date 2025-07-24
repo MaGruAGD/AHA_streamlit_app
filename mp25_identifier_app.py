@@ -589,10 +589,6 @@ def add_row_interface(processor, allowed_codes, control_samples):
     # Sample manager interface
     # Sample manager interface - REPLACE the existing sample manager section in add_row_interface
     if st.session_state.get('show_sample_manager', False):
-        st.write("🐛 DEBUG - Opening sample manager")
-        st.write("Sample type in session state:", st.session_state.get('sample_type'))
-        st.write("Show sample manager:", st.session_state.get('show_sample_manager'))
-        st.write("All session state keys:", list(st.session_state.keys()))
         with st.expander("🗂️ Toegevoegde monsters:", expanded=True):
             
             # Get added rows (rows beyond the original count)
@@ -760,13 +756,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
     else:
         st.session_state.sample_type = "Regular Samples" 
         st.session_state.sample_type_index = 0
-
-    # Temporary debug (remove this later)
-    st.write("🔍 Radio button debug:")
-    st.write("- Selected:", sample_type)
-    st.write("- Stored in session_state.sample_type:", st.session_state.get('sample_type'))
-    st.write("- Radio key value:", st.session_state.get('sample_type_radio'))
-    
+   
     # Code selection - filter to only show codes with MP25 entries in CSV for control samples
     if sample_type == "Control Samples":
         # For control samples, only show codes that have MP25 entries in the CSV
