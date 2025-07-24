@@ -523,7 +523,7 @@ def create_sidebar():
         steps = [
             "1. Upload CSV", 
             "2. Aantal runs", 
-            "3. Add Rows", 
+            "3. Monster toevoegen", 
             "4. Select Codes", 
             "5. Volume Manager",  
             "6. Process Data", 
@@ -1541,7 +1541,7 @@ def main():
     elif step == "2. Aantal runs":
         step_select_runs()
         
-    elif step == "3. Add Rows":
+    elif step == "3. Monster toevoegen":
         add_row_interface(st.session_state.processor, allowed_codes, control_samples)
         
     elif step == "4. Select Codes":
