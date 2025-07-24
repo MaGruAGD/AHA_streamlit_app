@@ -1025,7 +1025,7 @@ def step_upload_csv(allowed_codes):
     st.header("Stap 1: Upload Werklijst - Andrew.csv")
     
     uploaded_file = st.file_uploader(
-        "Kies een CSV file uit je bestanden",
+        "Kies een CSV file uit uw bestanden",
         type="csv",
         help="Upload je Werklijst - Andrew.csv verkregen uit Labo++"
     )
@@ -1051,10 +1051,10 @@ def step_upload_csv(allowed_codes):
 
 def step_select_runs():
     """Step 2: Select Number of Runs"""
-    st.header("Step 2: Select Number of Runs")
+    st.header("Step 2: Selecteer het aantal runs")
     
     if st.session_state.processor is None:
-        st.warning("Please upload a CSV file first.")
+        st.warning("Upload eerst een CSV-bestand.")
         return
     
     st.session_state.num_runs = st.radio(
@@ -1071,7 +1071,7 @@ def step_select_codes():
     st.header("Step 4: Select Codes and Volumes")
     
     if st.session_state.processor is None:
-        st.warning("Please upload a CSV file first.")
+        st.warning("Upload eerst een CSV-bestand.")
         return
     
     # Get codes from the original CSV upload
@@ -1151,7 +1151,7 @@ def step_process_data():
     st.header("Step 6: Process Data")
     
     if st.session_state.processor is None:
-        st.warning("Please upload a CSV file first.")
+        st.warning("Upload eerst een CSV-bestand.")
         return
     
     if not any(st.session_state.selected_codes.values()):
@@ -1194,7 +1194,7 @@ def step_download_results():
     st.header("Step 7: Download Results")
     
     if not st.session_state.data_processed or not st.session_state.filtered_data:
-        st.warning("Please process data first.")
+        st.warning("Upload eerst een CSV-bestand.")
         return
     
     # Simple download buttons for each run
