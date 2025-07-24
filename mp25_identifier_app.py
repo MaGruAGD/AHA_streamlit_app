@@ -276,112 +276,129 @@ class CSVProcessor:
 
 
 def step_select_codes():
-    """Step 3: Select Codes and Volumes"""
+    """Step 3: Select Codes and Volumes - Fixed version"""
     st.header("Step 3: Select Codes and Volumes")
     
     if st.session_state.processor is None:
         st.warning("Please upload a CSV file first.")
         return
     
-    # Get current codes and statistics
-    stats = st.session_state.processor.get_code_statistics()
+    # Get codes from the original CSV upload
+    original_codes = set(st.session_state.processor.codes)
     
     # Update the processor's codes by re-extracting from current dataframe
     st.session_state.processor.codes = st.session_state.processor.extract_codes()
-    all_available_codes = stats['all_codes_list']
+    current_codes = set(st.session_state.processor.codes)
+    
+    # Find newly added codes
+    added_codes = current_codes - original_codes
+    
+    # Combine all available codes
+    all_available_codes = sorted(list(current_codes))
     
     if not all_available_codes:
         st.warning("No codes found in the uploaded CSV file.")
         return
     
-    # Define default volumes
-    CUSTOM_DEFAULTS = {
-        # Add your custom defaults here, e.g.:
-        # 'BLT': 25,
-        # 'XYZ': 15,
-    }
+    # Show info about codes
+    if added_codes:
+        st.info(f"📝 Found {len(added_codes)} newly added code(s): {', '.join(sorted(added_codes))}")
+        
+        # Debug info to help troubleshoot
+        with st.expander("🔍 Code Detection Details", expanded=False):
+            st.write(f"**Original codes from CSV:** {', '.join(sorted(original_codes))}")
+            st.write(f"**Current codes (after additions):** {', '.join(sorted(current_codes))}")
+            st.write(f"**Newly added codes:** {', '.join(sorted(added_codes))}")
+    else:
+        st.info(f"📊 Using codes from original CSV: {', '.join(sorted(original_codes))}")
     
-    # Show basic info about codes
-    st.info(f"📊 Found {stats['total_codes']} codes in the CSV file")
-    
-    # Pre-calculate conflicts for all runs to avoid dynamic updates during rendering
-    run_conflicts = {}
-    for run_num in range(1, st.session_state.num_runs + 1):
-        other_runs_codes = set()
-        for other_run in range(1, st.session_state.num_runs + 1):
-            if other_run != run_num:
-                for code in all_available_codes:
-                    checkbox_key = f"run_{other_run}_code_{code}"
-                    if st.session_state.get(checkbox_key, False):
-                        other_runs_codes.add(code)
-        run_conflicts[run_num] = other_runs_codes
+    # Initialize selected_codes if not exists
+    if 'selected_codes' not in st.session_state:
+        st.session_state.selected_codes = {}
     
     # Code selection for each run
     for run_num in range(1, st.session_state.num_runs + 1):
-        st.subheader(f"🚀 Run {run_num}")
+        st.subheader(f"Run {run_num}")
         
-        # Use pre-calculated conflicts
-        other_runs_codes = run_conflicts[run_num]
+        # Initialize selected codes for this run if not exists
+        if run_num not in st.session_state.selected_codes:
+            st.session_state.selected_codes[run_num] = []
+        
+        # Get all codes that are already selected in OTHER runs
+        other_runs_codes = set()
+        for other_run in range(1, st.session_state.num_runs + 1):
+            if other_run != run_num:
+                other_runs_codes.update(st.session_state.selected_codes.get(other_run, []))
         
         # Create columns for better layout
         num_cols = 3
         cols = st.columns(num_cols)
         
-        # Display codes
+        # Track selected codes for this run based on widget states
+        current_run_selected = []
+        
         for i, code in enumerate(all_available_codes):
             col_idx = i % num_cols
             with cols[col_idx]:
                 # Check if this code is already used in another run
                 is_used_elsewhere = code in other_runs_codes
                 
-                # Create label with volume indicator
-                default_volume = CUSTOM_DEFAULTS.get(code, 20)
-                code_label = f"{code} ({default_volume}μL)"
+                # Add indicator for newly added codes
+                code_label = code
+                if code in added_codes:
+                    code_label = f"{code} ✨"  # Add sparkle emoji for added codes
                 
-                # Help text for disabled codes
-                help_text = "Already selected in another run" if is_used_elsewhere else None
-                
-                # Generate unique key for checkbox
+                # Create unique key for this checkbox
                 checkbox_key = f"run_{run_num}_code_{code}"
                 
-                # Create checkbox - let Streamlit handle state completely
-                st.checkbox(
+                # For the initial value, check if this code was previously selected for this run
+                # But only if it's not disabled due to being used elsewhere
+                initial_value = False
+                if not is_used_elsewhere:
+                    initial_value = code in st.session_state.selected_codes.get(run_num, [])
+                
+                # Create checkbox - let Streamlit handle the state completely
+                checkbox_value = st.checkbox(
                     code_label,
+                    value=initial_value,
                     key=checkbox_key,
                     disabled=is_used_elsewhere,
-                    help=help_text
+                    help=f"Already selected in another run" if is_used_elsewhere else ("Added via Add Rows" if code in added_codes else None)
                 )
-    
-    # After all checkboxes are created, update selected_codes for compatibility
-    if 'selected_codes' not in st.session_state:
-        st.session_state.selected_codes = {}
-    
-    # Update selected codes and show summaries for each run
-    for run_num in range(1, st.session_state.num_runs + 1):
-        # Build selected codes list by reading current checkbox states
-        current_run_selected = []
-        for code in all_available_codes:
-            checkbox_key = f"run_{run_num}_code_{code}"
-            if st.session_state.get(checkbox_key, False):
-                current_run_selected.append(code)
+                
+                # Add to current selection if checked and not disabled
+                if checkbox_value and not is_used_elsewhere:
+                    current_run_selected.append(code)
         
-        # Update the selected_codes for compatibility with other parts of your app
+        # Update session state for this run with the current selection
         st.session_state.selected_codes[run_num] = current_run_selected
         
-        # Show selection summary for this run (moved outside the main loop)
-        if run_num < st.session_state.num_runs:  # Don't show separator after last run
+        # Show selection summary for this run
+        if current_run_selected:
+            st.success(f"✅ Selected {len(current_run_selected)} codes: {', '.join(current_run_selected)}")
+        else:
+            st.info("No codes selected for this run")
+        
+        # Add separator between runs (except after the last one)
+        if run_num < st.session_state.num_runs:
             st.markdown("---")
     
     # Show final summary
     st.subheader("📋 Selection Summary")
+    total_selected = 0
     for run_num in range(1, st.session_state.num_runs + 1):
         current_run_selected = st.session_state.selected_codes.get(run_num, [])
+        total_selected += len(current_run_selected)
+        
         if current_run_selected:
-            st.success(f"**Run {run_num}: {len(current_run_selected)} codes selected**")
-            with st.expander(f"View Selected Codes for Run {run_num}", expanded=False):
-                st.write(", ".join(current_run_selected))
+            st.write(f"**Run {run_num}:** {len(current_run_selected)} codes - {', '.join(current_run_selected)}")
         else:
-            st.info(f"Run {run_num}: No codes selected")
+            st.write(f"**Run {run_num}:** No codes selected")
+    
+    if total_selected > 0:
+        st.success(f"🎯 Total: {total_selected} codes selected across all runs")
+    else:
+        st.info("💡 Select codes above to proceed to the next step")
         
 # Utility Functions
 def position_to_sample_number(position):
