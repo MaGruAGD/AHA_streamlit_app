@@ -8,7 +8,7 @@ import streamlit.components.v1 as components
 
 # Page configuration
 st.set_page_config(
-    page_title="AHA! - Andrew Helper App",
+    page_title="AHA!",
     page_icon="🧪",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -1487,7 +1487,7 @@ def main():
         <div class="header-container">
             <h1 class="header-title">
                 <span class="lab-icon">🧪</span>
-                AHA!
+                Andrew Helper App
             </h1>
             <p class="header-subtitle">Andrew Helper App</p>
         </div>
