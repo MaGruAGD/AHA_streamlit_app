@@ -276,7 +276,7 @@ class CSVProcessor:
 
 
 def step_select_codes():
-    """Step 3: Select Codes and Volumes - Using multiselect instead of checkboxes"""
+    """Step 3: Select Codes and Volumes - Using data_editor approach"""
     st.header("Step 3: Select Codes and Volumes")
     
     if st.session_state.processor is None:
@@ -312,65 +312,92 @@ def step_select_codes():
         for run_num in range(1, st.session_state.num_runs + 1):
             st.session_state.selected_codes[run_num] = []
     
-    # Code selection for each run using multiselect
+    # Create a dataframe for the data editor
+    import pandas as pd
+    
+    # Prepare data for data_editor
+    editor_data = []
+    for code in all_available_codes:
+        row = {'Code': code}
+        
+        # Add indicator for newly added codes
+        if code in added_codes:
+            row['Code'] = f"{code} ✨"
+        
+        # Add columns for each run
+        current_run = None
+        for run_num in range(1, st.session_state.num_runs + 1):
+            if code in st.session_state.selected_codes.get(run_num, []):
+                current_run = run_num
+                break
+        
+        # Set the run selection
+        for run_num in range(1, st.session_state.num_runs + 1):
+            row[f'Run {run_num}'] = (current_run == run_num)
+        
+        row['Unassigned'] = (current_run is None)
+        editor_data.append(row)
+    
+    df = pd.DataFrame(editor_data)
+    
+    st.subheader("🎯 Code Assignment")
+    st.write("Select one option per row. Each code can only be assigned to one run.")
+    
+    # Configure column types for data_editor
+    column_config = {
+        'Code': st.column_config.TextColumn('Code', disabled=True, width='medium')
+    }
+    
+    # Add run columns
     for run_num in range(1, st.session_state.num_runs + 1):
-        st.subheader(f"🚀 Run {run_num}")
-        
-        # Get codes already selected in other runs
-        codes_used_in_other_runs = set()
-        for other_run in range(1, st.session_state.num_runs + 1):
-            if other_run != run_num:
-                codes_used_in_other_runs.update(st.session_state.selected_codes.get(other_run, []))
-        
-        # Filter available codes for this run (remove those used in other runs)
-        available_for_this_run = [code for code in all_available_codes if code not in codes_used_in_other_runs]
-        
-        # Format options with indicators for newly added codes
-        formatted_options = []
-        option_to_code = {}
-        for code in available_for_this_run:
-            if code in added_codes:
-                formatted_option = f"{code} ✨"
-            else:
-                formatted_option = code
-            formatted_options.append(formatted_option)
-            option_to_code[formatted_option] = code
-        
-        # Get current selection for this run
-        current_selection = st.session_state.selected_codes.get(run_num, [])
-        
-        # Format current selection for display
-        formatted_current_selection = []
-        for code in current_selection:
-            if code in available_for_this_run:  # Only include if still available
-                if code in added_codes:
-                    formatted_current_selection.append(f"{code} ✨")
-                else:
-                    formatted_current_selection.append(code)
-        
-        # Create multiselect
-        selected_formatted = st.multiselect(
-            f"Select codes for Run {run_num}:",
-            options=formatted_options,
-            default=formatted_current_selection,
-            key=f"multiselect_run_{run_num}",
-            help=f"{len(available_for_this_run)} codes available for selection"
+        column_config[f'Run {run_num}'] = st.column_config.CheckboxColumn(
+            f'Run {run_num}',
+            help=f'Assign to Run {run_num}',
+            width='small'
         )
+    
+    column_config['Unassigned'] = st.column_config.CheckboxColumn(
+        'Unassigned',
+        help='Leave unassigned',
+        width='small'
+    )
+    
+    # Use data_editor
+    edited_df = st.data_editor(
+        df,
+        column_config=column_config,
+        hide_index=True,
+        use_container_width=True,
+        key='code_assignment_editor'
+    )
+    
+    # Process the edited data and ensure only one selection per row
+    updated_selections = {}
+    for run_num in range(1, st.session_state.num_runs + 1):
+        updated_selections[run_num] = []
+    
+    for idx, row in edited_df.iterrows():
+        code = all_available_codes[idx]  # Get original code without emoji
         
-        # Convert formatted selections back to actual codes
-        selected_codes_for_run = [option_to_code[formatted_option] for formatted_option in selected_formatted]
+        # Count how many options are selected for this row
+        selections = []
+        for run_num in range(1, st.session_state.num_runs + 1):
+            if row[f'Run {run_num}']:
+                selections.append(run_num)
         
-        # Update session state
-        st.session_state.selected_codes[run_num] = selected_codes_for_run
+        if row['Unassigned']:
+            selections.append('unassigned')
         
-        # Show info about unavailable codes
-        if codes_used_in_other_runs:
-            with st.expander("ℹ️ Codes unavailable for this run", expanded=False):
-                unavailable_list = sorted(list(codes_used_in_other_runs))
-                st.write(f"**{len(unavailable_list)} codes already selected in other runs:**")
-                st.write(", ".join(unavailable_list))
+        # If multiple selections, use the first one
+        if len(selections) > 1:
+            st.warning(f"⚠️ Code '{code}' has multiple selections. Using the first one.")
         
-        st.markdown("---")
+        # Assign to the first selected run (if any)
+        if selections and selections[0] != 'unassigned':
+            updated_selections[selections[0]].append(code)
+    
+    # Update session state
+    st.session_state.selected_codes = updated_selections
     
     # Show summary
     st.subheader("📋 Selection Summary")
@@ -386,6 +413,17 @@ def step_select_codes():
                 st.write(", ".join(current_selection))
         else:
             st.info(f"Run {run_num}: No codes selected")
+    
+    # Show unassigned codes
+    assigned_codes = set()
+    for run_codes in st.session_state.selected_codes.values():
+        assigned_codes.update(run_codes)
+    
+    unassigned_codes = [code for code in all_available_codes if code not in assigned_codes]
+    if unassigned_codes:
+        st.info(f"**Unassigned: {len(unassigned_codes)} codes**")
+        with st.expander("View Unassigned Codes", expanded=False):
+            st.write(", ".join(unassigned_codes))
     
     if total_selected > 0:
         st.success(f"🎯 Total: {total_selected} codes selected across all runs")
