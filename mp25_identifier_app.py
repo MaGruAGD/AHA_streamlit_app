@@ -1538,7 +1538,7 @@ def main():
     if step == "1. Upload CSV":
         step_upload_csv(allowed_codes)
         
-    elif step == "2. Select Runs":
+    elif step == "2. Aantal runs":
         step_select_runs()
         
     elif step == "3. Add Rows":
