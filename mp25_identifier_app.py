@@ -749,8 +749,23 @@ def add_row_interface(processor, allowed_codes, control_samples):
     sample_type = st.radio(
         "Sample Type:",
         ["Regular Samples", "Control Samples"],
-        key="sample_type_radio"
+        key="sample_type_radio",
+        index=st.session_state.get('sample_type_index', 0)  # Add this line
     )
+    
+    # Add this right after the radio button to store the state properly
+    if sample_type == "Control Samples":
+        st.session_state.sample_type = "Control Samples"
+        st.session_state.sample_type_index = 1
+    else:
+        st.session_state.sample_type = "Regular Samples" 
+        st.session_state.sample_type_index = 0
+
+    # Temporary debug (remove this later)
+    st.write("🔍 Radio button debug:")
+    st.write("- Selected:", sample_type)
+    st.write("- Stored in session_state.sample_type:", st.session_state.get('sample_type'))
+    st.write("- Radio key value:", st.session_state.get('sample_type_radio'))
     
     # Code selection - filter to only show codes with MP25 entries in CSV for control samples
     if sample_type == "Control Samples":
