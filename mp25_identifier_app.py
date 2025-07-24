@@ -619,7 +619,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
                         dest_id = dest_match.group(1) if dest_match else str(step1_destination)
                         
                         # Extract position from source and destination
-                        source_pos_match = re.search(r':([A-H]\d{1,2})
+                        source_pos_match = re.search(r':([A-H]\d{1,2})', source_id)
                         
                         source_position = source_pos_match.group(1) if source_pos_match else "Unknown"
                         dest_position = dest_pos_match.group(1) if dest_pos_match else "Unknown"
