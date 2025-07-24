@@ -276,7 +276,7 @@ class CSVProcessor:
 
 
 def step_select_codes():
-    """Step 3: Select Codes and Volumes - Completely rewritten for stable state"""
+    """Step 3: Select Codes and Volumes - Fixed double-click issue"""
     st.header("Step 3: Select Codes and Volumes")
     
     if st.session_state.processor is None:
@@ -306,26 +306,27 @@ def step_select_codes():
     else:
         st.info(f"📊 Using codes from original CSV: {', '.join(sorted(original_codes))}")
     
-    # Use ONLY widget keys as the single source of truth
-    # Don't maintain selected_codes separately during rendering
+    # Initialize selected_codes if it doesn't exist
+    if 'selected_codes' not in st.session_state:
+        st.session_state.selected_codes = {}
     
     # Code selection for each run
     for run_num in range(1, st.session_state.num_runs + 1):
         st.subheader(f"🚀 Run {run_num}")
         
-        # Calculate which codes are used in OTHER runs by reading widget states
-        # Do this calculation fresh each time to avoid stale state
+        # Calculate which codes are used in OTHER runs by reading current session state
         codes_used_in_other_runs = set()
         for other_run in range(1, st.session_state.num_runs + 1):
             if other_run != run_num:
-                for code in all_available_codes:
-                    other_checkbox_key = f"run_{other_run}_code_{code}"
-                    if st.session_state.get(other_checkbox_key, False):
-                        codes_used_in_other_runs.add(code)
+                other_run_codes = st.session_state.selected_codes.get(other_run, [])
+                codes_used_in_other_runs.update(other_run_codes)
         
         # Create columns for layout
         num_cols = 3
         cols = st.columns(num_cols)
+        
+        # Get current selection for this run
+        current_selection = st.session_state.selected_codes.get(run_num, [])
         
         # Create checkboxes for this run
         for i, code in enumerate(all_available_codes):
@@ -337,31 +338,28 @@ def step_select_codes():
                 # Create label
                 label = f"{code} ✨" if code in added_codes else code
                 
-                # Create checkbox with stable key
+                # Create checkbox with stable key and default value
                 checkbox_key = f"run_{run_num}_code_{code}"
+                default_value = code in current_selection
                 
-                st.checkbox(
+                is_checked = st.checkbox(
                     label,
+                    value=default_value,
                     key=checkbox_key,
                     disabled=is_disabled,
                     help="Already selected in another run" if is_disabled else ("Added via Add Rows" if code in added_codes else None)
                 )
+                
+                # Update selected_codes immediately based on checkbox state
+                if is_checked and code not in current_selection:
+                    if run_num not in st.session_state.selected_codes:
+                        st.session_state.selected_codes[run_num] = []
+                    st.session_state.selected_codes[run_num].append(code)
+                elif not is_checked and code in current_selection:
+                    if run_num in st.session_state.selected_codes:
+                        st.session_state.selected_codes[run_num].remove(code)
         
         st.markdown("---")
-    
-    # NOW update selected_codes for compatibility with the rest of the app
-    # Do this AFTER all checkboxes are created
-    if 'selected_codes' not in st.session_state:
-        st.session_state.selected_codes = {}
-    
-    # Read current selections from widget states
-    for run_num in range(1, st.session_state.num_runs + 1):
-        selected_for_run = []
-        for code in all_available_codes:
-            checkbox_key = f"run_{run_num}_code_{code}"
-            if st.session_state.get(checkbox_key, False):
-                selected_for_run.append(code)
-        st.session_state.selected_codes[run_num] = selected_for_run
     
     # Show summary
     st.subheader("📋 Selection Summary")
