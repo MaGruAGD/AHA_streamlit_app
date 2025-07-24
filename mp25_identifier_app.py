@@ -636,9 +636,13 @@ def add_row_interface(processor, allowed_codes, control_samples):
                         is_control = False
                         control_type = None
                         
+                        # Debug: Print destination info for troubleshooting
+                        # st.write(f"DEBUG - Dest ID: {dest_id}, Position: {dest_position}, MP25 Code: {mp25_code}")
+                        
                         # Check against all control samples to determine if this is a control
                         for code, code_controls in control_samples.items():
-                            if code == mp25_code:  # Only check controls for the matching MP25 code
+                            # Check if the MP25 code matches the control sample code
+                            if code == mp25_code:
                                 control_positions = code_controls.get('positions', [])
                                 control_names = code_controls.get('names', [])
                                 
@@ -652,6 +656,23 @@ def add_row_interface(processor, allowed_codes, control_samples):
                                     except (ValueError, IndexError):
                                         control_type = "Control"
                                     break
+                        
+                        # Alternative method: Check if any control name appears in the destination ID
+                        if not is_control:
+                            for code, code_controls in control_samples.items():
+                                if code == mp25_code:
+                                    control_names = code_controls.get('names', [])
+                                    control_positions = code_controls.get('positions', [])
+                                    
+                                    # Check each control name to see if it appears in the destination
+                                    for i, control_name in enumerate(control_names):
+                                        if control_name.upper() in dest_id.upper():
+                                            is_control = True
+                                            control_type = control_name
+                                            break
+                                    
+                                    if is_control:
+                                        break
                         
                         # Display sample information with enhanced details
                         with col1:
@@ -715,7 +736,29 @@ def add_row_interface(processor, allowed_codes, control_samples):
                     dest_id = dest_match.group(1) if dest_match else str(step1_destination)
                     
                     # Extract position and MP25 code
-                    dest_pos_match = re.search(r':([A-H]\d{1,2})$', dest_id)
+                    dest_pos_match = re.search(r':([A-H]\d{1,2})
+                
+                # Display summary
+                summary_col1, summary_col2, summary_col3 = st.columns(3)
+                
+                with summary_col1:
+                    st.metric("Regular Samples", regular_count)
+                
+                with summary_col2:
+                    st.metric("Control Samples", control_count)
+                
+                with summary_col3:
+                    st.metric("MP25 Codes Used", len(codes_used))
+                
+                if codes_used:
+                    st.write(f"**Codes:** {', '.join(sorted(codes_used))}")
+                
+                # Close manager button
+                if st.button("❌ Sluiten", use_container_width=True):
+                    st.session_state.show_sample_manager = False
+                    st.rerun()
+            else:
+                st.info("No added samples found. Add some samples using the interface below and they will appear here for management."), dest_id)
                     dest_position = dest_pos_match.group(1) if dest_pos_match else "Unknown"
                     
                     mp25_match = re.search(r'MP25([A-Z0-9]+)\d{4}', dest_id)
@@ -723,12 +766,22 @@ def add_row_interface(processor, allowed_codes, control_samples):
                         mp25_code = mp25_match.group(1)
                         codes_used.add(mp25_code)
                         
-                        # Check if control
+                        # Check if control - use same enhanced logic as above
                         is_control_sample = False
+                        
+                        # Method 1: Check by position
                         if mp25_code in control_samples:
                             control_positions = control_samples[mp25_code].get('positions', [])
                             if dest_position in control_positions:
                                 is_control_sample = True
+                        
+                        # Method 2: Check by name in destination ID if position check failed
+                        if not is_control_sample and mp25_code in control_samples:
+                            control_names = control_samples[mp25_code].get('names', [])
+                            for control_name in control_names:
+                                if control_name.upper() in dest_id.upper():
+                                    is_control_sample = True
+                                    break
                         
                         if is_control_sample:
                             control_count += 1
@@ -756,7 +809,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
                     st.rerun()
             else:
                 st.info("No added samples found. Add some samples using the interface below and they will appear here for management.")
-
+                
     st.markdown("---")
                            
     # Sample type selection
@@ -993,6 +1046,22 @@ def add_row_interface(processor, allowed_codes, control_samples):
         ]
                 
         processor.add_row(row_data)
+        
+        # Initialize metadata tracking if not exists
+        if 'added_samples_metadata' not in st.session_state:
+            st.session_state.added_samples_metadata = {}
+        
+        # Store sample metadata - get the index of the newly added row
+        new_row_index = len(processor.df) - 1
+        
+        # Store metadata about this sample
+        st.session_state.added_samples_metadata[new_row_index] = {
+            'is_control': sample_type == "Control Samples",
+            'control_type': control_sample_name if sample_type == "Control Samples" else None,
+            'mp25_code': selected_code,
+            'sample_type': sample_type,
+            'added_timestamp': datetime.now().isoformat()
+        }
         
         # Determine which run this sample belongs to
         run_for_sample = None
