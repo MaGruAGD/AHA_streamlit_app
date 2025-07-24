@@ -1530,7 +1530,10 @@ def main():
     
     # Enhanced sidebar
     create_sidebar()
-       
+    
+    # Modern breadcrumb navigation
+    step = st.session_state.current_step
+    
     # Step routing
     if step == "1. Upload CSV":
         step_upload_csv(allowed_codes)
