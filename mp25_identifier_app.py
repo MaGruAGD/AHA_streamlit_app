@@ -276,7 +276,7 @@ class CSVProcessor:
 
 
 def step_select_codes():
-    """Step 3: Select Codes and Volumes - Fixed version"""
+    """Step 3: Select Codes and Volumes - Fixed version with proper state management"""
     st.header("Step 3: Select Codes and Volumes")
     
     if st.session_state.processor is None:
@@ -312,7 +312,7 @@ def step_select_codes():
     else:
         st.info(f"📊 Using codes from original CSV: {', '.join(sorted(original_codes))}")
     
-    # Initialize selected_codes if not exists
+    # Initialize selected_codes if not exists - but don't interfere with it during rendering
     if 'selected_codes' not in st.session_state:
         st.session_state.selected_codes = {}
     
@@ -320,22 +320,19 @@ def step_select_codes():
     for run_num in range(1, st.session_state.num_runs + 1):
         st.subheader(f"Run {run_num}")
         
-        # Initialize selected codes for this run if not exists
-        if run_num not in st.session_state.selected_codes:
-            st.session_state.selected_codes[run_num] = []
-        
         # Get all codes that are already selected in OTHER runs
         other_runs_codes = set()
         for other_run in range(1, st.session_state.num_runs + 1):
             if other_run != run_num:
-                other_runs_codes.update(st.session_state.selected_codes.get(other_run, []))
+                # Read from checkbox states, not from selected_codes
+                for code in all_available_codes:
+                    checkbox_key = f"run_{other_run}_code_{code}"
+                    if st.session_state.get(checkbox_key, False):
+                        other_runs_codes.add(code)
         
         # Create columns for better layout
         num_cols = 3
         cols = st.columns(num_cols)
-        
-        # Track selected codes for this run based on widget states
-        current_run_selected = []
         
         for i, code in enumerate(all_available_codes):
             col_idx = i % num_cols
@@ -351,33 +348,34 @@ def step_select_codes():
                 # Create unique key for this checkbox
                 checkbox_key = f"run_{run_num}_code_{code}"
                 
-                # For the initial value, check if this code was previously selected for this run
-                # But only if it's not disabled due to being used elsewhere
-                initial_value = False
-                if not is_used_elsewhere:
-                    initial_value = code in st.session_state.selected_codes.get(run_num, [])
-                
-                # Create checkbox - let Streamlit handle the state completely
-                checkbox_value = st.checkbox(
+                # Create checkbox - let Streamlit handle state completely
+                # Don't set any initial value - let the widget maintain its own state
+                st.checkbox(
                     code_label,
-                    value=initial_value,
                     key=checkbox_key,
                     disabled=is_used_elsewhere,
                     help=f"Already selected in another run" if is_used_elsewhere else ("Added via Add Rows" if code in added_codes else None)
                 )
-                
-                # Add to current selection if checked and not disabled
-                if checkbox_value and not is_used_elsewhere:
-                    current_run_selected.append(code)
+    
+    # After ALL checkboxes are created, read their states and update selected_codes
+    # This happens AFTER the widget rendering phase
+    for run_num in range(1, st.session_state.num_runs + 1):
+        current_run_selected = []
         
-        # Update session state for this run with the current selection
+        for code in all_available_codes:
+            checkbox_key = f"run_{run_num}_code_{code}"
+            # Read the current state of the checkbox
+            if st.session_state.get(checkbox_key, False):
+                current_run_selected.append(code)
+        
+        # Update session state (this doesn't affect the widgets since they're already rendered)
         st.session_state.selected_codes[run_num] = current_run_selected
         
         # Show selection summary for this run
         if current_run_selected:
-            st.success(f"✅ Selected {len(current_run_selected)} codes: {', '.join(current_run_selected)}")
+            st.success(f"✅ Run {run_num}: Selected {len(current_run_selected)} codes: {', '.join(current_run_selected)}")
         else:
-            st.info("No codes selected for this run")
+            st.info(f"Run {run_num}: No codes selected")
         
         # Add separator between runs (except after the last one)
         if run_num < st.session_state.num_runs:
