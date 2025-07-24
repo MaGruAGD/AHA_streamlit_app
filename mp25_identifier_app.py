@@ -643,18 +643,8 @@ def add_row_interface(processor, allowed_codes, control_samples):
                         if not dest_pos_match:
                             dest_pos_match = re.search(r'([A-H]\d{1,2})', dest_id)
                         
-                        # Extract the position or show what we have for debugging
-                        if source_pos_match:
-                            source_position = source_pos_match.group(1)
-                        else:
-                            # Show the actual value for debugging
-                            source_position = f"? ({source_id[:20]}...)" if len(source_id) > 20 else f"? ({source_id})"
-                        
-                        if dest_pos_match:
-                            dest_position = dest_pos_match.group(1)
-                        else:
-                            # Show the actual value for debugging  
-                            dest_position = f"? ({dest_id[:20]}...)" if len(dest_id) > 20 else f"? ({dest_id})"
+                        source_position = metadata.get('poolplaat_position', 'Unknown') if metadata else 'Unknown'
+                        dest_position = metadata.get('analyseplaat_position', 'Unknown') if metadata else 'Unknown'
                         
                         # Get MP25 code (keep existing logic)
                         mp25_match = re.search(r'MP25([A-Z0-9]+)\d{4}', dest_id)
