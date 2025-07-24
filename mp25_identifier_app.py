@@ -652,7 +652,6 @@ def add_row_interface(processor, allowed_codes, control_samples):
                         
                         # Use metadata to determine sample type and details
                         if metadata:
-                            st.write("🔍 What's in metadata:", metadata)
                             is_control = metadata['sample_type'] == "Control Samples"
                             control_type = metadata.get('control_name', 'Control')
                             sample_type_from_metadata = metadata['sample_type']
