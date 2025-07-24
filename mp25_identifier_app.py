@@ -587,8 +587,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
 
     # Sample manager interface
     if st.session_state.get('show_sample_manager', False):
-        with st.expander("🗂️ Added Samples Manager", expanded=True):
-            st.subheader("Toegevoegde stalen")
+        with st.expander("🗂️ Toegevoegde monsters", expanded=True):
             
             # Recalculate added rows here as well to ensure freshness
             current_added_count = len(processor.df) - st.session_state.original_row_count
