@@ -518,7 +518,7 @@ def initialize_session_state():
 def create_sidebar():
     """Create the sidebar navigation"""
     with st.sidebar:
-        st.header("Navigation")
+        st.header("Navigatie")
         
         steps = [
             "1. Upload CSV", 
