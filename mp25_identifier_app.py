@@ -522,7 +522,7 @@ def create_sidebar():
         
         steps = [
             "1. Upload CSV", 
-            "2. Select Runs", 
+            "2. Aantal runs", 
             "3. Add Rows", 
             "4. Select Codes", 
             "5. Volume Manager",  
@@ -544,7 +544,7 @@ def create_sidebar():
         # Reset button
         st.markdown("---")
         if st.button(
-            "🔄 Reset Application",
+            "🔄 Reset",
             type="secondary",
             use_container_width=True,
             help="Clear all data and start over"
