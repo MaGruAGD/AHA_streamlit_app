@@ -276,7 +276,7 @@ class CSVProcessor:
 
 
 def step_select_codes():
-    """Step 3: Select Codes and Volumes - Fixed version with proper state management"""
+    """Step 3: Select Codes and Volumes - Fixed version with stable state management"""
     st.header("Step 3: Select Codes and Volumes")
     
     if st.session_state.processor is None:
@@ -312,23 +312,26 @@ def step_select_codes():
     else:
         st.info(f"📊 Using codes from original CSV: {', '.join(sorted(original_codes))}")
     
-    # Initialize selected_codes if not exists - but don't interfere with it during rendering
-    if 'selected_codes' not in st.session_state:
-        st.session_state.selected_codes = {}
+    # Pre-calculate conflicts ONCE before rendering any widgets
+    # This ensures the disabled state doesn't change during rendering
+    conflicts_snapshot = {}
+    for run_num in range(1, st.session_state.num_runs + 1):
+        other_runs_codes = set()
+        for other_run in range(1, st.session_state.num_runs + 1):
+            if other_run != run_num:
+                for code in all_available_codes:
+                    checkbox_key = f"run_{other_run}_code_{code}"
+                    # Use the previous state, not the current changing state
+                    if st.session_state.get(checkbox_key, False):
+                        other_runs_codes.add(code)
+        conflicts_snapshot[run_num] = other_runs_codes
     
     # Code selection for each run
     for run_num in range(1, st.session_state.num_runs + 1):
         st.subheader(f"Run {run_num}")
         
-        # Get all codes that are already selected in OTHER runs
-        other_runs_codes = set()
-        for other_run in range(1, st.session_state.num_runs + 1):
-            if other_run != run_num:
-                # Read from checkbox states, not from selected_codes
-                for code in all_available_codes:
-                    checkbox_key = f"run_{other_run}_code_{code}"
-                    if st.session_state.get(checkbox_key, False):
-                        other_runs_codes.add(code)
+        # Use the pre-calculated conflicts
+        other_runs_codes = conflicts_snapshot[run_num]
         
         # Create columns for better layout
         num_cols = 3
@@ -337,7 +340,7 @@ def step_select_codes():
         for i, code in enumerate(all_available_codes):
             col_idx = i % num_cols
             with cols[col_idx]:
-                # Check if this code is already used in another run
+                # Check if this code is already used in another run (from snapshot)
                 is_used_elsewhere = code in other_runs_codes
                 
                 # Add indicator for newly added codes
@@ -348,8 +351,7 @@ def step_select_codes():
                 # Create unique key for this checkbox
                 checkbox_key = f"run_{run_num}_code_{code}"
                 
-                # Create checkbox - let Streamlit handle state completely
-                # Don't set any initial value - let the widget maintain its own state
+                # Create checkbox with stable disabled state
                 st.checkbox(
                     code_label,
                     key=checkbox_key,
@@ -357,41 +359,37 @@ def step_select_codes():
                     help=f"Already selected in another run" if is_used_elsewhere else ("Added via Add Rows" if code in added_codes else None)
                 )
     
-    # After ALL checkboxes are created, read their states and update selected_codes
-    # This happens AFTER the widget rendering phase
+    # Initialize selected_codes if not exists
+    if 'selected_codes' not in st.session_state:
+        st.session_state.selected_codes = {}
+    
+    # After ALL checkboxes are rendered, update selected_codes based on widget states
     for run_num in range(1, st.session_state.num_runs + 1):
         current_run_selected = []
         
         for code in all_available_codes:
             checkbox_key = f"run_{run_num}_code_{code}"
-            # Read the current state of the checkbox
             if st.session_state.get(checkbox_key, False):
                 current_run_selected.append(code)
         
-        # Update session state (this doesn't affect the widgets since they're already rendered)
+        # Update selected_codes for compatibility with other parts of the app
         st.session_state.selected_codes[run_num] = current_run_selected
-        
-        # Show selection summary for this run
-        if current_run_selected:
-            st.success(f"✅ Run {run_num}: Selected {len(current_run_selected)} codes: {', '.join(current_run_selected)}")
-        else:
-            st.info(f"Run {run_num}: No codes selected")
-        
-        # Add separator between runs (except after the last one)
-        if run_num < st.session_state.num_runs:
-            st.markdown("---")
     
-    # Show final summary
+    # Display summaries AFTER all state updates
+    st.markdown("---")
     st.subheader("📋 Selection Summary")
+    
     total_selected = 0
     for run_num in range(1, st.session_state.num_runs + 1):
         current_run_selected = st.session_state.selected_codes.get(run_num, [])
         total_selected += len(current_run_selected)
         
         if current_run_selected:
-            st.write(f"**Run {run_num}:** {len(current_run_selected)} codes - {', '.join(current_run_selected)}")
+            st.success(f"**Run {run_num}:** {len(current_run_selected)} codes selected")
+            with st.expander(f"View codes for Run {run_num}", expanded=False):
+                st.write(", ".join(current_run_selected))
         else:
-            st.write(f"**Run {run_num}:** No codes selected")
+            st.info(f"**Run {run_num}:** No codes selected")
     
     if total_selected > 0:
         st.success(f"🎯 Total: {total_selected} codes selected across all runs")
