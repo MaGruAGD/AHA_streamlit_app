@@ -524,7 +524,7 @@ def create_sidebar():
             "1. Upload CSV", 
             "2. Aantal runs", 
             "3. Monster toevoegen", 
-            "4. Ananlyses", 
+            "4. Analyses", 
             "5. Volume Manager",  
             "6. Data verwerken", 
             "7. Download CSV"  
