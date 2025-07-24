@@ -585,8 +585,6 @@ def add_row_interface(processor, allowed_codes, control_samples):
         st.session_state.show_sample_manager = not st.session_state.get('show_sample_manager', False)
         st.rerun()
 
-    # Sample manager interface
-    # Sample manager interface - REPLACE the existing sample manager section in add_row_interface
     # Sample manager interface - REPLACE the existing sample manager section in add_row_interface
     if st.session_state.get('show_sample_manager', False):
         with st.expander("🗂️ Toegevoegde monsters:", expanded=True):
