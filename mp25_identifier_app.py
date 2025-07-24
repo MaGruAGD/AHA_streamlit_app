@@ -1111,8 +1111,6 @@ def step_select_codes():
         if run_num not in st.session_state.selected_codes:
             st.session_state.selected_codes[run_num] = []
         
-        selected = []
-        
         # Get all codes that are already selected in OTHER runs
         other_runs_codes = set()
         for other_run in range(1, st.session_state.num_runs + 1):
@@ -1126,9 +1124,6 @@ def step_select_codes():
         for i, code in enumerate(all_available_codes):
             col_idx = i % num_cols
             with cols[col_idx]:
-                # Check if this code is already selected for this run
-                is_selected = code in st.session_state.selected_codes[run_num]
-                
                 # Check if this code is already used in another run
                 is_used_elsewhere = code in other_runs_codes
                 
@@ -1137,28 +1132,30 @@ def step_select_codes():
                 if code in added_codes:
                     code_label = f"{code} ✨"  # Add sparkle emoji for added codes
                 
-                # Create checkbox - disabled if used in another run
+                # Create unique key for this checkbox
+                checkbox_key = f"code_{run_num}_{code}"
+                
+                # Create checkbox with unique key - disabled if used in another run
                 checkbox_value = st.checkbox(
                     code_label,
-                    value=is_selected,
-                    key=f"checkbox_{run_num}_{code}",
+                    key=checkbox_key,
                     disabled=is_used_elsewhere,
-                    help=f"Already selected in another run" if is_used_elsewhere else ("Added via Add Rows" if code in added_codes else None)
+                    help="Already selected in another run" if is_used_elsewhere else None
                 )
                 
-                # Add to selected list if checked
-                if checkbox_value:
-                    selected.append(code)
+                # Update session state based on checkbox value
+                if checkbox_value and code not in st.session_state.selected_codes[run_num]:
+                    st.session_state.selected_codes[run_num].append(code)
+                elif not checkbox_value and code in st.session_state.selected_codes[run_num]:
+                    st.session_state.selected_codes[run_num].remove(code)
         
-        # Update session state for this specific run
-        st.session_state.selected_codes[run_num] = selected
+        # Display selected codes for this run
+        if st.session_state.selected_codes[run_num]:
+            st.write(f"**Selected codes:** {', '.join(sorted(st.session_state.selected_codes[run_num]))}")
+        else:
+            st.write("**Selected codes:** None")
         
-        # Optional: Add debug info (commented out to avoid errors)
-        # Uncomment only if you need to debug
-        # st.write("🐛 DEBUG INFO:")
-        # st.write(f"Original codes from CSV upload: {sorted(original_codes_set)}")
-        # st.write(f"Added codes (difference): {sorted(added_codes)}")
-        # st.write(f"All available codes: {sorted(all_available_codes)}")
+        st.write("---")  # Visual separator between runs
 
 def step_process_data():
     """Step 6: Process Data"""
