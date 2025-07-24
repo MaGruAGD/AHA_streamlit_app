@@ -276,7 +276,7 @@ class CSVProcessor:
 
 
 def step_select_codes():
-    """Step 3: Select Codes and Volumes - Fixed feedback loop issue"""
+    """Step 3: Select Codes and Volumes - Using callback approach"""
     st.header("Step 3: Select Codes and Volumes")
     
     if st.session_state.processor is None:
@@ -306,60 +306,79 @@ def step_select_codes():
     else:
         st.info(f"📊 Using codes from original CSV: {', '.join(sorted(original_codes))}")
     
-    # Initialize selected_codes if it doesn't exist
-    if 'selected_codes' not in st.session_state:
-        st.session_state.selected_codes = {}
+    # Initialize code selection state using a simple dict approach
+    if 'code_selections' not in st.session_state:
+        st.session_state.code_selections = {}
         for run_num in range(1, st.session_state.num_runs + 1):
-            st.session_state.selected_codes[run_num] = []
+            for code in all_available_codes:
+                st.session_state.code_selections[f"{run_num}_{code}"] = False
+    
+    # Callback function to handle checkbox changes
+    def handle_code_selection(run_num, code):
+        key = f"{run_num}_{code}"
+        # If this code is being selected, deselect it from other runs
+        if st.session_state.code_selections[key]:
+            for other_run in range(1, st.session_state.num_runs + 1):
+                if other_run != run_num:
+                    other_key = f"{other_run}_{code}"
+                    if other_key in st.session_state.code_selections:
+                        st.session_state.code_selections[other_key] = False
     
     # Code selection for each run
     for run_num in range(1, st.session_state.num_runs + 1):
         st.subheader(f"🚀 Run {run_num}")
         
-        # Calculate which codes are used in OTHER runs
-        codes_used_in_other_runs = set()
-        for other_run in range(1, st.session_state.num_runs + 1):
-            if other_run != run_num and other_run in st.session_state.selected_codes:
-                codes_used_in_other_runs.update(st.session_state.selected_codes[other_run])
-        
         # Create columns for layout
         num_cols = 3
         cols = st.columns(num_cols)
         
-        # Create checkboxes for this run - DON'T modify session state during rendering
-        new_selection = []
+        # Create checkboxes for this run
         for i, code in enumerate(all_available_codes):
             col_idx = i % num_cols
             with cols[col_idx]:
-                # Check if disabled
-                is_disabled = code in codes_used_in_other_runs
+                key = f"{run_num}_{code}"
+                
+                # Check if this code is selected in another run
+                is_disabled = False
+                for other_run in range(1, st.session_state.num_runs + 1):
+                    if other_run != run_num:
+                        other_key = f"{other_run}_{code}"
+                        if st.session_state.code_selections.get(other_key, False):
+                            is_disabled = True
+                            break
                 
                 # Create label
                 label = f"{code} ✨" if code in added_codes else code
                 
-                # Get current state - use checkbox key as source of truth
-                checkbox_key = f"run_{run_num}_code_{code}"
-                
-                # Set initial value from selected_codes only if checkbox key doesn't exist
-                if checkbox_key not in st.session_state:
-                    initial_value = code in st.session_state.selected_codes.get(run_num, [])
-                    st.session_state[checkbox_key] = initial_value
-                
-                is_checked = st.checkbox(
+                # Create checkbox
+                st.checkbox(
                     label,
-                    key=checkbox_key,
+                    key=f"checkbox_{key}",
+                    value=st.session_state.code_selections.get(key, False),
                     disabled=is_disabled,
-                    help="Already selected in another run" if is_disabled else ("Added via Add Rows" if code in added_codes else None)
+                    help="Already selected in another run" if is_disabled else ("Added via Add Rows" if code in added_codes else None),
+                    on_change=handle_code_selection,
+                    args=(run_num, code)
                 )
                 
-                # Collect new selection without modifying session state yet
-                if is_checked:
-                    new_selection.append(code)
-        
-        # Update selected_codes AFTER all checkboxes for this run are rendered
-        st.session_state.selected_codes[run_num] = new_selection
+                # Update our tracking state based on checkbox state
+                checkbox_key = f"checkbox_{key}"
+                if checkbox_key in st.session_state:
+                    st.session_state.code_selections[key] = st.session_state[checkbox_key]
         
         st.markdown("---")
+    
+    # Build selected_codes for compatibility with rest of app
+    if 'selected_codes' not in st.session_state:
+        st.session_state.selected_codes = {}
+    
+    for run_num in range(1, st.session_state.num_runs + 1):
+        selected_for_run = []
+        for code in all_available_codes:
+            key = f"{run_num}_{code}"
+            if st.session_state.code_selections.get(key, False):
+                selected_for_run.append(code)
+        st.session_state.selected_codes[run_num] = selected_for_run
     
     # Show summary
     st.subheader("📋 Selection Summary")
