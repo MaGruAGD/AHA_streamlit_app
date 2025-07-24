@@ -518,16 +518,16 @@ def initialize_session_state():
 def create_sidebar():
     """Create the sidebar navigation"""
     with st.sidebar:
-        st.header("Navigation")
+        st.header("Navigatie")
         
         steps = [
             "1. Upload CSV", 
-            "2. Select Runs", 
-            "3. Select Codes", 
-            "4. Add Rows", 
-            "5. Volume Manager",  
-            "6. Process Data", 
-            "7. Download Results"  
+            "2. Aantal runs", 
+            "3. Analyses", 
+            "4. Monster toevoegen", 
+            "5. Volumes aanpassen",  
+            "6. Data Verwerken", 
+            "7. Download CSV"  
         ]
         
         for step_name in steps:
@@ -1489,7 +1489,7 @@ def main():
                 <span class="lab-icon">🧪</span>
                 Andrew Helper App
             </h1>
-            <p class="header-subtitle">Andrew Helper App</p>
+            <p class="header-subtitle">CSV's bewerken en exporteren</p>
         </div>
         """,
         unsafe_allow_html=True
