@@ -585,6 +585,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
         st.session_state.show_sample_manager = not st.session_state.get('show_sample_manager', False)
         st.rerun()
 
+    # Sample manager interface
     # Sample manager interface - REPLACE the existing sample manager section in add_row_interface
     if st.session_state.get('show_sample_manager', False):
         with st.expander("🗂️ Toegevoegde monsters:", expanded=True):
@@ -619,7 +620,8 @@ def add_row_interface(processor, allowed_codes, control_samples):
                         dest_id = dest_match.group(1) if dest_match else str(step1_destination)
                         
                         # Extract position from source and destination
-                        source_pos_match = re.search(r':([A-H]\d{1,2})', source_id)
+                        source_pos_match = re.search(r':([A-H]\d{1,2})$', source_id)
+                        dest_pos_match = re.search(r':([A-H]\d{1,2})$', dest_id)
                         
                         source_position = source_pos_match.group(1) if source_pos_match else "Unknown"
                         dest_position = dest_pos_match.group(1) if dest_pos_match else "Unknown"
@@ -634,13 +636,9 @@ def add_row_interface(processor, allowed_codes, control_samples):
                         is_control = False
                         control_type = None
                         
-                        # Debug: Print destination info for troubleshooting
-                        # st.write(f"DEBUG - Dest ID: {dest_id}, Position: {dest_position}, MP25 Code: {mp25_code}")
-                        
                         # Check against all control samples to determine if this is a control
                         for code, code_controls in control_samples.items():
-                            # Check if the MP25 code matches the control sample code
-                            if code == mp25_code:
+                            if code == mp25_code:  # Only check controls for the matching MP25 code
                                 control_positions = code_controls.get('positions', [])
                                 control_names = code_controls.get('names', [])
                                 
@@ -654,23 +652,6 @@ def add_row_interface(processor, allowed_codes, control_samples):
                                     except (ValueError, IndexError):
                                         control_type = "Control"
                                     break
-                        
-                        # Alternative method: Check if any control name appears in the destination ID
-                        if not is_control:
-                            for code, code_controls in control_samples.items():
-                                if code == mp25_code:
-                                    control_names = code_controls.get('names', [])
-                                    control_positions = code_controls.get('positions', [])
-                                    
-                                    # Check each control name to see if it appears in the destination
-                                    for i, control_name in enumerate(control_names):
-                                        if control_name.upper() in dest_id.upper():
-                                            is_control = True
-                                            control_type = control_name
-                                            break
-                                    
-                                    if is_control:
-                                        break
                         
                         # Display sample information with enhanced details
                         with col1:
@@ -734,29 +715,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
                     dest_id = dest_match.group(1) if dest_match else str(step1_destination)
                     
                     # Extract position and MP25 code
-                    dest_pos_match = re.search(r':([A-H]\d{1,2})', dest_id)
-                
-                # Display summary
-                summary_col1, summary_col2, summary_col3 = st.columns(3)
-                
-                with summary_col1:
-                    st.metric("Regular Samples", regular_count)
-                
-                with summary_col2:
-                    st.metric("Control Samples", control_count)
-                
-                with summary_col3:
-                    st.metric("MP25 Codes Used", len(codes_used))
-                
-                if codes_used:
-                    st.write(f"**Codes:** {', '.join(sorted(codes_used))}")
-                
-                # Close manager button
-                if st.button("❌ Sluiten", use_container_width=True):
-                    st.session_state.show_sample_manager = False
-                    st.rerun()
-            else:
-                st.info("No added samples found. Add some samples using the interface below and they will appear here for management."), dest_id)
+                    dest_pos_match = re.search(r':([A-H]\d{1,2})$', dest_id)
                     dest_position = dest_pos_match.group(1) if dest_pos_match else "Unknown"
                     
                     mp25_match = re.search(r'MP25([A-Z0-9]+)\d{4}', dest_id)
@@ -764,397 +723,12 @@ def add_row_interface(processor, allowed_codes, control_samples):
                         mp25_code = mp25_match.group(1)
                         codes_used.add(mp25_code)
                         
-                        # Check if control - use same enhanced logic as above
+                        # Check if control
                         is_control_sample = False
-                        
-                        # Method 1: Check by position
                         if mp25_code in control_samples:
                             control_positions = control_samples[mp25_code].get('positions', [])
                             if dest_position in control_positions:
                                 is_control_sample = True
-                        
-                        # Method 2: Check by name in destination ID if position check failed
-                        if not is_control_sample and mp25_code in control_samples:
-                            control_names = control_samples[mp25_code].get('names', [])
-                            for control_name in control_names:
-                                if control_name.upper() in dest_id.upper():
-                                    is_control_sample = True
-                                    break
-                        
-                        if is_control_sample:
-                            control_count += 1
-                        else:
-                            regular_count += 1
-                
-                # Display summary
-                summary_col1, summary_col2, summary_col3 = st.columns(3)
-                
-                with summary_col1:
-                    st.metric("Regular Samples", regular_count)
-                
-                with summary_col2:
-                    st.metric("Control Samples", control_count)
-                
-                with summary_col3:
-                    st.metric("MP25 Codes Used", len(codes_used))
-                
-                if codes_used:
-                    st.write(f"**Codes:** {', '.join(sorted(codes_used))}")
-                
-                # Close manager button
-                if st.button("❌ Sluiten", use_container_width=True):
-                    st.session_state.show_sample_manager = False
-                    st.rerun()
-            else:
-                st.info("No added samples found. Add some samples using the interface below and they will appear here for management."), source_id)
-                        dest_pos_match = re.search(r':([A-H]\d{1,2})
-                        
-                        source_position = source_pos_match.group(1) if source_pos_match else "Unknown"
-                        dest_position = dest_pos_match.group(1) if dest_pos_match else "Unknown"
-                        
-                        # Determine MP25 code from destination
-                        mp25_code = "Unknown"
-                        mp25_match = re.search(r'MP25([A-Z0-9]+)\d{4}', dest_id)
-                        if mp25_match:
-                            mp25_code = mp25_match.group(1)
-                        
-                        # Determine if this is a control sample and get control type
-                        is_control = False
-                        control_type = None
-                        
-                        # Debug: Print destination info for troubleshooting
-                        # st.write(f"DEBUG - Dest ID: {dest_id}, Position: {dest_position}, MP25 Code: {mp25_code}")
-                        
-                        # Check against all control samples to determine if this is a control
-                        for code, code_controls in control_samples.items():
-                            # Check if the MP25 code matches the control sample code
-                            if code == mp25_code:
-                                control_positions = code_controls.get('positions', [])
-                                control_names = code_controls.get('names', [])
-                                
-                                # Check if the destination position matches any control position
-                                if dest_position in control_positions:
-                                    is_control = True
-                                    # Get the corresponding control name
-                                    try:
-                                        control_idx = control_positions.index(dest_position)
-                                        control_type = control_names[control_idx]
-                                    except (ValueError, IndexError):
-                                        control_type = "Control"
-                                    break
-                        
-                        # Alternative method: Check if any control name appears in the destination ID
-                        if not is_control:
-                            for code, code_controls in control_samples.items():
-                                if code == mp25_code:
-                                    control_names = code_controls.get('names', [])
-                                    control_positions = code_controls.get('positions', [])
-                                    
-                                    # Check each control name to see if it appears in the destination
-                                    for i, control_name in enumerate(control_names):
-                                        if control_name.upper() in dest_id.upper():
-                                            is_control = True
-                                            control_type = control_name
-                                            break
-                                    
-                                    if is_control:
-                                        break
-                        
-                        # Display sample information with enhanced details
-                        with col1:
-                            if is_control:
-                                st.write(f"🧪 **Control Sample**")
-                                st.caption(f"Type: {control_type}")
-                            else:
-                                st.write(f"🔬 **Regular Sample**")
-                                st.caption(f"Name: {solution_name}")
-                        
-                        with col2:
-                            st.write(f"**MP25 Code:**")
-                            st.write(f"`{mp25_code}`")
-                        
-                        with col3:
-                            st.write(f"**Volume:**")
-                            st.write(f"{step1_volume} μL")
-                        
-                        with col4:
-                            st.write(f"**Transfer:**")
-                            st.write(f"{source_position} → {dest_position}")
-                            st.caption(f"Poolplaat to Analyseplaat")
-                        
-                        with col5:
-                            # Delete checkbox
-                            delete_key = f"delete_sample_{idx}_{df_idx}"
-                            st.write("**Delete**")
-                            if st.checkbox("🗑️", key=delete_key, help="Mark for deletion"):
-                                samples_to_delete.append(df_idx)
-                    
-                    st.markdown("---")
-                
-                # Delete selected samples
-                if samples_to_delete:
-                    col1, col2 = st.columns(2)
-                    
-                    with col1:
-                        if st.button("🗑️ Delete Selected Samples", type="secondary", use_container_width=True):
-                            # Remove selected rows from the dataframe
-                            processor.df = processor.df.drop(samples_to_delete).reset_index(drop=True)
-                            st.success(f"✅ Deleted {len(samples_to_delete)} sample(s)")
-                            
-                            # Clear the sample manager display and force refresh
-                            st.session_state.show_sample_manager = False
-                            st.rerun()
-                    
-                    with col2:
-                        st.write(f"**{len(samples_to_delete)} sample(s) selected for deletion**")
-                
-                # Summary section
-                st.markdown("### 📊 Summary")
-                
-                # Count regular vs control samples
-                regular_count = 0
-                control_count = 0
-                codes_used = set()
-                
-                for idx, (df_idx, row) in enumerate(added_rows.iterrows()):
-                    step1_destination = row.get('Step1Destination', '')
-                    dest_match = re.search(r'"([^"]+)"', str(step1_destination))
-                    dest_id = dest_match.group(1) if dest_match else str(step1_destination)
-                    
-                    # Extract position and MP25 code
-                    dest_pos_match = re.search(r':([A-H]\d{1,2})
-                
-                # Display summary
-                summary_col1, summary_col2, summary_col3 = st.columns(3)
-                
-                with summary_col1:
-                    st.metric("Regular Samples", regular_count)
-                
-                with summary_col2:
-                    st.metric("Control Samples", control_count)
-                
-                with summary_col3:
-                    st.metric("MP25 Codes Used", len(codes_used))
-                
-                if codes_used:
-                    st.write(f"**Codes:** {', '.join(sorted(codes_used))}")
-                
-                # Close manager button
-                if st.button("❌ Sluiten", use_container_width=True):
-                    st.session_state.show_sample_manager = False
-                    st.rerun()
-            else:
-                st.info("No added samples found. Add some samples using the interface below and they will appear here for management."), dest_id)
-                    dest_position = dest_pos_match.group(1) if dest_pos_match else "Unknown"
-                    
-                    mp25_match = re.search(r'MP25([A-Z0-9]+)\d{4}', dest_id)
-                    if mp25_match:
-                        mp25_code = mp25_match.group(1)
-                        codes_used.add(mp25_code)
-                        
-                        # Check if control - use same enhanced logic as above
-                        is_control_sample = False
-                        
-                        # Method 1: Check by position
-                        if mp25_code in control_samples:
-                            control_positions = control_samples[mp25_code].get('positions', [])
-                            if dest_position in control_positions:
-                                is_control_sample = True
-                        
-                        # Method 2: Check by name in destination ID if position check failed
-                        if not is_control_sample and mp25_code in control_samples:
-                            control_names = control_samples[mp25_code].get('names', [])
-                            for control_name in control_names:
-                                if control_name.upper() in dest_id.upper():
-                                    is_control_sample = True
-                                    break
-                        
-                        if is_control_sample:
-                            control_count += 1
-                        else:
-                            regular_count += 1
-                
-                # Display summary
-                summary_col1, summary_col2, summary_col3 = st.columns(3)
-                
-                with summary_col1:
-                    st.metric("Regular Samples", regular_count)
-                
-                with summary_col2:
-                    st.metric("Control Samples", control_count)
-                
-                with summary_col3:
-                    st.metric("MP25 Codes Used", len(codes_used))
-                
-                if codes_used:
-                    st.write(f"**Codes:** {', '.join(sorted(codes_used))}")
-                
-                # Close manager button
-                if st.button("❌ Sluiten", use_container_width=True):
-                    st.session_state.show_sample_manager = False
-                    st.rerun()
-            else:
-                st.info("No added samples found. Add some samples using the interface below and they will appear here for management."), dest_id)
-                        
-                        source_position = source_pos_match.group(1) if source_pos_match else "Unknown"
-                        dest_position = dest_pos_match.group(1) if dest_pos_match else "Unknown"
-                        
-                        # Determine MP25 code from destination
-                        mp25_code = "Unknown"
-                        mp25_match = re.search(r'MP25([A-Z0-9]+)\d{4}', dest_id)
-                        if mp25_match:
-                            mp25_code = mp25_match.group(1)
-                        
-                        # Determine if this is a control sample and get control type
-                        is_control = False
-                        control_type = None
-                        
-                        # Debug: Print destination info for troubleshooting
-                        # st.write(f"DEBUG - Dest ID: {dest_id}, Position: {dest_position}, MP25 Code: {mp25_code}")
-                        
-                        # Check against all control samples to determine if this is a control
-                        for code, code_controls in control_samples.items():
-                            # Check if the MP25 code matches the control sample code
-                            if code == mp25_code:
-                                control_positions = code_controls.get('positions', [])
-                                control_names = code_controls.get('names', [])
-                                
-                                # Check if the destination position matches any control position
-                                if dest_position in control_positions:
-                                    is_control = True
-                                    # Get the corresponding control name
-                                    try:
-                                        control_idx = control_positions.index(dest_position)
-                                        control_type = control_names[control_idx]
-                                    except (ValueError, IndexError):
-                                        control_type = "Control"
-                                    break
-                        
-                        # Alternative method: Check if any control name appears in the destination ID
-                        if not is_control:
-                            for code, code_controls in control_samples.items():
-                                if code == mp25_code:
-                                    control_names = code_controls.get('names', [])
-                                    control_positions = code_controls.get('positions', [])
-                                    
-                                    # Check each control name to see if it appears in the destination
-                                    for i, control_name in enumerate(control_names):
-                                        if control_name.upper() in dest_id.upper():
-                                            is_control = True
-                                            control_type = control_name
-                                            break
-                                    
-                                    if is_control:
-                                        break
-                        
-                        # Display sample information with enhanced details
-                        with col1:
-                            if is_control:
-                                st.write(f"🧪 **Control Sample**")
-                                st.caption(f"Type: {control_type}")
-                            else:
-                                st.write(f"🔬 **Regular Sample**")
-                                st.caption(f"Name: {solution_name}")
-                        
-                        with col2:
-                            st.write(f"**MP25 Code:**")
-                            st.write(f"`{mp25_code}`")
-                        
-                        with col3:
-                            st.write(f"**Volume:**")
-                            st.write(f"{step1_volume} μL")
-                        
-                        with col4:
-                            st.write(f"**Transfer:**")
-                            st.write(f"{source_position} → {dest_position}")
-                            st.caption(f"Poolplaat to Analyseplaat")
-                        
-                        with col5:
-                            # Delete checkbox
-                            delete_key = f"delete_sample_{idx}_{df_idx}"
-                            st.write("**Delete**")
-                            if st.checkbox("🗑️", key=delete_key, help="Mark for deletion"):
-                                samples_to_delete.append(df_idx)
-                    
-                    st.markdown("---")
-                
-                # Delete selected samples
-                if samples_to_delete:
-                    col1, col2 = st.columns(2)
-                    
-                    with col1:
-                        if st.button("🗑️ Delete Selected Samples", type="secondary", use_container_width=True):
-                            # Remove selected rows from the dataframe
-                            processor.df = processor.df.drop(samples_to_delete).reset_index(drop=True)
-                            st.success(f"✅ Deleted {len(samples_to_delete)} sample(s)")
-                            
-                            # Clear the sample manager display and force refresh
-                            st.session_state.show_sample_manager = False
-                            st.rerun()
-                    
-                    with col2:
-                        st.write(f"**{len(samples_to_delete)} sample(s) selected for deletion**")
-                
-                # Summary section
-                st.markdown("### 📊 Summary")
-                
-                # Count regular vs control samples
-                regular_count = 0
-                control_count = 0
-                codes_used = set()
-                
-                for idx, (df_idx, row) in enumerate(added_rows.iterrows()):
-                    step1_destination = row.get('Step1Destination', '')
-                    dest_match = re.search(r'"([^"]+)"', str(step1_destination))
-                    dest_id = dest_match.group(1) if dest_match else str(step1_destination)
-                    
-                    # Extract position and MP25 code
-                    dest_pos_match = re.search(r':([A-H]\d{1,2})
-                
-                # Display summary
-                summary_col1, summary_col2, summary_col3 = st.columns(3)
-                
-                with summary_col1:
-                    st.metric("Regular Samples", regular_count)
-                
-                with summary_col2:
-                    st.metric("Control Samples", control_count)
-                
-                with summary_col3:
-                    st.metric("MP25 Codes Used", len(codes_used))
-                
-                if codes_used:
-                    st.write(f"**Codes:** {', '.join(sorted(codes_used))}")
-                
-                # Close manager button
-                if st.button("❌ Sluiten", use_container_width=True):
-                    st.session_state.show_sample_manager = False
-                    st.rerun()
-            else:
-                st.info("No added samples found. Add some samples using the interface below and they will appear here for management."), dest_id)
-                    dest_position = dest_pos_match.group(1) if dest_pos_match else "Unknown"
-                    
-                    mp25_match = re.search(r'MP25([A-Z0-9]+)\d{4}', dest_id)
-                    if mp25_match:
-                        mp25_code = mp25_match.group(1)
-                        codes_used.add(mp25_code)
-                        
-                        # Check if control - use same enhanced logic as above
-                        is_control_sample = False
-                        
-                        # Method 1: Check by position
-                        if mp25_code in control_samples:
-                            control_positions = control_samples[mp25_code].get('positions', [])
-                            if dest_position in control_positions:
-                                is_control_sample = True
-                        
-                        # Method 2: Check by name in destination ID if position check failed
-                        if not is_control_sample and mp25_code in control_samples:
-                            control_names = control_samples[mp25_code].get('names', [])
-                            for control_name in control_names:
-                                if control_name.upper() in dest_id.upper():
-                                    is_control_sample = True
-                                    break
                         
                         if is_control_sample:
                             control_count += 1
@@ -1182,7 +756,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
                     st.rerun()
             else:
                 st.info("No added samples found. Add some samples using the interface below and they will appear here for management.")
-                
+
     st.markdown("---")
                            
     # Sample type selection
@@ -1419,22 +993,6 @@ def add_row_interface(processor, allowed_codes, control_samples):
         ]
                 
         processor.add_row(row_data)
-        
-        # Initialize metadata tracking if not exists
-        if 'added_samples_metadata' not in st.session_state:
-            st.session_state.added_samples_metadata = {}
-        
-        # Store sample metadata - get the index of the newly added row
-        new_row_index = len(processor.df) - 1
-        
-        # Store metadata about this sample
-        st.session_state.added_samples_metadata[new_row_index] = {
-            'is_control': sample_type == "Control Samples",
-            'control_type': control_sample_name if sample_type == "Control Samples" else None,
-            'mp25_code': selected_code,
-            'sample_type': sample_type,
-            'added_timestamp': datetime.now().isoformat()
-        }
         
         # Determine which run this sample belongs to
         run_for_sample = None
