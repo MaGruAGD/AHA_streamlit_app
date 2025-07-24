@@ -716,37 +716,6 @@ def add_row_interface(processor, allowed_codes, control_samples):
                     with col2:
                         st.write(f"**{len(samples_to_delete)} sample(s) selected for deletion**")
                 
-                # Summary section using metadata
-                st.markdown("### 📊 Summary")
-                
-                # Count using metadata
-                regular_count = 0
-                control_count = 0
-                codes_used = set()
-                
-                if 'added_samples_metadata' in st.session_state:
-                    for metadata in st.session_state.added_samples_metadata[:len(added_rows)]:  # Only count existing rows
-                        codes_used.add(metadata['mp25_code'])
-                        if metadata['sample_type'] == "Control Samples":
-                            control_count += 1
-                        else:
-                            regular_count += 1
-                
-                # Display summary
-                summary_col1, summary_col2, summary_col3 = st.columns(3)
-                
-                with summary_col1:
-                    st.metric("Regular Samples", regular_count)
-                
-                with summary_col2:
-                    st.metric("Control Samples", control_count)
-                
-                with summary_col3:
-                    st.metric("MP25 Codes Used", len(codes_used))
-                
-                if codes_used:
-                    st.write(f"**Codes:** {', '.join(sorted(codes_used))}")
-                
                 # Close manager button
                 if st.button("❌ Sluiten", use_container_width=True):
                     st.session_state.show_sample_manager = False
