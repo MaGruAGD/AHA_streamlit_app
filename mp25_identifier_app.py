@@ -558,7 +558,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
     st.header("Step 3: Add Rows")
     
     if processor is None:
-        st.warning("Please upload a CSV file first.")
+        st.warning("Upload eerst een CSV-bestand.")
         return
     
     # Track original row count if not already tracked
@@ -947,7 +947,7 @@ def volume_manager_interface(processor, allowed_codes):
     st.header("Step 5: Volume Manager")
     
     if processor is None:
-        st.warning("Please upload a CSV file first.")
+        st.warning("Upload eerst een CSV-bestand.")
         return
     
     # Get codes that have been selected in the "Select Codes" step
