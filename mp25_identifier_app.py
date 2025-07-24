@@ -524,10 +524,10 @@ def create_sidebar():
             "1. Upload CSV", 
             "2. Aantal runs", 
             "3. Monster toevoegen", 
-            "4. Select Codes", 
+            "4. Ananlyses", 
             "5. Volume Manager",  
-            "6. Process Data", 
-            "7. Download Results"  
+            "6. Data verwerken", 
+            "7. Download CSV"  
         ]
         
         for step_name in steps:
@@ -1544,16 +1544,16 @@ def main():
     elif step == "3. Monster toevoegen":
         add_row_interface(st.session_state.processor, allowed_codes, control_samples)
         
-    elif step == "4. Select Codes":
+    elif step == "4. Analyses":
         step_select_codes()
         
     elif step == "5. Volume Manager":
         volume_manager_interface(st.session_state.processor, allowed_codes)
         
-    elif step == "6. Process Data":
+    elif step == "6. Data verwerken":
         step_process_data()
         
-    elif step == "7. Download Results":
+    elif step == "7. Download CSV":
         step_download_results()
 
 # Add this function if you want to provide theme switching capability
