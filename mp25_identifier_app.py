@@ -1058,13 +1058,13 @@ def step_select_runs():
         return
     
     st.session_state.num_runs = st.radio(
-        "Number of runs:",
+        "Aantal runs:",
         options=[1, 2, 3],
         index=st.session_state.num_runs - 1,
         horizontal=True
     )
     
-    st.success(f"Selected {st.session_state.num_runs} run(s)")
+    st.success(f"{st.session_state.num_runs} run(s) geselecteerd")
 
 def step_select_codes():
     """Step 4: Select Codes and Volumes"""
