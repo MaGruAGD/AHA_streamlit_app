@@ -1489,7 +1489,7 @@ def main():
                 <span class="lab-icon">🧪</span>
                 Andrew Helper App
             </h1>
-            <p class="header-subtitle">Andrew Helper App</p>
+            <p class="header-subtitle">CSV's verwerken en exporteren</p>
         </div>
         """,
         unsafe_allow_html=True
