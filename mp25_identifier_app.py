@@ -734,7 +734,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
                     dest_id = dest_match.group(1) if dest_match else str(step1_destination)
                     
                     # Extract position and MP25 code
-                    dest_pos_match = re.search(r':([A-H]\d{1,2})
+                    dest_pos_match = re.search(r':([A-H]\d{1,2})', dest_id)
                 
                 # Display summary
                 summary_col1, summary_col2, summary_col3 = st.columns(3)
