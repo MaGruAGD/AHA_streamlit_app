@@ -1530,15 +1530,7 @@ def main():
     
     # Enhanced sidebar
     create_sidebar()
-    
-    # Modern breadcrumb navigation
-    step = st.session_state.current_step
-    st.markdown(f"""
-        <div class="breadcrumb-container">
-            <strong>CURRENT WORKFLOW:</strong> {step}
-        </div>
-    """, unsafe_allow_html=True)
-    
+       
     # Step routing
     if step == "1. Upload CSV":
         step_upload_csv(allowed_codes)
