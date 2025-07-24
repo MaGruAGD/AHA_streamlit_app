@@ -507,7 +507,8 @@ def initialize_session_state():
         'filtered_data': {},
         'database': None,
         'database_loaded': False,
-        'current_step': "1. Upload CSV"
+        'current_step': "1. Upload CSV",
+        'added_samples_metadata': []
     }
     
     for key, value in defaults.items():
@@ -590,23 +591,27 @@ def add_row_interface(processor, allowed_codes, control_samples):
     if st.session_state.get('show_sample_manager', False):
         with st.expander("🗂️ Toegevoegde monsters:", expanded=True):
             
-            # Recalculate added rows here as well to ensure freshness
-            current_added_count = len(processor.df) - st.session_state.original_row_count
-            
             # Get added rows (rows beyond the original count)
-            added_rows = processor.df.iloc[st.session_state.original_row_count:].copy()
+            original_count = st.session_state.get('original_row_count', 0)
+            added_rows = processor.df.iloc[original_count:].copy()
             
             if len(added_rows) > 0:
                 # Create a list to track which samples to delete
                 samples_to_delete = []
+                metadata_indices_to_delete = []
                 
                 # Display each added sample with delete option
                 for idx, (df_idx, row) in enumerate(added_rows.iterrows()):
+                    # Get the metadata for this sample
+                    metadata = None
+                    if 'added_samples_metadata' in st.session_state and idx < len(st.session_state.added_samples_metadata):
+                        metadata = st.session_state.added_samples_metadata[idx]
+                    
                     with st.container():
                         # Create columns for sample info and delete button
                         col1, col2, col3, col4, col5 = st.columns([2, 1.5, 1.5, 2, 1])
                         
-                        # Extract sample information
+                        # Extract sample information from the row
                         solution_name = row.get('SolutionName', 'Unknown')
                         step1_source = row.get('Step1Source', '')
                         step1_destination = row.get('Step1Destination', '')
@@ -619,41 +624,29 @@ def add_row_interface(processor, allowed_codes, control_samples):
                         source_id = source_match.group(1) if source_match else str(step1_source)
                         dest_id = dest_match.group(1) if dest_match else str(step1_destination)
                         
-                        # Extract position from source and destination
+                        # Extract positions
                         source_pos_match = re.search(r':([A-H]\d{1,2})$', source_id)
                         dest_pos_match = re.search(r':([A-H]\d{1,2})$', dest_id)
                         
                         source_position = source_pos_match.group(1) if source_pos_match else "Unknown"
                         dest_position = dest_pos_match.group(1) if dest_pos_match else "Unknown"
                         
-                        # Determine MP25 code from destination
-                        mp25_code = "Unknown"
+                        # Get MP25 code
                         mp25_match = re.search(r'MP25([A-Z0-9]+)\d{4}', dest_id)
-                        if mp25_match:
-                            mp25_code = mp25_match.group(1)
+                        mp25_code = mp25_match.group(1) if mp25_match else "Unknown"
                         
-                        # Determine if this is a control sample and get control type
-                        is_control = False
-                        control_type = None
+                        # Use metadata to determine sample type and details
+                        if metadata:
+                            is_control = metadata['sample_type'] == "Control Samples"
+                            control_type = metadata.get('control_name', 'Control')
+                            sample_type_from_metadata = metadata['sample_type']
+                        else:
+                            # Fallback if no metadata (shouldn't happen with new system)
+                            is_control = False
+                            control_type = None
+                            sample_type_from_metadata = "Regular Samples"
                         
-                        # Check against all control samples to determine if this is a control
-                        for code, code_controls in control_samples.items():
-                            if code == mp25_code:  # Only check controls for the matching MP25 code
-                                control_positions = code_controls.get('positions', [])
-                                control_names = code_controls.get('names', [])
-                                
-                                # Check if the destination position matches any control position
-                                if dest_position in control_positions:
-                                    is_control = True
-                                    # Get the corresponding control name
-                                    try:
-                                        control_idx = control_positions.index(dest_position)
-                                        control_type = control_names[control_idx]
-                                    except (ValueError, IndexError):
-                                        control_type = "Control"
-                                    break
-                        
-                        # Display sample information with enhanced details
+                        # Display sample information
                         with col1:
                             if is_control:
                                 st.write(f"🧪 **Control Sample**")
@@ -681,6 +674,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
                             st.write("**Delete**")
                             if st.checkbox("🗑️", key=delete_key, help="Mark for deletion"):
                                 samples_to_delete.append(df_idx)
+                                metadata_indices_to_delete.append(idx)
                     
                     st.markdown("---")
                 
@@ -692,6 +686,12 @@ def add_row_interface(processor, allowed_codes, control_samples):
                         if st.button("🗑️ Delete Selected Samples", type="secondary", use_container_width=True):
                             # Remove selected rows from the dataframe
                             processor.df = processor.df.drop(samples_to_delete).reset_index(drop=True)
+                            
+                            # Remove corresponding metadata entries (in reverse order to maintain indices)
+                            for idx in sorted(metadata_indices_to_delete, reverse=True):
+                                if 'added_samples_metadata' in st.session_state and idx < len(st.session_state.added_samples_metadata):
+                                    st.session_state.added_samples_metadata.pop(idx)
+                            
                             st.success(f"✅ Deleted {len(samples_to_delete)} sample(s)")
                             
                             # Clear the sample manager display and force refresh
@@ -701,36 +701,18 @@ def add_row_interface(processor, allowed_codes, control_samples):
                     with col2:
                         st.write(f"**{len(samples_to_delete)} sample(s) selected for deletion**")
                 
-                # Summary section
+                # Summary section using metadata
                 st.markdown("### 📊 Summary")
                 
-                # Count regular vs control samples
+                # Count using metadata
                 regular_count = 0
                 control_count = 0
                 codes_used = set()
                 
-                for idx, (df_idx, row) in enumerate(added_rows.iterrows()):
-                    step1_destination = row.get('Step1Destination', '')
-                    dest_match = re.search(r'"([^"]+)"', str(step1_destination))
-                    dest_id = dest_match.group(1) if dest_match else str(step1_destination)
-                    
-                    # Extract position and MP25 code
-                    dest_pos_match = re.search(r':([A-H]\d{1,2})$', dest_id)
-                    dest_position = dest_pos_match.group(1) if dest_pos_match else "Unknown"
-                    
-                    mp25_match = re.search(r'MP25([A-Z0-9]+)\d{4}', dest_id)
-                    if mp25_match:
-                        mp25_code = mp25_match.group(1)
-                        codes_used.add(mp25_code)
-                        
-                        # Check if control
-                        is_control_sample = False
-                        if mp25_code in control_samples:
-                            control_positions = control_samples[mp25_code].get('positions', [])
-                            if dest_position in control_positions:
-                                is_control_sample = True
-                        
-                        if is_control_sample:
+                if 'added_samples_metadata' in st.session_state:
+                    for metadata in st.session_state.added_samples_metadata[:len(added_rows)]:  # Only count existing rows
+                        codes_used.add(metadata['mp25_code'])
+                        if metadata['sample_type'] == "Control Samples":
                             control_count += 1
                         else:
                             regular_count += 1
@@ -991,8 +973,28 @@ def add_row_interface(processor, allowed_codes, control_samples):
             volume,                    # Step1Volume
             analyseplaat_entry         # Step1Destination
         ]
-                
+        
+        # Add the row to the processor
         processor.add_row(row_data)
+        
+        # NEW: Store metadata about this added sample
+        sample_metadata = {
+            'row_index': len(processor.df) - 1,  # Index of the newly added row
+            'sample_type': sample_type,  # "Regular Samples" or "Control Samples"
+            'mp25_code': selected_code,
+            'control_name': control_sample_name if sample_type == "Control Samples" else None,
+            'poolplaat_position': poolplaat_position,
+            'analyseplaat_position': analyseplaat_position,
+            'volume': volume,
+            'sample_number': sample_number,
+            'solution_name': solution_name
+        }
+        
+        # Initialize the list if it doesn't exist
+        if 'added_samples_metadata' not in st.session_state:
+            st.session_state.added_samples_metadata = []
+        
+        st.session_state.added_samples_metadata.append(sample_metadata)
         
         # Determine which run this sample belongs to
         run_for_sample = None
