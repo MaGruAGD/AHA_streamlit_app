@@ -523,8 +523,8 @@ def create_sidebar():
         steps = [
             "1. Upload CSV", 
             "2. Select Runs", 
-            "3. Select Codes", 
-            "4. Add Rows", 
+            "3. Add Rows", 
+            "4. Select Codes", 
             "5. Volume Manager",  
             "6. Process Data", 
             "7. Download Results"  
@@ -555,7 +555,7 @@ def create_sidebar():
         
 def add_row_interface(processor, allowed_codes, control_samples):
     """Enhanced add row interface with regular and control samples + sample management"""
-    st.header("Step 4: Add Rows")
+    st.header("Step 3: Add Rows")
     
     if processor is None:
         st.warning("Please upload a CSV file first.")
@@ -1067,8 +1067,8 @@ def step_select_runs():
     st.success(f"Selected {st.session_state.num_runs} run(s)")
 
 def step_select_codes():
-    """Step 3: Select Codes and Volumes"""
-    st.header("Step 3: Select Codes and Volumes")
+    """Step 4: Select Codes and Volumes"""
+    st.header("Step 4: Select Codes and Volumes")
     
     if st.session_state.processor is None:
         st.warning("Please upload a CSV file first.")
@@ -1541,11 +1541,11 @@ def main():
     elif step == "2. Select Runs":
         step_select_runs()
         
-    elif step == "3. Select Codes":
-        step_select_codes()
-        
-    elif step == "4. Add Rows":
+    elif step == "3. Add Rows":
         add_row_interface(st.session_state.processor, allowed_codes, control_samples)
+        
+    elif step == "4. Select Codes":
+        step_select_codes()
         
     elif step == "5. Volume Manager":
         volume_manager_interface(st.session_state.processor, allowed_codes)
