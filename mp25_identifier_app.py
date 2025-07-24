@@ -276,7 +276,7 @@ class CSVProcessor:
 
 
 def step_select_codes():
-    """Step 3: Select Codes and Volumes - Using callback approach"""
+    """Step 3: Select Codes and Volumes - Using multiselect instead of checkboxes"""
     st.header("Step 3: Select Codes and Volumes")
     
     if st.session_state.processor is None:
@@ -306,79 +306,71 @@ def step_select_codes():
     else:
         st.info(f"📊 Using codes from original CSV: {', '.join(sorted(original_codes))}")
     
-    # Initialize code selection state using a simple dict approach
-    if 'code_selections' not in st.session_state:
-        st.session_state.code_selections = {}
+    # Initialize selected_codes if it doesn't exist
+    if 'selected_codes' not in st.session_state:
+        st.session_state.selected_codes = {}
         for run_num in range(1, st.session_state.num_runs + 1):
-            for code in all_available_codes:
-                st.session_state.code_selections[f"{run_num}_{code}"] = False
+            st.session_state.selected_codes[run_num] = []
     
-    # Callback function to handle checkbox changes
-    def handle_code_selection(run_num, code):
-        key = f"{run_num}_{code}"
-        # If this code is being selected, deselect it from other runs
-        if st.session_state.code_selections[key]:
-            for other_run in range(1, st.session_state.num_runs + 1):
-                if other_run != run_num:
-                    other_key = f"{other_run}_{code}"
-                    if other_key in st.session_state.code_selections:
-                        st.session_state.code_selections[other_key] = False
-    
-    # Code selection for each run
+    # Code selection for each run using multiselect
     for run_num in range(1, st.session_state.num_runs + 1):
         st.subheader(f"🚀 Run {run_num}")
         
-        # Create columns for layout
-        num_cols = 3
-        cols = st.columns(num_cols)
+        # Get codes already selected in other runs
+        codes_used_in_other_runs = set()
+        for other_run in range(1, st.session_state.num_runs + 1):
+            if other_run != run_num:
+                codes_used_in_other_runs.update(st.session_state.selected_codes.get(other_run, []))
         
-        # Create checkboxes for this run
-        for i, code in enumerate(all_available_codes):
-            col_idx = i % num_cols
-            with cols[col_idx]:
-                key = f"{run_num}_{code}"
-                
-                # Check if this code is selected in another run
-                is_disabled = False
-                for other_run in range(1, st.session_state.num_runs + 1):
-                    if other_run != run_num:
-                        other_key = f"{other_run}_{code}"
-                        if st.session_state.code_selections.get(other_key, False):
-                            is_disabled = True
-                            break
-                
-                # Create label
-                label = f"{code} ✨" if code in added_codes else code
-                
-                # Create checkbox
-                st.checkbox(
-                    label,
-                    key=f"checkbox_{key}",
-                    value=st.session_state.code_selections.get(key, False),
-                    disabled=is_disabled,
-                    help="Already selected in another run" if is_disabled else ("Added via Add Rows" if code in added_codes else None),
-                    on_change=handle_code_selection,
-                    args=(run_num, code)
-                )
-                
-                # Update our tracking state based on checkbox state
-                checkbox_key = f"checkbox_{key}"
-                if checkbox_key in st.session_state:
-                    st.session_state.code_selections[key] = st.session_state[checkbox_key]
+        # Filter available codes for this run (remove those used in other runs)
+        available_for_this_run = [code for code in all_available_codes if code not in codes_used_in_other_runs]
+        
+        # Format options with indicators for newly added codes
+        formatted_options = []
+        option_to_code = {}
+        for code in available_for_this_run:
+            if code in added_codes:
+                formatted_option = f"{code} ✨"
+            else:
+                formatted_option = code
+            formatted_options.append(formatted_option)
+            option_to_code[formatted_option] = code
+        
+        # Get current selection for this run
+        current_selection = st.session_state.selected_codes.get(run_num, [])
+        
+        # Format current selection for display
+        formatted_current_selection = []
+        for code in current_selection:
+            if code in available_for_this_run:  # Only include if still available
+                if code in added_codes:
+                    formatted_current_selection.append(f"{code} ✨")
+                else:
+                    formatted_current_selection.append(code)
+        
+        # Create multiselect
+        selected_formatted = st.multiselect(
+            f"Select codes for Run {run_num}:",
+            options=formatted_options,
+            default=formatted_current_selection,
+            key=f"multiselect_run_{run_num}",
+            help=f"{len(available_for_this_run)} codes available for selection"
+        )
+        
+        # Convert formatted selections back to actual codes
+        selected_codes_for_run = [option_to_code[formatted_option] for formatted_option in selected_formatted]
+        
+        # Update session state
+        st.session_state.selected_codes[run_num] = selected_codes_for_run
+        
+        # Show info about unavailable codes
+        if codes_used_in_other_runs:
+            with st.expander("ℹ️ Codes unavailable for this run", expanded=False):
+                unavailable_list = sorted(list(codes_used_in_other_runs))
+                st.write(f"**{len(unavailable_list)} codes already selected in other runs:**")
+                st.write(", ".join(unavailable_list))
         
         st.markdown("---")
-    
-    # Build selected_codes for compatibility with rest of app
-    if 'selected_codes' not in st.session_state:
-        st.session_state.selected_codes = {}
-    
-    for run_num in range(1, st.session_state.num_runs + 1):
-        selected_for_run = []
-        for code in all_available_codes:
-            key = f"{run_num}_{code}"
-            if st.session_state.code_selections.get(key, False):
-                selected_for_run.append(code)
-        st.session_state.selected_codes[run_num] = selected_for_run
     
     # Show summary
     st.subheader("📋 Selection Summary")
