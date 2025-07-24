@@ -1091,18 +1091,7 @@ def step_select_codes():
         st.warning("No codes found in the uploaded CSV file.")
         return
     
-    # Show info about codes
-    if added_codes:
-        st.info(f"📝 Found {len(added_codes)} newly added code(s): {', '.join(sorted(added_codes))}")
-        
-        # Debug info to help troubleshoot
-        with st.expander("🔍 Code Detection Details", expanded=False):
-            st.write(f"**Original codes from CSV:** {', '.join(sorted(original_codes))}")
-            st.write(f"**Current codes (after additions):** {', '.join(sorted(current_codes))}")
-            st.write(f"**Newly added codes:** {', '.join(sorted(added_codes))}")
-    else:
-        st.info(f"📊 Using codes from original CSV: {', '.join(sorted(original_codes))}")
-    
+   
     # Code selection for each run
     for run_num in range(1, st.session_state.num_runs + 1):
         st.subheader(f"Run {run_num}")
