@@ -589,6 +589,10 @@ def add_row_interface(processor, allowed_codes, control_samples):
     # Sample manager interface
     # Sample manager interface - REPLACE the existing sample manager section in add_row_interface
     if st.session_state.get('show_sample_manager', False):
+        st.write("🐛 DEBUG - Opening sample manager")
+        st.write("Sample type in session state:", st.session_state.get('sample_type'))
+        st.write("Show sample manager:", st.session_state.get('show_sample_manager'))
+        st.write("All session state keys:", list(st.session_state.keys()))
         with st.expander("🗂️ Toegevoegde monsters:", expanded=True):
             
             # Get added rows (rows beyond the original count)
