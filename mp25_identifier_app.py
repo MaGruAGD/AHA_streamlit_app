@@ -1114,7 +1114,7 @@ def step_upload_csv(allowed_codes):
             st.success("✅ Het CSV-bestand is succesvol geüpload.")
                           
             # Show extracted codes
-            st.subheader("Extracted Codes")
+            st.subheader("Analyses")
             if st.session_state.processor.codes:
                 st.write(f"{len(st.session_state.processor.codes)} analyses geïdentificeerd:")
                 st.write(", ".join(st.session_state.processor.codes))
