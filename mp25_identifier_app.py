@@ -556,7 +556,7 @@ def create_sidebar():
             st.rerun()
         
 def add_row_interface(processor, allowed_codes, control_samples):
-    """Enhanced add row interface with regular and control samples + sample management"""
+    """Enhanced add row interface with regular and control samples + sample management - DUTCH VERSION"""
     st.header("Stap 3: Monsters en/of controlemonsters toevoegen")
     
     if processor is None:
@@ -588,7 +588,6 @@ def add_row_interface(processor, allowed_codes, control_samples):
         st.rerun()
 
     # Sample manager interface
-    # Sample manager interface - REPLACE the existing sample manager section in add_row_interface
     if st.session_state.get('show_sample_manager', False):
         with st.expander("🗂️ Toegevoegde monsters:", expanded=True):
             
@@ -613,7 +612,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
                         col1, col2, col3, col4, col5 = st.columns([2, 1.5, 1.5, 2, 1])
                         
                         # Extract sample information from the row
-                        solution_name = row.get('SolutionName', 'Unknown')
+                        solution_name = row.get('SolutionName', 'Onbekend')
                         step1_source = row.get('Step1Source', '')
                         step1_destination = row.get('Step1Destination', '')
                         step1_volume = row.get('Step1Volume', '')
@@ -642,17 +641,17 @@ def add_row_interface(processor, allowed_codes, control_samples):
                         if not dest_pos_match:
                             dest_pos_match = re.search(r'([A-H]\d{1,2})', dest_id)
                         
-                        source_position = metadata.get('poolplaat_position', 'Unknown') if metadata else 'Unknown'
-                        dest_position = metadata.get('analyseplaat_position', 'Unknown') if metadata else 'Unknown'
+                        source_position = metadata.get('poolplaat_position', 'Onbekend') if metadata else 'Onbekend'
+                        dest_position = metadata.get('analyseplaat_position', 'Onbekend') if metadata else 'Onbekend'
                         
                         # Get MP25 code (keep existing logic)
                         mp25_match = re.search(r'MP25([A-Z0-9]+)\d{4}', dest_id)
-                        mp25_code = mp25_match.group(1) if mp25_match else "Unknown"
+                        mp25_code = mp25_match.group(1) if mp25_match else "Onbekend"
                         
                         # Use metadata to determine sample type and details
                         if metadata:
                             is_control = metadata['sample_type'] == "Control Samples"
-                            control_type = metadata.get('control_name', 'Control')
+                            control_type = metadata.get('control_name', 'Controle')
                             sample_type_from_metadata = metadata['sample_type']
                         else:
                             # Fallback if no metadata (shouldn't happen with new system)
@@ -663,11 +662,11 @@ def add_row_interface(processor, allowed_codes, control_samples):
                         # Display sample information
                         with col1:
                             if is_control:
-                                st.write(f"🧪 **Control Sample**")
+                                st.write(f"🧪 **Controlemonster**")
                                 st.caption(f"Type: {control_type}")
                             else:
-                                st.write(f"🔬 **Regular Sample**")
-                                st.caption(f"Name: {solution_name}")
+                                st.write(f"🔬 **Routine Monster**")
+                                st.caption(f"Naam: {solution_name}")
                         
                         with col2:
                             st.write(f"**MP25 Code:**")
@@ -680,13 +679,13 @@ def add_row_interface(processor, allowed_codes, control_samples):
                         with col4:
                             st.write(f"**Transfer:**")
                             st.write(f"{source_position} → {dest_position}")
-                            st.caption(f"Poolplaat to Analyseplaat")
+                            st.caption(f"Poolplaat naar Analyseplaat")
                         
                         with col5:
                             # Delete checkbox
                             delete_key = f"delete_sample_{idx}_{df_idx}"
-                            st.write("**Delete**")
-                            if st.checkbox("🗑️", key=delete_key, help="Mark for deletion"):
+                            st.write("**Verwijderen**")
+                            if st.checkbox("🗑️", key=delete_key, help="Markeer voor verwijdering"):
                                 samples_to_delete.append(df_idx)
                                 metadata_indices_to_delete.append(idx)
                     
@@ -697,7 +696,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
                     col1, col2 = st.columns(2)
                     
                     with col1:
-                        if st.button("🗑️ Delete Selected Samples", type="secondary", use_container_width=True):
+                        if st.button("🗑️ Geselecteerde Monsters Verwijderen", type="secondary", use_container_width=True):
                             # Remove selected rows from the dataframe
                             processor.df = processor.df.drop(samples_to_delete).reset_index(drop=True)
                             
@@ -706,42 +705,42 @@ def add_row_interface(processor, allowed_codes, control_samples):
                                 if 'added_samples_metadata' in st.session_state and idx < len(st.session_state.added_samples_metadata):
                                     st.session_state.added_samples_metadata.pop(idx)
                             
-                            st.success(f"✅ Deleted {len(samples_to_delete)} sample(s)")
+                            st.success(f"✅ {len(samples_to_delete)} monster(s) verwijderd")
                             
                             # Clear the sample manager display and force refresh
                             st.session_state.show_sample_manager = False
                             st.rerun()
                     
                     with col2:
-                        st.write(f"**{len(samples_to_delete)} sample(s) selected for deletion**")
+                        st.write(f"**{len(samples_to_delete)} monster(s) geselecteerd voor verwijdering**")
                 
                 # Close manager button
                 if st.button("❌ Sluiten", use_container_width=True):
                     st.session_state.show_sample_manager = False
                     st.rerun()
             else:
-                st.info("No added samples found. Add some samples using the interface below and they will appear here for management.")
+                st.info("Geen toegevoegde monsters gevonden. Voeg monsters toe via de interface hieronder en ze verschijnen hier voor beheer.")
 
     st.markdown("---")
                            
     # Sample type selection
     sample_type = st.radio(
         "Monstertype:",
-        ["Regular Samples", "Control Samples"],
+        ["Routinee Monsters", "Controlemonsters"],
         key="sample_type_radio",
-        index=st.session_state.get('sample_type_index', 0)  # Add this line
+        index=st.session_state.get('sample_type_index', 0)
     )
     
     # Add this right after the radio button to store the state properly
-    if sample_type == "Control Samples":
-        st.session_state.sample_type = "Control Samples"
+    if sample_type == "Controlemonsters":
+        st.session_state.sample_type = "Control Samples"  # Keep internal English for compatibility
         st.session_state.sample_type_index = 1
     else:
-        st.session_state.sample_type = "Regular Samples" 
+        st.session_state.sample_type = "Regular Samples"  # Keep internal English for compatibility
         st.session_state.sample_type_index = 0
    
     # Code selection - filter to only show codes with MP25 entries in CSV for control samples
-    if sample_type == "Control Samples":
+    if sample_type == "Controlemonsters":
         # For control samples, only show codes that have MP25 entries in the CSV
         codes_with_mp25 = []
         for code in allowed_codes:
@@ -751,24 +750,24 @@ def add_row_interface(processor, allowed_codes, control_samples):
         
         if codes_with_mp25:
             selected_code = st.selectbox(
-                "Select Code:",
+                "Selecteer Code:",
                 options=codes_with_mp25,
                 key="code_selector",
-                help="Only showing codes with MP25 entries found in the uploaded CSV"
+                help="Toont alleen codes met MP25 vermeldingen gevonden in het geüploade CSV"
             )
         else:
-            st.warning("No codes with MP25 entries found in the uploaded CSV.")
+            st.warning("Geen codes met MP25 vermeldingen gevonden in het geüploade CSV.")
             selected_code = None
     else:
         # For regular samples, show all allowed codes
         selected_code = st.selectbox(
-            "Select Code:",
+            "Selecteer Code:",
             options=allowed_codes,
             key="code_selector"
         )
     
     if not selected_code:
-        st.warning("Please select a code.")
+        st.warning("Selecteer eerst een code.")
         return
     
     # Create two columns for Poolplaat and Analyseplaat
@@ -785,31 +784,31 @@ def add_row_interface(processor, allowed_codes, control_samples):
                 "Poolplaat ID:",
                 options=plsta_ids,
                 key="poolplaat_id_selector",
-                help="Select PP25PLSTA ID from the uploaded CSV"
+                help="Selecteer PP25PLSTA ID uit het geüploade CSV"
             )
         else:
             poolplaat_id = st.text_input(
                 "Poolplaat ID:",
                 value="PP25PLSTA0001",
                 key="poolplaat_id_input",
-                help="Enter PP25PLSTA ID (format: PP25PLSTAXXXX)"
+                help="Voer PP25PLSTA ID in (formaat: PP25PLSTAXXXX)"
             )
         
         # Use the improved well plate selector
         poolplaat_position = well_plate_selector(
             key="poolplaat_position_selector",
-            title="Select position on poolplaat",
+            title="Selecteer positie op poolplaat",
             default_position="A1"
         )
         
         # Calculate sample number automatically
         sample_number = position_to_sample_number(poolplaat_position)
         st.text_input(
-            "Sample number:",
+            "Monsternummer:",
             value=str(sample_number),
             disabled=True,
             key="sample_number_display",
-            help="Automatically calculated from position"
+            help="Automatisch berekend op basis van positie"
         )
     
     with col2:
@@ -845,7 +844,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
             "Analyseplaat ID:",
             value=st.session_state.get(analyseplaat_key, default_analyseplaat_id),
             key=f"analyseplaat_id_input_{selected_code}",
-            help=f"Required format: MP25{selected_code}XXXX (e.g., MP25{selected_code}0081)",
+            help=f"Vereist formaat: MP25{selected_code}XXXX (bijv., MP25{selected_code}0081)",
             placeholder=f"MP25{selected_code}0001"
         )
         
@@ -856,20 +855,20 @@ def add_row_interface(processor, allowed_codes, control_samples):
         is_valid_analyseplaat_id = validate_analyseplaat_id(analyseplaat_id, selected_code)
         
         if analyseplaat_id and not is_valid_analyseplaat_id:
-            st.error(f"⚠️ Invalid format! Must be: MP25{selected_code}XXXX (where XXXX are 4 digits)")
-            st.info(f"Example: MP25{selected_code}0081")
+            st.error(f"⚠️ Ongeldig formaat! Moet zijn: MP25{selected_code}XXXX (waarbij XXXX 4 cijfers zijn)")
+            st.info(f"Voorbeeld: MP25{selected_code}0081")
         elif analyseplaat_id and is_valid_analyseplaat_id:
-            st.success("✅ Valid Analyseplaat ID format")
+            st.success("✅ Geldig Analyseplaat ID formaat")
         
         # Control sample selection (only for control samples)
         control_sample_name = None
-        if sample_type == "Control Samples":
+        if sample_type == "Controlemonsters":
             if selected_code in control_samples:
                 control_options = control_samples[selected_code]['names']
                 control_positions = control_samples[selected_code]['positions']
                 
                 selected_control_idx = st.selectbox(
-                    "Control Sample:",
+                    "Controlemonster:",
                     options=range(len(control_options)),
                     format_func=lambda x: control_options[x],
                     key="control_sample_selector"
@@ -885,16 +884,16 @@ def add_row_interface(processor, allowed_codes, control_samples):
                     value=analyseplaat_position,
                     disabled=True,
                     key="analyseplaat_position_control",
-                    help="Position automatically set based on control sample"
+                    help="Positie automatisch ingesteld op basis van controlemonster"
                 )
             else:
-                st.warning(f"No control samples defined for code {selected_code}")
+                st.warning(f"Geen controlemonsters gedefinieerd voor code {selected_code}")
                 analyseplaat_position = "A1"
         else:
             # Regular samples - use improved well plate selector
             analyseplaat_position = well_plate_selector(
                 key="analyseplaat_position_selector",
-                title="Select position on analyseplaat",
+                title="Selecteer positie op analyseplaat",
                 default_position="A1"
             )
     
@@ -927,22 +926,22 @@ def add_row_interface(processor, allowed_codes, control_samples):
         preview_csv = ",".join([f'"{str(item)}"' if item else '""' for item in preview_row])
         
         # Display preview with additional info for control samples
-        st.subheader("Preview")
-        if sample_type == "Control Samples" and control_sample_name:
-            st.info(f"🧪 This will be added as a control sample ({control_sample_name}) but will use the standard naming format: {solution_name}")
+        st.subheader("Voorvertoning")
+        if sample_type == "Controlemonsters" and control_sample_name:
+            st.info(f"🧪 Dit wordt toegevoegd als een controlemonster ({control_sample_name}) maar gebruikt het standaard naamformaat: {solution_name}")
         st.code(preview_csv, language="csv")
     
     # Add Sample button - only enabled if Analyseplaat ID is valid
     add_button_disabled = not (poolplaat_id and poolplaat_position and analyseplaat_id and analyseplaat_position and is_valid_analyseplaat_id)
     
-    if st.button("➕ Add Sample", type="primary", use_container_width=True, disabled=add_button_disabled):
+    if st.button("➕ Monster Toevoegen", type="primary", use_container_width=True, disabled=add_button_disabled):
         # Validate inputs
         if not poolplaat_id or not poolplaat_position or not analyseplaat_id or not analyseplaat_position:
-            st.error("Please fill in all required fields.")
+            st.error("Vul alle vereiste velden in.")
             return
         
         if not is_valid_analyseplaat_id:
-            st.error(f"Invalid Analyseplaat ID format. Must be: MP25{selected_code}XXXX")
+            st.error(f"Ongeldig Analyseplaat ID formaat. Moet zijn: MP25{selected_code}XXXX")
             return
         
         # Create the row data in the correct format
@@ -972,9 +971,9 @@ def add_row_interface(processor, allowed_codes, control_samples):
         # NEW: Store metadata about this added sample
         sample_metadata = {
             'row_index': len(processor.df) - 1,  # Index of the newly added row
-            'sample_type': sample_type,  # "Regular Samples" or "Control Samples"
+            'sample_type': sample_type,  # "Routinee Monsters" or "Controlemonsters" (Dutch)
             'mp25_code': selected_code,
-            'control_name': control_sample_name if sample_type == "Control Samples" else None,
+            'control_name': control_sample_name if sample_type == "Controlemonsters" else None,
             'poolplaat_position': poolplaat_position,
             'analyseplaat_position': analyseplaat_position,
             'volume': volume,
@@ -1003,15 +1002,15 @@ def add_row_interface(processor, allowed_codes, control_samples):
         
         # Show run notification with toast for 3 seconds
         if run_for_sample:
-            if sample_type == "Control Samples":
-                st.toast(f"✅ Control sample '{control_sample_name}' added to Run {run_for_sample}", icon="✅")
+            if sample_type == "Controlemonsters":
+                st.toast(f"✅ Controlemonster '{control_sample_name}' toegevoegd aan Run {run_for_sample}", icon="✅")
             else:
-                st.toast(f"✅ Sample added to Run {run_for_sample}", icon="✅")
+                st.toast(f"✅ Monster toegevoegd aan Run {run_for_sample}", icon="✅")
         else:
-            if sample_type == "Control Samples":
-                st.toast(f"✅ Control sample '{control_sample_name}' added successfully", icon="✅")
+            if sample_type == "Controlemonsters":
+                st.toast(f"✅ Controlemonster '{control_sample_name}' succesvol toegevoegd", icon="✅")
             else:
-                st.toast(f"✅ Sample added successfully", icon="✅")
+                st.toast(f"✅ Monster succesvol toegevoegd", icon="✅")
         
         # Force a rerun to refresh the display immediately
         st.rerun()
