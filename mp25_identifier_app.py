@@ -557,7 +557,7 @@ def create_sidebar():
         
 def add_row_interface(processor, allowed_codes, control_samples):
     """Enhanced add row interface with regular and control samples + sample management - DUTCH VERSION"""
-    st.header("Stap 3: Monsters en/of controlemonsters toevoegen")
+    st.header("Stap 3: Monsters en/of Controle toevoegen")
     
     if processor is None:
         st.warning("Upload eerst een CSV-bestand.")
@@ -726,13 +726,13 @@ def add_row_interface(processor, allowed_codes, control_samples):
     # Sample type selection
     sample_type = st.radio(
         "Monstertype:",
-        ["Routine Monsters", "Controlemonsters"],
+        ["Routine", "Controle"],
         key="sample_type_radio",
         index=st.session_state.get('sample_type_index', 0)
     )
     
     # Add this right after the radio button to store the state properly
-    if sample_type == "Controlemonsters":
+    if sample_type == "Controle":
         st.session_state.sample_type = "Control Samples"  # Keep internal English for compatibility
         st.session_state.sample_type_index = 1
     else:
@@ -740,7 +740,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
         st.session_state.sample_type_index = 0
    
     # Code selection - filter to only show codes with MP25 entries in CSV for control samples
-    if sample_type == "Controlemonsters":
+    if sample_type == "Controle":
         # For control samples, only show codes that have MP25 entries in the CSV
         codes_with_mp25 = []
         for code in allowed_codes:
@@ -862,7 +862,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
         
         # Control sample selection (only for control samples)
         control_sample_name = None
-        if sample_type == "Controlemonsters":
+        if sample_type == "Controle":
             if selected_code in control_samples:
                 control_options = control_samples[selected_code]['names']
                 control_positions = control_samples[selected_code]['positions']
@@ -887,7 +887,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
                     help="Positie automatisch ingesteld op basis van controlemonster"
                 )
             else:
-                st.warning(f"Geen controlemonsters gedefinieerd voor code {selected_code}")
+                st.warning(f"Geen Controle gedefinieerd voor code {selected_code}")
                 analyseplaat_position = "A1"
         else:
             # Regular samples - use improved well plate selector
@@ -927,7 +927,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
         
         # Display preview with additional info for control samples
         st.subheader("Voorvertoning")
-        if sample_type == "Controlemonsters" and control_sample_name:
+        if sample_type == "Controle" and control_sample_name:
             st.code(preview_csv, language="csv")
     
     # Add Sample button - only enabled if Analyseplaat ID is valid
@@ -970,9 +970,9 @@ def add_row_interface(processor, allowed_codes, control_samples):
         # NEW: Store metadata about this added sample
         sample_metadata = {
             'row_index': len(processor.df) - 1,  # Index of the newly added row
-            'sample_type': sample_type,  # "Routine Monsters" or "Controlemonsters" (Dutch)
+            'sample_type': sample_type,  # "Routine" or "Controle" (Dutch)
             'mp25_code': selected_code,
-            'control_name': control_sample_name if sample_type == "Controlemonsters" else None,
+            'control_name': control_sample_name if sample_type == "Controle" else None,
             'poolplaat_position': poolplaat_position,
             'analyseplaat_position': analyseplaat_position,
             'volume': volume,
@@ -1001,12 +1001,12 @@ def add_row_interface(processor, allowed_codes, control_samples):
         
         # Show run notification with toast for 3 seconds
         if run_for_sample:
-            if sample_type == "Controlemonsters":
+            if sample_type == "Controle":
                 st.toast(f"✅ Controlemonster '{control_sample_name}' toegevoegd aan Run {run_for_sample}", icon="✅")
             else:
                 st.toast(f"✅ Monster toegevoegd aan Run {run_for_sample}", icon="✅")
         else:
-            if sample_type == "Controlemonsters":
+            if sample_type == "Controle":
                 st.toast(f"✅ Controlemonster '{control_sample_name}' succesvol toegevoegd", icon="✅")
             else:
                 st.toast(f"✅ Monster succesvol toegevoegd", icon="✅")
