@@ -1111,12 +1111,12 @@ def step_upload_csv(allowed_codes):
         try:
             df = pd.read_csv(uploaded_file, quoting=1)
             st.session_state.processor = CSVProcessor(df, allowed_codes)
-            st.success("✅ CSV file uploaded successfully!")
+            st.success("✅ Het CSV-bestand is succesvol geüpload.")
                           
             # Show extracted codes
             st.subheader("Extracted Codes")
             if st.session_state.processor.codes:
-                st.write(f"Found {len(st.session_state.processor.codes)} codes:")
+                st.write(f"{len(st.session_state.processor.codes)} analyses geïdentificeerd:")
                 st.write(", ".join(st.session_state.processor.codes))
             else:
                 st.warning("No valid codes found in the CSV file.")
