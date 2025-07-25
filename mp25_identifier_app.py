@@ -1322,7 +1322,8 @@ def step_download_results():
             
             # Sort codes for consistent display
             sorted_codes = sorted(list(mp25_codes))
-                
+            
+            if sorted_codes: 
                 # Display codes with copy buttons
                 for code in sorted_codes:
                     col1, col2 = st.columns([4, 1])
