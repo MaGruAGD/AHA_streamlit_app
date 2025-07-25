@@ -41,6 +41,7 @@
     position: relative;
     overflow: hidden;
     color: white !important; /* Force white text for all children */
+    isolation: isolate; /* Create new stacking context */
 }
 
 .header-container::before {
@@ -85,27 +86,30 @@ div.header-container .header-subtitle {
     color: white !important;
 }
 
-/* Fix visibility for ALL elements in header area */
-.header-container *,
-.header-container h1,
-.header-container h2, 
-.header-container h3,
-.header-container h4,
-.header-container h5,
-.header-container h6,
-.header-container p,
-.header-container span,
-.header-container div,
-.header-container button,
-.header-container .stButton > button,
-.header-container [data-testid="stButton"] button,
-.header-container .stSelectbox,
-.header-container .stRadio,
-.header-container input,
-.header-container label,
-.header-container text {
+/* Only apply white text to direct children and specific elements within header */
+.header-container > *,
+.header-container .header-title,
+.header-container .header-subtitle,
+.header-container .lab-icon {
     color: white !important;
-    fill: white !important;
+}
+
+/* Remove the overly broad selector that was causing issues */
+/* .header-container * { color: white !important; } - REMOVED */
+
+/* Ensure main content area has proper text color */
+.main .block-container {
+    color: var(--text) !important;
+}
+
+/* Force proper text color for all headings outside header */
+.main h1:not(.header-title),
+.main h2:not(.header-title), 
+.main h3:not(.header-title),
+.main h4,
+.main h5,
+.main h6 {
+    color: var(--text) !important;
 }
 
 /* Ensure buttons in header have proper styling */
