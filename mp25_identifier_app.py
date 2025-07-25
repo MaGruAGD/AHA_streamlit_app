@@ -726,7 +726,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
     # Sample type selection
     sample_type = st.radio(
         "Monstertype:",
-        ["Routinee Monsters", "Controlemonsters"],
+        ["Routine Monsters", "Controlemonsters"],
         key="sample_type_radio",
         index=st.session_state.get('sample_type_index', 0)
     )
@@ -928,7 +928,6 @@ def add_row_interface(processor, allowed_codes, control_samples):
         # Display preview with additional info for control samples
         st.subheader("Voorvertoning")
         if sample_type == "Controlemonsters" and control_sample_name:
-            st.info(f"🧪 Dit wordt toegevoegd als een controlemonster ({control_sample_name}) maar gebruikt het standaard naamformaat: {solution_name}")
         st.code(preview_csv, language="csv")
     
     # Add Sample button - only enabled if Analyseplaat ID is valid
@@ -971,7 +970,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
         # NEW: Store metadata about this added sample
         sample_metadata = {
             'row_index': len(processor.df) - 1,  # Index of the newly added row
-            'sample_type': sample_type,  # "Routinee Monsters" or "Controlemonsters" (Dutch)
+            'sample_type': sample_type,  # "Routine Monsters" or "Controlemonsters" (Dutch)
             'mp25_code': selected_code,
             'control_name': control_sample_name if sample_type == "Controlemonsters" else None,
             'poolplaat_position': poolplaat_position,
