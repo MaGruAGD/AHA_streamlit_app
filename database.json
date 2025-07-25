@@ -33,7 +33,7 @@
     "allowed": true,
     "control_samples": {
       "ncs": {"position": "H12", "name": "NCS"}
-    }
+    },
   },
   "BLT8": {
     "allowed": true,
@@ -266,5 +266,12 @@
     "control_samples": {
       "ncs": {"position": "H12", "name": "NCS"}
     }
+  },
+  "TBE": {
+  "allowed": true,
+  "control_samples": {
+    "ncs": {"position": "H12", "name": "NCS"}
   }
+}
+
 }
