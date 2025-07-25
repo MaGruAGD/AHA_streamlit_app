@@ -1219,7 +1219,7 @@ def step_select_codes():
 
 def step_process_data():
     """Step 6: Process Data"""
-    st.header("Stap 6: Process Data")
+    st.header("Stap 6: Data verwerken")
     
     if st.session_state.processor is None:
         st.warning("Upload eerst een CSV-bestand.")
@@ -1233,7 +1233,7 @@ def step_process_data():
         st.warning("Please select codes for processing.")
         return
     
-    if st.button("🔄 Process Data", type="primary"):
+    if st.button("🔄 Verwerken", type="primary"):
         st.session_state.filtered_data = {}
         
         for run_num in range(1, st.session_state.num_runs + 1):
@@ -1256,12 +1256,12 @@ def step_process_data():
                 st.session_state.filtered_data[run_num] = filtered_df
         
         st.session_state.data_processed = True
-        st.success("✅ Data processed successfully!")
+        st.success("✅ Gegevens succesvol verwerkt!")
     
     # Display processed data
     if st.session_state.data_processed and st.session_state.filtered_data:
         for run_num, df in st.session_state.filtered_data.items():
-            st.subheader(f"Run {run_num} - Processed Data")
+            st.subheader(f"Run {run_num} - Verwerkte Data")
             st.write(f"**Rows:** {len(df)}")
             st.dataframe(df, use_container_width=True)
             
