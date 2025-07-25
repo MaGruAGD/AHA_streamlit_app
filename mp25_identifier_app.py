@@ -1295,10 +1295,10 @@ def step_download_results():
         )
 
     # Display MP25 codes for each run with copy functionality
-    st.subheader("📋 MP25 Codes in Downloaded Files")
+    st.subheader("📋 Analyseplaat ID's")
     
     for run_num, df in st.session_state.filtered_data.items():
-        with st.expander(f"Run {run_num} MP25 Codes", expanded=True):
+        with st.expander(f"Run {run_num}", expanded=True):
             # Get the selected codes for this specific run
             selected_codes_for_run = st.session_state.selected_codes.get(run_num, [])
             
@@ -1322,9 +1322,6 @@ def step_download_results():
             
             # Sort codes for consistent display
             sorted_codes = sorted(list(mp25_codes))
-            
-            if sorted_codes:
-                st.write(f"**Found {len(sorted_codes)} MP25 codes for selected codes ({', '.join(selected_codes_for_run)}):**")
                 
                 # Display codes with copy buttons
                 for code in sorted_codes:
