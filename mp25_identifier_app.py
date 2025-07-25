@@ -1143,7 +1143,7 @@ def step_select_runs():
 
 def step_select_codes():
     """Step 4: Select Codes and Volumes"""
-    st.header("Step 4: Select Codes and Volumes")
+    st.header("Step 4: Selecteer analyses")
     
     if st.session_state.processor is None:
         st.warning("Upload eerst een CSV-bestand.")
@@ -1226,9 +1226,9 @@ def step_select_codes():
         
         # Display selected codes for this run
         if st.session_state.selected_codes[run_num]:
-            st.write(f"**Selected codes:** {', '.join(sorted(st.session_state.selected_codes[run_num]))}")
+            st.write(f"**Geselecteerde analyses:** {', '.join(sorted(st.session_state.selected_codes[run_num]))}")
         else:
-            st.write("**Selected codes:** None")
+            st.write("**Geselecteerde analyses:** Geen")
         
         st.write("---")  # Visual separator between runs
 
