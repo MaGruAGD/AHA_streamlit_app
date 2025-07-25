@@ -1168,12 +1168,15 @@ def step_select_codes():
         st.warning("No codes found in the uploaded CSV file.")
         return
     
-   
+    # Initialize selected_codes structure if it doesn't exist
+    if 'selected_codes' not in st.session_state:
+        st.session_state.selected_codes = {}
+    
     # Code selection for each run
     for run_num in range(1, st.session_state.num_runs + 1):
         st.subheader(f"Run {run_num}")
         
-        # Initialize selected codes for this run
+        # Initialize selected codes for this run if not exists
         if run_num not in st.session_state.selected_codes:
             st.session_state.selected_codes[run_num] = []
         
@@ -1186,6 +1189,9 @@ def step_select_codes():
         # Create columns for better layout
         num_cols = 3
         cols = st.columns(num_cols)
+        
+        # Store the current selections for this run
+        current_run_selections = st.session_state.selected_codes[run_num].copy()
         
         for i, code in enumerate(all_available_codes):
             col_idx = i % num_cols
@@ -1201,19 +1207,24 @@ def step_select_codes():
                 # Create unique key for this checkbox
                 checkbox_key = f"code_{run_num}_{code}"
                 
-                # Create checkbox with unique key - disabled if used in another run
+                # Determine if checkbox should be checked based on session state
+                is_checked = code in st.session_state.selected_codes[run_num]
+                
+                # Create checkbox with explicit value parameter - disabled if used in another run
                 checkbox_value = st.checkbox(
                     code_label,
                     key=checkbox_key,
+                    value=is_checked,  # Explicitly set the value from session state
                     disabled=is_used_elsewhere,
                     help="Already selected in another run" if is_used_elsewhere else None
                 )
                 
-                # Update session state based on checkbox value
-                if checkbox_value and code not in st.session_state.selected_codes[run_num]:
-                    st.session_state.selected_codes[run_num].append(code)
-                elif not checkbox_value and code in st.session_state.selected_codes[run_num]:
-                    st.session_state.selected_codes[run_num].remove(code)
+                # Update session state based on checkbox value only if not disabled
+                if not is_used_elsewhere:
+                    if checkbox_value and code not in st.session_state.selected_codes[run_num]:
+                        st.session_state.selected_codes[run_num].append(code)
+                    elif not checkbox_value and code in st.session_state.selected_codes[run_num]:
+                        st.session_state.selected_codes[run_num].remove(code)
         
         # Display selected codes for this run
         if st.session_state.selected_codes[run_num]:
