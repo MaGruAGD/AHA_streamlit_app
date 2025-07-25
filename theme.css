@@ -40,6 +40,7 @@
     border-radius: 12px 12px 0 0;
     position: relative;
     overflow: hidden;
+    color: white !important; /* Force white text for all children */
 }
 
 .header-container::before {
@@ -50,10 +51,13 @@
     opacity: 0.3;
 }
 
-.header-title {
+/* Enhanced header title with higher specificity */
+.header-container .header-title,
+.header-container h1.header-title,
+div.header-container .header-title {
     font-size: clamp(1.75rem, 4vw, 2.5rem);
     font-weight: 700;
-    color: white;
+    color: white !important;
     margin: 0;
     display: flex;
     align-items: center;
@@ -62,15 +66,23 @@
     z-index: 1;
 }
 
-.header-subtitle {
+/* Enhanced header subtitle with higher specificity */
+.header-container .header-subtitle,
+.header-container p.header-subtitle,
+div.header-container .header-subtitle {
     font-size: 0.875rem;
-    color: rgba(255,255,255,0.85);
+    color: rgba(255,255,255,0.85) !important;
     margin: 0.75rem 0 0 0;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     position: relative;
     z-index: 1;
+}
+
+/* Ensure all text inside header is white */
+.header-container * {
+    color: white !important;
 }
 
 .step-container {
@@ -231,6 +243,7 @@
 .header-title .lab-icon {
     font-size: 2rem;
     animation: pulse 2s infinite;
+    color: white !important; /* Ensure icon is also white */
 }
 
 @keyframes pulse {
