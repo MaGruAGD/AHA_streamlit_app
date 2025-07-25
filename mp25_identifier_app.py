@@ -1071,7 +1071,7 @@ def volume_manager_interface(processor, allowed_codes):
                 st.write(default_text)
     
     # Apply changes button
-    if st.button("🔄 Apply Volume Changes", type="primary", use_container_width=True):
+    if st.button("🔄 Toepassen", type="primary", use_container_width=True):
         # Apply the volume changes to the dataframe
         updated_df = processor.apply_volumes(processor.df, volume_changes)
         processor.df = updated_df
