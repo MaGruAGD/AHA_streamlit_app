@@ -1077,17 +1077,8 @@ def volume_manager_interface(processor, allowed_codes):
         processor.df = updated_df
         
         st.session_state.volume_changes_applied = True  # Add this line
-        st.success("✅ Volume changes applied successfully!")
+        st.success("✅ Volumewijzigingen succesvol toegepast!")
         
-        # Show summary of changes
-        st.subheader("Applied Changes:")
-        for code, volume in volume_changes.items():
-            icon = "🔧" if code in CUSTOM_DEFAULTS else "⚙️"
-            st.write(f"{icon} **MP25{code}**: {volume} μL")
-        
-        # Show legend
-        st.caption("🔧 = Custom default volume | ⚙️ = Standard 20μL default")
-
 # Main Application Steps
 def step_upload_csv(allowed_codes):
     """Step 1: Upload CSV File"""
