@@ -1261,7 +1261,7 @@ def step_process_data():
     # Display processed data
     if st.session_state.data_processed and st.session_state.filtered_data:
         for run_num, df in st.session_state.filtered_data.items():
-            st.subheader(f"Run {run_num} - Verwerkte Data")
+            st.subheader(f"Run {run_num} - Verwerkte data")
             st.write(f"**Rows:** {len(df)}")
             st.dataframe(df, use_container_width=True)
             
