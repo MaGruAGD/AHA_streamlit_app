@@ -85,6 +85,86 @@ div.header-container .header-subtitle {
     color: white !important;
 }
 
+/* Fix visibility for ALL elements in header area */
+.header-container *,
+.header-container h1,
+.header-container h2, 
+.header-container h3,
+.header-container h4,
+.header-container h5,
+.header-container h6,
+.header-container p,
+.header-container span,
+.header-container div,
+.header-container button,
+.header-container .stButton > button,
+.header-container [data-testid="stButton"] button,
+.header-container .stSelectbox,
+.header-container .stRadio,
+.header-container input,
+.header-container label,
+.header-container text {
+    color: white !important;
+    fill: white !important;
+}
+
+/* Ensure buttons in header have proper styling */
+.header-container button,
+.header-container .stButton > button,
+.header-container [data-testid="stButton"] button {
+    background: rgba(255,255,255,0.2) !important;
+    border: 1px solid rgba(255,255,255,0.3) !important;
+    backdrop-filter: blur(10px);
+    font-weight: 600 !important;
+}
+
+.header-container button:hover,
+.header-container .stButton > button:hover {
+    background: rgba(255,255,255,0.3) !important;
+    border: 1px solid rgba(255,255,255,0.5) !important;
+    transform: translateY(-1px);
+}
+
+/* Fix visibility for SVG icons and symbols */
+.header-container svg,
+.header-container path,
+.header-container svg *,
+.header-container [class*="plus"],
+.header-container [class*="icon"],
+.header-container [class*="symbol"] {
+    color: white !important;
+    fill: white !important;
+    stroke: white !important;
+    opacity: 1 !important;
+}
+
+/* Ensure step headers and content outside header are properly visible */
+.main .block-container h1:not(.header-title),
+.main .block-container h2:not(.header-title),
+.main .block-container h3:not(.header-title) {
+    color: var(--text) !important;
+    background: none !important;
+    text-shadow: none !important;
+}
+
+/* If there's any overlap with header styling, force normal text color */
+.stApp > .main h1,
+.stApp > .main h2, 
+.stApp > .main h3,
+.stApp > .main .step-header {
+    color: var(--text) !important;
+    background: transparent !important;
+}
+
+/* Specific fix for step content that might be getting header styling */
+.main [data-testid="block-container"] h1,
+.main [data-testid="block-container"] h2,
+.main [data-testid="block-container"] h3 {
+    color: var(--text) !important;
+    text-shadow: none !important;
+    background: none !important;
+}
+
 .step-container {
     background: var(--bg);
     border: 1px solid var(--border);
