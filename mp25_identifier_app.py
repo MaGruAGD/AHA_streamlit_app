@@ -1037,14 +1037,8 @@ def volume_manager_interface(processor, allowed_codes):
         st.warning("Nog geen analyses geselecteerd. Ga eerst naar 'Analyses'.")
         return
     
-    st.subheader("Edit Volumes for Selected MP25 Codes")
-    st.write("Adjust the volumes for each MP25 code that you've selected:")
-    
-    # Show selected codes info
-    with st.expander("ℹ️ Selected Codes", expanded=False):
-        st.write("**Selected Codes:**")
-        st.write(", ".join(sorted(selected_codes_from_runs)))
-    
+    st.subheader("Bewerk de volumes voor de geselecteerde analyses")
+           
     # Create volume inputs for each relevant MP25 code
     volume_changes = {}
     
