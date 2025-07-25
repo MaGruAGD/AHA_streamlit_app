@@ -1034,7 +1034,7 @@ def volume_manager_interface(processor, allowed_codes):
     relevant_codes = sorted(list(selected_codes_from_runs))
     
     if not relevant_codes:
-        st.warning("No codes selected yet. Please go to 'Select Codes' first.")
+        st.warning("Nog geen analyses geselecteerd. Ga eerst naar 'Analyses'.")
         return
     
     st.subheader("Edit Volumes for Selected MP25 Codes")
