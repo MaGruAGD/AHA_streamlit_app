@@ -527,7 +527,7 @@ def create_sidebar():
             "2. Aantal runs", 
             "3. Monster toevoegen", 
             "4. Analyses", 
-            "5. Volume Manager",  
+            "5. Volumebeheer",  
             "6. Data verwerken", 
             "7. Download CSV"  
         ]
@@ -1018,7 +1018,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
         
 def volume_manager_interface(processor, allowed_codes):
     """Volume Manager interface to edit volumes for selected MP25 codes only"""
-    st.header("Stap 5: Volume Manager")
+    st.header("Stap 5: Volumebeheer")
     
     if processor is None:
         st.warning("Upload eerst een CSV-bestand.")
@@ -1241,7 +1241,7 @@ def step_process_data():
         return
         
     if not st.session_state.volume_changes_applied:
-        st.warning("Please apply volume changes in Step 5 (Volume Manager) before processing data.")
+        st.warning("Pas de volumewijzigingen toe in stap 5 (Volumebeheer) voordat u de gegevens verwerkt.")
         return
     
     if not any(st.session_state.selected_codes.values()):
@@ -1642,7 +1642,7 @@ def main():
     elif step == "4. Analyses":
         step_select_codes()
         
-    elif step == "5. Volume Manager":
+    elif step == "5. Volumebeheer":
         volume_manager_interface(st.session_state.processor, allowed_codes)
         
     elif step == "6. Data verwerken":
