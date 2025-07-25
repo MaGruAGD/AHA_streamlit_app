@@ -504,6 +504,7 @@ def initialize_session_state():
         'selected_codes': {},
         'volumes': {},
         'data_processed': False,
+        'volume_changes_applied': False,
         'filtered_data': {},
         'database': None,
         'database_loaded': False,
@@ -1083,6 +1084,7 @@ def volume_manager_interface(processor, allowed_codes):
         updated_df = processor.apply_volumes(processor.df, volume_changes)
         processor.df = updated_df
         
+        st.session_state.volume_changes_applied = True  # Add this line
         st.success("✅ Volume changes applied successfully!")
         
         # Show summary of changes
@@ -1228,6 +1230,10 @@ def step_process_data():
     if st.session_state.processor is None:
         st.warning("Upload eerst een CSV-bestand.")
         return
+        
+    if not st.session_state.volume_changes_applied:
+    st.warning("Please apply volume changes in Step 5 (Volume Manager) before processing data.")
+    return
     
     if not any(st.session_state.selected_codes.values()):
         st.warning("Please select codes for processing.")
