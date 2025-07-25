@@ -1018,7 +1018,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
         
 def volume_manager_interface(processor, allowed_codes):
     """Volume Manager interface to edit volumes for selected MP25 codes only"""
-    st.header("Step 5: Volume Manager")
+    st.header("Stap 5: Volume Manager")
     
     if processor is None:
         st.warning("Upload eerst een CSV-bestand.")
@@ -1143,7 +1143,7 @@ def step_select_runs():
 
 def step_select_codes():
     """Step 4: Select Codes and Volumes"""
-    st.header("Step 4: Selecteer analyses")
+    st.header("Stap 4: Selecteer analyses")
     
     if st.session_state.processor is None:
         st.warning("Upload eerst een CSV-bestand.")
@@ -1234,7 +1234,7 @@ def step_select_codes():
 
 def step_process_data():
     """Step 6: Process Data"""
-    st.header("Step 6: Process Data")
+    st.header("Stap 6: Process Data")
     
     if st.session_state.processor is None:
         st.warning("Upload eerst een CSV-bestand.")
@@ -1282,7 +1282,7 @@ def step_process_data():
             
 def step_download_results():
     """Step 7: Download Results"""
-    st.header("Step 7: Download Results")
+    st.header("Stap 7: Download CSV")
     
     if st.session_state.processor is None:
         st.warning("Upload eerst een CSV-bestand.")
