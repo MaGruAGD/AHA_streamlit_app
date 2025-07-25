@@ -1488,12 +1488,12 @@ def main():
     
     # Initialize theme selection early
     if 'selected_theme' not in st.session_state:
-        st.session_state.selected_theme = "☀️ Light Mode"
+        st.session_state.selected_theme = "☀️ Lichtmodus"
     
     # Theme options mapping
     theme_options = {
-        "☀️ Light Mode": "theme.css",
-        "🌙 Dark Mode": "dark_theme_css.css",
+        "☀️ Lichtmodus": "theme.css",
+        "🌙 Donkermodus": "dark_theme_css.css",
         
     }
     
@@ -1660,13 +1660,13 @@ def add_theme_selector():
         
         # Available theme files in your repo
         theme_options = {
-            "☀️ Light Mode": "theme.css",
-            "🌙 Dark Mode": "dark_theme_css.css",
+            "☀️ Lichtmodus": "theme.css",
+            "🌙 Donkermodus": "dark_theme_css.css",
         }
         
         # Initialize theme selection in session state
         if 'selected_theme' not in st.session_state:
-            st.session_state.selected_theme = "☀️ Light Mode"
+            st.session_state.selected_theme = "☀️ Lichtmodus"
         
         # Theme selector with callback
         selected_theme = st.selectbox(
