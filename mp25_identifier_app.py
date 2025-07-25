@@ -1232,8 +1232,8 @@ def step_process_data():
         return
         
     if not st.session_state.volume_changes_applied:
-    st.warning("Please apply volume changes in Step 5 (Volume Manager) before processing data.")
-    return
+        st.warning("Please apply volume changes in Step 5 (Volume Manager) before processing data.")
+        return
     
     if not any(st.session_state.selected_codes.values()):
         st.warning("Please select codes for processing.")
