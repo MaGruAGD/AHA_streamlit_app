@@ -1274,8 +1274,12 @@ def step_download_results():
     """Step 7: Download Results"""
     st.header("Step 7: Download Results")
     
-    if not st.session_state.data_processed or not st.session_state.filtered_data:
+    if st.session_state.processor is None:
         st.warning("Upload eerst een CSV-bestand.")
+        return
+    
+    if not st.session_state.data_processed or not st.session_state.filtered_data:
+        st.warning("Verwerk eerst de data in Stap 6 (Data verwerken) voordat u kunt downloaden.")
         return
     
     # Simple download buttons for each run
