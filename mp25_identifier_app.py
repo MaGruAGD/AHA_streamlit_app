@@ -1270,6 +1270,7 @@ def step_process_data():
             st.subheader(f"Run {run_num} - Processed Data")
             st.write(f"**Rows:** {len(df)}")
             st.dataframe(df, use_container_width=True)
+            
 def step_download_results():
     """Step 7: Download Results"""
     st.header("Step 7: Download Results")
@@ -1287,9 +1288,9 @@ def step_download_results():
         # Use QUOTE_MINIMAL to only quote fields that contain special characters
         csv_data = df.to_csv(index=False, quoting=0)  # 0 = QUOTE_MINIMAL
         
-        # Create filename in format: Andrew_Werklijst_RunX_ddmmyy.csv
-        current_date = datetime.now().strftime('%d%m%y')
-        filename = f"Andrew_Werklijst_Run{run_num}_{current_date}.csv"
+        # Create filename in format: Werklijst - Andrew - DD-MM-YYYY - Run X.csv
+        current_date = datetime.now().strftime('%d-%m-%Y')
+        filename = f"Werklijst - Andrew - {current_date} - Run {run_num}.csv"
         
         st.download_button(
             label=f"📥 Download Run {run_num}",
