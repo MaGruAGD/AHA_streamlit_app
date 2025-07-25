@@ -617,9 +617,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
                         step1_source = row.get('Step1Source', '')
                         step1_destination = row.get('Step1Destination', '')
                         step1_volume = row.get('Step1Volume', '')
-                        
-                        # REPLACE THE PARSING SECTION WITH THIS (remove the debug st.write lines):
-                        
+                                                
                         # Parse source and destination for display
                         source_match = re.search(r'"([^"]+)"', str(step1_source))
                         dest_match = re.search(r'"([^"]+)"', str(step1_destination))
@@ -728,7 +726,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
                            
     # Sample type selection
     sample_type = st.radio(
-        "Sample Type:",
+        "Monstertype:",
         ["Regular Samples", "Control Samples"],
         key="sample_type_radio",
         index=st.session_state.get('sample_type_index', 0)  # Add this line
