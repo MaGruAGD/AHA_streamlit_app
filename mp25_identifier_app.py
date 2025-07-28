@@ -970,9 +970,9 @@ def add_row_interface(processor, allowed_codes, control_samples):
         # NEW: Store metadata about this added sample
         sample_metadata = {
             'row_index': len(processor.df) - 1,  # Index of the newly added row
-            'sample_type': sample_type,  # "Routine" or "Controle" (Dutch)
+            'sample_type': st.session_state.sample_type,  # Use the internal English value from session state
             'mp25_code': selected_code,
-            'control_name': control_sample_name if sample_type == "Controle" else None,
+            'control_name': control_sample_name if st.session_state.sample_type == "Control Samples" else None,
             'poolplaat_position': poolplaat_position,
             'analyseplaat_position': analyseplaat_position,
             'volume': volume,
