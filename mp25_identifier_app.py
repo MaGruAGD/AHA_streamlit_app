@@ -1226,7 +1226,7 @@ def step_select_codes():
         st.write("---")  # Visual separator between runs
         
 def step_process_data():
-    """Step 6: Process Data with integrated delete functionality in table"""
+    """Step 6: Process Data with compact, efficient display for large datasets"""
     st.header("Stap 6: Data verwerken")
     
     if st.session_state.processor is None:
@@ -1266,145 +1266,278 @@ def step_process_data():
         st.session_state.data_processed = True
         st.success("✅ Gegevens succesvol verwerkt!")
     
-    # Display processed data with integrated delete functionality
+    # Display processed data with compact, efficient interface
     if st.session_state.data_processed and st.session_state.filtered_data:
         for run_num, df in st.session_state.filtered_data.items():
-            st.subheader(f"Run {run_num} - Verwerkte data")
-            
-            if len(df) == 0:
-                st.info("Geen data gevonden voor deze run.")
-                continue
-            
-            st.write(f"**Aantal rijen:** {len(df)}")
-            
-            # Initialize session state for rows to delete if not exists
-            delete_key = f"rows_to_delete_run_{run_num}"
-            if delete_key not in st.session_state:
-                st.session_state[delete_key] = set()
-            
-            # Create custom table with checkboxes
-            with st.container():
-                # Table header
-                header_cols = st.columns([1] + [2] * len(df.columns))
-                with header_cols[0]:
-                    st.write("**Verwijderen**")
-                for i, col_name in enumerate(df.columns):
-                    with header_cols[i + 1]:
-                        st.write(f"**{col_name}**")
+            with st.expander(f"🗂️ Run {run_num} - Verwerkte data ({len(df)} rijen)", expanded=True):
+                
+                if len(df) == 0:
+                    st.info("Geen data gevonden voor deze run.")
+                    continue
+                
+                # Compact statistics
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    st.metric("Totaal rijen", len(df))
+                with col2:
+                    unique_codes = len(set([code for col in df.columns for value in df[col].astype(str) 
+                                          for code in st.session_state.processor.allowed_codes 
+                                          if st.session_state.processor._find_code_in_text(value, code)]))
+                    st.metric("Unieke codes", unique_codes)
+                with col3:
+                    total_volume = df['Step1Volume'].sum() if 'Step1Volume' in df.columns else 0
+                    st.metric("Totaal volume", f"{total_volume} μL")
+                with col4:
+                    # Count MP25 vs PP25
+                    mp25_count = sum(1 for col in df.columns for value in df[col].astype(str) if 'MP25' in str(value))
+                    st.metric("MP25 entries", mp25_count)
                 
                 st.markdown("---")
                 
-                # Table rows with checkboxes
-                for idx, (df_idx, row) in enumerate(df.iterrows()):
-                    row_cols = st.columns([1] + [2] * len(df.columns))
+                # Compact data view with pagination and filtering
+                st.subheader("📊 Data overzicht")
+                
+                # Filter options
+                filter_col1, filter_col2, filter_col3 = st.columns(3)
+                
+                with filter_col1:
+                    # Search filter
+                    search_term = st.text_input(
+                        "🔍 Zoeken in data:",
+                        key=f"search_run_{run_num}",
+                        placeholder="Zoek naar MP25, PP25, positie..."
+                    )
+                
+                with filter_col2:
+                    # Column filter
+                    show_columns = st.multiselect(
+                        "📋 Toon kolommen:",
+                        options=df.columns.tolist(),
+                        default=['Step1Source', 'Step1Volume', 'Step1Destination'],
+                        key=f"columns_run_{run_num}"
+                    )
+                
+                with filter_col3:
+                    # Rows per page
+                    rows_per_page = st.selectbox(
+                        "📄 Rijen per pagina:",
+                        options=[10, 25, 50, 100, 500],
+                        index=2,  # Default to 50
+                        key=f"rows_per_page_run_{run_num}"
+                    )
+                
+                # Apply search filter
+                display_df = df.copy()
+                if search_term:
+                    mask = display_df.astype(str).apply(
+                        lambda x: x.str.contains(search_term, case=False, na=False)
+                    ).any(axis=1)
+                    display_df = display_df[mask]
+                
+                # Apply column filter
+                if show_columns:
+                    display_df = display_df[show_columns]
+                
+                # Pagination
+                total_rows = len(display_df)
+                total_pages = (total_rows - 1) // rows_per_page + 1 if total_rows > 0 else 1
+                
+                page_col1, page_col2, page_col3 = st.columns([1, 2, 1])
+                
+                with page_col2:
+                    current_page = st.number_input(
+                        f"Pagina (1-{total_pages}):",
+                        min_value=1,
+                        max_value=total_pages,
+                        value=1,
+                        key=f"page_run_{run_num}"
+                    )
+                
+                # Calculate start and end indices
+                start_idx = (current_page - 1) * rows_per_page
+                end_idx = min(start_idx + rows_per_page, total_rows)
+                
+                # Display paginated data
+                if total_rows > 0:
+                    page_df = display_df.iloc[start_idx:end_idx]
                     
-                    # Checkbox column
-                    with row_cols[0]:
-                        checkbox_key = f"delete_row_{run_num}_{df_idx}_{idx}"
-                        is_selected = df_idx in st.session_state[delete_key]
-                        
-                        delete_selected = st.checkbox(
-                            "🗑️",
-                            key=checkbox_key,
-                            value=is_selected,
-                            help=f"Selecteer rij {idx + 1} voor verwijdering"
+                    st.info(f"Toont rijen {start_idx + 1}-{end_idx} van {total_rows} gefilterde rijen")
+                    
+                    # Display the dataframe with better formatting
+                    st.dataframe(
+                        page_df,
+                        use_container_width=True,
+                        height=min(400, len(page_df) * 35 + 50),  # Dynamic height
+                        hide_index=True
+                    )
+                else:
+                    st.info("Geen data gevonden met huidige filters.")
+                
+                st.markdown("---")
+                
+                # Advanced deletion options
+                st.subheader("🗑️ Geavanceerde verwijderopties")
+                
+                delete_col1, delete_col2 = st.columns(2)
+                
+                with delete_col1:
+                    st.write("**Verwijderen op basis van index:**")
+                    
+                    # Range deletion
+                    range_col1, range_col2 = st.columns(2)
+                    with range_col1:
+                        start_range = st.number_input(
+                            "Van rij:",
+                            min_value=0,
+                            max_value=len(df)-1,
+                            value=0,
+                            key=f"start_range_run_{run_num}"
                         )
+                    with range_col2:
+                        end_range = st.number_input(
+                            "Tot rij:",
+                            min_value=start_range,
+                            max_value=len(df)-1,
+                            value=min(start_range + 9, len(df)-1),
+                            key=f"end_range_run_{run_num}"
+                        )
+                    
+                    if st.button(
+                        f"🗑️ Verwijder rijen {start_range}-{end_range}",
+                        key=f"delete_range_run_{run_num}",
+                        type="secondary"
+                    ):
+                        # Confirm deletion
+                        if f"confirm_range_delete_run_{run_num}" not in st.session_state:
+                            st.session_state[f"confirm_range_delete_run_{run_num}"] = True
+                            st.rerun()
+                    
+                    # Individual row deletion
+                    st.write("**Individuele rij verwijderen:**")
+                    specific_row = st.number_input(
+                        "Rij nummer:",
+                        min_value=0,
+                        max_value=len(df)-1,
+                        value=0,
+                        key=f"specific_row_run_{run_num}"
+                    )
+                    
+                    if st.button(
+                        f"🗑️ Verwijder rij {specific_row}",
+                        key=f"delete_specific_run_{run_num}",
+                        type="secondary"
+                    ):
+                        # Delete immediately for single row
+                        df_updated = df.drop(df.index[specific_row]).reset_index(drop=True)
+                        st.session_state.filtered_data[run_num] = df_updated
+                        st.success(f"✅ Rij {specific_row} verwijderd")
+                        st.rerun()
+                
+                with delete_col2:
+                    st.write("**Verwijderen op basis van inhoud:**")
+                    
+                    # Content-based deletion
+                    delete_pattern = st.text_input(
+                        "Verwijder rijen die bevatten:",
+                        key=f"delete_pattern_run_{run_num}",
+                        placeholder="bijv. MP25BLT0001"
+                    )
+                    
+                    if delete_pattern:
+                        # Show preview of rows that would be deleted
+                        pattern_mask = df.astype(str).apply(
+                            lambda x: x.str.contains(delete_pattern, case=False, na=False)
+                        ).any(axis=1)
+                        matching_rows = df[pattern_mask]
                         
-                        # Update session state
-                        if delete_selected:
-                            st.session_state[delete_key].add(df_idx)
+                        if len(matching_rows) > 0:
+                            st.info(f"🎯 {len(matching_rows)} rijen gevonden met '{delete_pattern}'")
+                            
+                            if st.button(
+                                f"🗑️ Verwijder {len(matching_rows)} rijen",
+                                key=f"delete_pattern_confirm_run_{run_num}",
+                                type="secondary"
+                            ):
+                                if f"confirm_pattern_delete_run_{run_num}" not in st.session_state:
+                                    st.session_state[f"confirm_pattern_delete_run_{run_num}"] = True
+                                    st.rerun()
                         else:
-                            st.session_state[delete_key].discard(df_idx)
+                            st.info(f"Geen rijen gevonden met '{delete_pattern}'")
                     
-                    # Data columns
-                    for i, (col_name, value) in enumerate(row.items()):
-                        with row_cols[i + 1]:
-                            # Truncate long values for display
-                            display_value = str(value)
-                            if len(display_value) > 50:
-                                display_value = display_value[:47] + "..."
-                            st.write(display_value)
+                    # Clear all data option
+                    st.write("**Gevaarlijke opties:**")
+                    if st.button(
+                        "🚨 Verwijder ALLE data",
+                        key=f"delete_all_run_{run_num}",
+                        type="secondary"
+                    ):
+                        if f"confirm_delete_all_run_{run_num}" not in st.session_state:
+                            st.session_state[f"confirm_delete_all_run_{run_num}"] = True
+                            st.rerun()
+                
+                # Handle confirmations
+                # Range deletion confirmation
+                if st.session_state.get(f"confirm_range_delete_run_{run_num}", False):
+                    st.error(f"⚠️ **Weet je zeker dat je rijen {start_range}-{end_range} wilt verwijderen?**")
+                    conf_col1, conf_col2 = st.columns(2)
                     
-                    # Add subtle separator between rows
-                    if idx < len(df) - 1:
-                        st.markdown("<hr style='margin: 0.5rem 0; border: none; border-top: 1px solid #eee;'>", unsafe_allow_html=True)
-            
-            # Show delete actions if rows are selected
-            selected_count = len(st.session_state[delete_key])
-            if selected_count > 0:
-                st.warning(f"⚠️ {selected_count} rij(en) geselecteerd voor verwijdering")
-                
-                # Action buttons in columns
-                col1, col2, col3 = st.columns([2, 2, 2])
-                
-                with col1:
-                    # Initialize confirmation state
-                    confirm_key = f"confirm_delete_run_{run_num}"
+                    with conf_col1:
+                        if st.button(f"✅ Ja, verwijder", key=f"confirm_range_yes_run_{run_num}", type="primary"):
+                            indices_to_delete = list(range(start_range, end_range + 1))
+                            df_updated = df.drop(df.index[indices_to_delete]).reset_index(drop=True)
+                            st.session_state.filtered_data[run_num] = df_updated
+                            st.session_state[f"confirm_range_delete_run_{run_num}"] = False
+                            deleted_count = end_range - start_range + 1
+                            st.success(f"✅ {deleted_count} rijen verwijderd")
+                            st.rerun()
                     
-                    if st.button(f"🗑️ Verwijder geselecteerde", key=f"delete_btn_run_{run_num}", type="secondary"):
-                        # Set confirmation state
-                        st.session_state[confirm_key] = True
-                        st.rerun()
+                    with conf_col2:
+                        if st.button(f"❌ Annuleren", key=f"confirm_range_no_run_{run_num}", type="secondary"):
+                            st.session_state[f"confirm_range_delete_run_{run_num}"] = False
+                            st.rerun()
+                
+                # Pattern deletion confirmation
+                if st.session_state.get(f"confirm_pattern_delete_run_{run_num}", False):
+                    pattern_mask = df.astype(str).apply(
+                        lambda x: x.str.contains(delete_pattern, case=False, na=False)
+                    ).any(axis=1)
+                    matching_count = pattern_mask.sum()
                     
-                    # Show confirmation dialog if delete was clicked
-                    if st.session_state.get(confirm_key, False):
-                        st.error(f"⚠️ **Weet je zeker dat je {selected_count} rij(en) wilt verwijderen?**")
-                        st.write("Deze actie kan niet ongedaan worden gemaakt.")
-                        
-                        # Confirmation buttons
-                        conf_col1, conf_col2 = st.columns(2)
-                        
-                        with conf_col1:
-                            if st.button(f"✅ Ja, verwijder {selected_count} rij(en)", key=f"confirm_yes_run_{run_num}", type="primary"):
-                                # Remove selected rows
-                                indices_to_delete = list(st.session_state[delete_key])
-                                original_count = len(df)
-                                
-                                # Create new dataframe without deleted rows
-                                df_cleaned = df.drop(indices_to_delete).reset_index(drop=True)
-                                
-                                # Update the filtered data
-                                st.session_state.filtered_data[run_num] = df_cleaned
-                                
-                                # Clear the selection and confirmation state
-                                st.session_state[delete_key] = set()
-                                st.session_state[confirm_key] = False
-                                
-                                deleted_count = original_count - len(df_cleaned)
-                                st.success(f"✅ {deleted_count} rij(en) succesvol verwijderd uit Run {run_num}")
-                                st.rerun()
-                        
-                        with conf_col2:
-                            if st.button(f"❌ Annuleren", key=f"confirm_no_run_{run_num}", type="secondary"):
-                                # Clear confirmation state without deleting
-                                st.session_state[confirm_key] = False
-                                st.rerun()
+                    st.error(f"⚠️ **Weet je zeker dat je {matching_count} rijen met '{delete_pattern}' wilt verwijderen?**")
+                    conf_col1, conf_col2 = st.columns(2)
+                    
+                    with conf_col1:
+                        if st.button(f"✅ Ja, verwijder {matching_count} rijen", key=f"confirm_pattern_yes_run_{run_num}", type="primary"):
+                            df_updated = df[~pattern_mask].reset_index(drop=True)
+                            st.session_state.filtered_data[run_num] = df_updated
+                            st.session_state[f"confirm_pattern_delete_run_{run_num}"] = False
+                            st.success(f"✅ {matching_count} rijen verwijderd")
+                            st.rerun()
+                    
+                    with conf_col2:
+                        if st.button(f"❌ Annuleren", key=f"confirm_pattern_no_run_{run_num}", type="secondary"):
+                            st.session_state[f"confirm_pattern_delete_run_{run_num}"] = False
+                            st.rerun()
                 
-                with col2:
-                    if st.button(f"👀 Toon geselecteerde rijen", key=f"show_selected_run_{run_num}", type="secondary"):
-                        toggle_key = f"show_selected_preview_run_{run_num}"
-                        st.session_state[toggle_key] = not st.session_state.get(toggle_key, False)
-                        st.rerun()
-                
-                with col3:
-                    if st.button(f"❌ Deselecteer alles", key=f"clear_selection_run_{run_num}", type="secondary"):
-                        st.session_state[delete_key] = set()
-                        st.rerun()
-                
-                # Show preview of selected rows
-                if st.session_state.get(f"show_selected_preview_run_{run_num}", False):
-                    with st.expander("🗑️ Geselecteerde rijen voor verwijdering:", expanded=True):
-                        selected_indices = list(st.session_state[delete_key])
-                        if selected_indices:
-                            preview_df = df.loc[selected_indices]
-                            st.dataframe(preview_df, use_container_width=True)
-                        else:
-                            st.info("Geen rijen geselecteerd.")
-            
-            else:
-                st.info("💡 Tip: Vink de vakjes aan in de 'Verwijderen' kolom om rijen te selecteren voor verwijdering.")
-            
-            st.markdown("---")
+                # Delete all confirmation
+                if st.session_state.get(f"confirm_delete_all_run_{run_num}", False):
+                    st.error(f"⚠️ **GEVAARLIJK: Weet je zeker dat je ALLE {len(df)} rijen wilt verwijderen?**")
+                    st.write("Deze actie kan niet ongedaan worden gemaakt!")
+                    
+                    conf_col1, conf_col2 = st.columns(2)
+                    
+                    with conf_col1:
+                        if st.button(f"🚨 JA, VERWIJDER ALLES", key=f"confirm_all_yes_run_{run_num}", type="primary"):
+                            empty_df = df.iloc[0:0].copy()  # Empty dataframe with same structure
+                            st.session_state.filtered_data[run_num] = empty_df
+                            st.session_state[f"confirm_delete_all_run_{run_num}"] = False
+                            st.success(f"✅ Alle data verwijderd uit Run {run_num}")
+                            st.rerun()
+                    
+                    with conf_col2:
+                        if st.button(f"❌ Annuleren", key=f"confirm_all_no_run_{run_num}", type="secondary"):
+                            st.session_state[f"confirm_delete_all_run_{run_num}"] = False
+                            st.rerun()
             
 def step_download_results():
     """Step 7: Download Results"""
