@@ -1267,8 +1267,7 @@ def step_process_data():
         
         st.session_state.data_processed = True
         st.success("✅ Data succesvol verwerkt!")
-        # Lab equipment celebration instead of balloons
-        st.markdown("🧪⚗️🔬🧫🥽🧪⚗️🔬🧫🥽", unsafe_allow_html=True)
+        st.balloons()
     
     # Show processing status
     if st.session_state.data_processed and st.session_state.filtered_data:
