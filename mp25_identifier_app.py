@@ -1153,7 +1153,38 @@ def step_select_codes():
         if run_num not in st.session_state.selected_codes:
             st.session_state.selected_codes[run_num] = []
     
-    # Code selection for each run
+    # ==========================================
+    # STEP 1: READ ALL CURRENT WIDGET STATES FIRST
+    # ==========================================
+    all_selections = {}  # run_num -> list of selected codes
+    
+    for run_num in range(1, st.session_state.num_runs + 1):
+        all_selections[run_num] = []
+        for code in all_available_codes:
+            checkbox_key = f"checkbox_{run_num}_{code}"
+            if checkbox_key in st.session_state and st.session_state[checkbox_key]:
+                all_selections[run_num].append(code)
+    
+    # ==========================================
+    # STEP 2: RESOLVE CONFLICTS GLOBALLY
+    # ==========================================
+    # If a code is selected in multiple runs, keep it only in the lowest numbered run
+    used_codes = set()
+    for run_num in range(1, st.session_state.num_runs + 1):
+        cleaned_selection = []
+        for code in all_selections[run_num]:
+            if code not in used_codes:
+                cleaned_selection.append(code)
+                used_codes.add(code)
+            else:
+                # Force uncheck the checkbox for this conflicting code
+                checkbox_key = f"checkbox_{run_num}_{code}"
+                st.session_state[checkbox_key] = False
+        st.session_state.selected_codes[run_num] = cleaned_selection
+    
+    # ==========================================
+    # STEP 3: NOW DISPLAY THE UI
+    # ==========================================
     for run_num in range(1, st.session_state.num_runs + 1):
         st.subheader(f"Run {run_num}")
         
@@ -1167,8 +1198,6 @@ def step_select_codes():
         num_cols = 3
         cols = st.columns(num_cols)
         
-        selected_codes_for_this_run = []
-        
         for i, code in enumerate(all_available_codes):
             col_idx = i % num_cols
             with cols[col_idx]:
@@ -1180,21 +1209,13 @@ def step_select_codes():
                 if code in added_codes:
                     code_label = f"{code} ✨"
                 
-                # Create checkbox
-                is_selected = st.checkbox(
+                # Create checkbox - the state is already managed above
+                st.checkbox(
                     code_label,
-                    value=code in st.session_state.selected_codes[run_num],
                     key=f"checkbox_{run_num}_{code}",
                     disabled=is_disabled,
                     help="Already selected in another run" if is_disabled else None
                 )
-                
-                # Add to selection if checked and not disabled
-                if is_selected and not is_disabled:
-                    selected_codes_for_this_run.append(code)
-        
-        # Update the session state for this run
-        st.session_state.selected_codes[run_num] = selected_codes_for_this_run
         
         # Display selected codes for this run
         if st.session_state.selected_codes[run_num]:
