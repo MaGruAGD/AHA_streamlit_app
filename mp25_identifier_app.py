@@ -1156,21 +1156,6 @@ def step_select_codes():
         if run_num not in st.session_state.selected_codes:
             st.session_state.selected_codes[run_num] = []
         
-        # Get all codes that are already selected in OTHER runs
-        other_runs_codes = set()
-        for other_run in range(1, st.session_state.num_runs + 1):
-            if other_run != run_num:
-                other_runs_codes.update(st.session_state.selected_codes.get(other_run, []))
-        
-        # Initialize checkbox states for this run if they don't exist
-        for code in all_available_codes:
-            checkbox_key = f"code_{run_num}_{code}"
-            if checkbox_key not in st.session_state:
-                # Only initialize as checked if the code is in this run's selection AND not used elsewhere
-                is_in_current_run = code in st.session_state.selected_codes[run_num]
-                is_available = code not in other_runs_codes
-                st.session_state[checkbox_key] = is_in_current_run and is_available
-        
         # Create columns for better layout
         num_cols = 3
         cols = st.columns(num_cols)
@@ -1181,6 +1166,12 @@ def step_select_codes():
         for i, code in enumerate(all_available_codes):
             col_idx = i % num_cols
             with cols[col_idx]:
+                # Recalculate other runs codes for each checkbox to get current state
+                other_runs_codes = set()
+                for other_run in range(1, st.session_state.num_runs + 1):
+                    if other_run != run_num:
+                        other_runs_codes.update(st.session_state.selected_codes.get(other_run, []))
+                
                 # Check if this code is already used in another run
                 is_used_elsewhere = code in other_runs_codes
                 
@@ -1192,7 +1183,15 @@ def step_select_codes():
                 # Create unique key for this checkbox
                 checkbox_key = f"code_{run_num}_{code}"
                 
-                # Don't set initial value - let Streamlit manage it based on the key
+                # Initialize checkbox state if it doesn't exist
+                if checkbox_key not in st.session_state:
+                    is_in_current_run = code in st.session_state.selected_codes[run_num]
+                    st.session_state[checkbox_key] = is_in_current_run and not is_used_elsewhere
+                
+                # If code became used elsewhere, uncheck and disable the checkbox
+                if is_used_elsewhere and st.session_state.get(checkbox_key, False):
+                    st.session_state[checkbox_key] = False
+                
                 # Create checkbox - let Streamlit handle the state
                 checkbox_value = st.checkbox(
                     code_label,
