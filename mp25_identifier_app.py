@@ -1010,10 +1010,6 @@ def add_row_interface(processor, allowed_codes, control_samples):
         # Force a rerun to refresh the display immediately
         st.rerun()
         
-# Replace the entire volume_manager_interface function with this professional version:
-
-# Replace the volume input section in volume_manager_interface function:
-
 def volume_manager_interface(processor, allowed_codes):
     """Volume Manager interface to edit volumes for selected MP25 codes only"""
     st.header("Stap 5: Volumebeheer")
@@ -1036,37 +1032,39 @@ def volume_manager_interface(processor, allowed_codes):
         return
     
     st.subheader("Bewerk de volumes voor de geselecteerde analyses")
-           
-    # Create volume inputs for each relevant MP25 code - COMPACT VERSION
+    
+    # MUCH TIGHTER LAYOUT - Create table-style rows
     volume_changes = {}
     
-    # Use container to control spacing
-    with st.container():
-        for code in relevant_codes:
-            # Use columns with tighter spacing
-            col1, col2 = st.columns([3, 2])  # Adjusted ratios for tighter layout
+    # Create each row without extra spacing
+    for code in relevant_codes:
+        # Single row with inline styling for tight spacing
+        col1, col2 = st.columns([1, 1])  # Equal width columns
+        
+        with col1:
+            # Remove markdown padding with custom CSS
+            st.markdown(f"""
+            <div style="display: flex; align-items: center; height: 40px; margin: 0; padding: 0;">
+                <span style="font-weight: 600; font-size: 16px;">MP25{code}</span>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            current_volume = CUSTOM_DEFAULTS.get(code, 20)
             
-            with col1:
-                st.markdown(f"**MP25{code}**", help=None)  # Remove extra spacing
+            new_volume = st.number_input(
+                f"volume_{code}",  # Hidden label
+                min_value=1,
+                max_value=100,
+                value=current_volume,
+                key=f"volume_manager_{code}",
+                label_visibility="collapsed"
+            )
             
-            with col2:
-                current_volume = CUSTOM_DEFAULTS.get(code, 20)
-                
-                new_volume = st.number_input(
-                    "Volume (μL)",
-                    min_value=1,
-                    max_value=100,
-                    value=current_volume,
-                    key=f"volume_manager_{code}",
-                    label_visibility="collapsed"  # Hide the label to save space
-                )
-                
-                volume_changes[code] = new_volume
+            volume_changes[code] = new_volume
     
-    # Apply changes button
-    st.markdown("<br>", unsafe_allow_html=True)  # Small break before button
+    # Apply button with minimal spacing
     if st.button("🔄 Toepassen", type="primary", use_container_width=True):
-        # Apply the volume changes to the dataframe
         updated_df = processor.apply_volumes(processor.df, volume_changes)
         processor.df = updated_df
         
