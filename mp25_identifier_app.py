@@ -1012,8 +1012,10 @@ def add_row_interface(processor, allowed_codes, control_samples):
         
 # Replace the entire volume_manager_interface function with this professional version:
 
+# Replace the volume input section in volume_manager_interface function:
+
 def volume_manager_interface(processor, allowed_codes):
-    """Professional Volume Manager interface"""
+    """Volume Manager interface to edit volumes for selected MP25 codes only"""
     st.header("Stap 5: Volumebeheer")
     
     if processor is None:
@@ -1033,168 +1035,42 @@ def volume_manager_interface(processor, allowed_codes):
         st.warning("Nog geen analyses geselecteerd. Ga eerst naar 'Analyses'.")
         return
     
-    st.markdown("### 🧪 Volume-instellingen per Analyse")
-    st.markdown("Pas de volumes aan voor elke geselecteerde analyse. Standaard volumes zijn al ingesteld.")
+    st.subheader("Bewerk de volumes voor de geselecteerde analyses")
+           
+    # Create volume inputs for each relevant MP25 code - COMPACT VERSION
+    volume_changes = {}
     
-    # Create a more professional table-like layout
+    # Use container to control spacing
     with st.container():
-        # Header row
-        st.markdown("""
-        <div style='background: linear-gradient(90deg, #f8f9fa 0%, #e9ecef 100%); 
-                    padding: 12px 20px; 
-                    border-radius: 8px 8px 0 0; 
-                    border: 1px solid #dee2e6;
-                    margin-bottom: 0;'>
-            <div style='display: flex; align-items: center;'>
-                <div style='flex: 2; font-weight: 600; color: #495057;'>Analyse Code</div>
-                <div style='flex: 1; font-weight: 600; color: #495057; text-align: center;'>Volume (μL)</div>
-                <div style='flex: 1; font-weight: 600; color: #495057; text-align: center;'>Actie</div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Volume inputs for each code
-        volume_changes = {}
-        
-        for i, code in enumerate(relevant_codes):
-            # Alternating row colors
-            bg_color = "#ffffff" if i % 2 == 0 else "#f8f9fa"
-            border_radius = "0 0 8px 8px" if i == len(relevant_codes) - 1 else "0"
-            
-            st.markdown(f"""
-            <div style='background: {bg_color}; 
-                        padding: 16px 20px; 
-                        border: 1px solid #dee2e6; 
-                        border-top: none;
-                        border-radius: {border_radius};
-                        margin-bottom: {"20px" if i == len(relevant_codes) - 1 else "0"};'>
-            """, unsafe_allow_html=True)
-            
-            # Create columns for this row
-            col1, col2, col3 = st.columns([2, 1, 1])
+        for code in relevant_codes:
+            # Use columns with tighter spacing
+            col1, col2 = st.columns([3, 2])  # Adjusted ratios for tighter layout
             
             with col1:
-                # Analysis code with icon and styling
-                current_volume = CUSTOM_DEFAULTS.get(code, 20)
-                is_custom = code in CUSTOM_DEFAULTS
-                
-                if is_custom:
-                    st.markdown(f"""
-                    <div style='display: flex; align-items: center; gap: 8px;'>
-                        <span style='background: #28a745; color: white; padding: 2px 8px; 
-                                   border-radius: 12px; font-size: 12px; font-weight: 500;'>CUSTOM</span>
-                        <span style='font-weight: 600; font-size: 16px; color: #212529;'>MP25{code}</span>
-                    </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    st.markdown(f"""
-                    <div style='display: flex; align-items: center; gap: 8px;'>
-                        <span style='background: #6c757d; color: white; padding: 2px 8px; 
-                                   border-radius: 12px; font-size: 12px; font-weight: 500;'>DEFAULT</span>
-                        <span style='font-weight: 600; font-size: 16px; color: #212529;'>MP25{code}</span>
-                    </div>
-                    """, unsafe_allow_html=True)
+                st.markdown(f"**MP25{code}**", help=None)  # Remove extra spacing
             
             with col2:
-                # Volume input with better styling
+                current_volume = CUSTOM_DEFAULTS.get(code, 20)
+                
                 new_volume = st.number_input(
-                    "Volume",
+                    "Volume (μL)",
                     min_value=1,
                     max_value=100,
                     value=current_volume,
                     key=f"volume_manager_{code}",
-                    label_visibility="collapsed",
-                    help=f"Standaard volume voor {code}: {current_volume} μL"
+                    label_visibility="collapsed"  # Hide the label to save space
                 )
+                
                 volume_changes[code] = new_volume
-            
-            with col3:
-                # Reset button for individual codes
-                if st.button(
-                    "🔄 Reset", 
-                    key=f"reset_{code}",
-                    help=f"Reset naar standaard ({current_volume} μL)",
-                    use_container_width=True
-                ):
-                    st.session_state[f"volume_manager_{code}"] = current_volume
-                    st.rerun()
-            
-            st.markdown("</div>", unsafe_allow_html=True)
-    
-    # Action buttons section
-    st.markdown("### ⚙️ Acties")
-    
-    col1, col2, col3 = st.columns([1, 1, 1])
-    
-    with col1:
-        # Reset all to defaults
-        if st.button("🔄 Alles Resetten", type="secondary", use_container_width=True):
-            for code in relevant_codes:
-                default_vol = CUSTOM_DEFAULTS.get(code, 20)
-                st.session_state[f"volume_manager_{code}"] = default_vol
-            st.success("✅ Alle volumes gereset naar standaard waarden")
-            st.rerun()
-    
-    with col2:
-        # Show summary of changes
-        changes_made = []
-        for code in relevant_codes:
-            default_vol = CUSTOM_DEFAULTS.get(code, 20)
-            current_vol = volume_changes[code]
-            if current_vol != default_vol:
-                changes_made.append(f"{code}: {default_vol}→{current_vol}μL")
-        
-        if changes_made:
-            with st.popover("📊 Wijzigingen", use_container_width=True):
-                st.write("**Aangepaste volumes:**")
-                for change in changes_made:
-                    st.write(f"• {change}")
-        else:
-            st.button("📊 Geen Wijzigingen", disabled=True, use_container_width=True)
-    
-    with col3:
-        # Apply changes button
-        if st.button("✅ Volumes Toepassen", type="primary", use_container_width=True):
-            # Apply the volume changes to the dataframe
-            updated_df = processor.apply_volumes(processor.df, volume_changes)
-            processor.df = updated_df
-            
-            st.session_state.volume_changes_applied = True
-            
-            # Show what was applied
-            if changes_made:
-                st.success(f"✅ Volumes toegepast! {len(changes_made)} wijziging(en) gemaakt.")
-            else:
-                st.success("✅ Standaard volumes toegepast!")
-            
-            st.info("💡 Ga nu naar 'Data verwerken' om door te gaan.")
-    
-    # Summary information
-    st.markdown("---")
-    with st.expander("ℹ️ Volume Informatie", expanded=False):
-        st.markdown("**Standaard Volumes:**")
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("**Aangepaste Codes:**")
-            for code, vol in CUSTOM_DEFAULTS.items():
-                if code in relevant_codes:
-                    st.write(f"• {code}: {vol} μL")
-        
-        with col2:
-            st.markdown("**Standaard Codes (20 μL):**")
-            for code in relevant_codes:
-                if code not in CUSTOM_DEFAULTS:
-                    st.write(f"• {code}: 20 μL")
-        
     
     # Apply changes button
+    st.markdown("<br>", unsafe_allow_html=True)  # Small break before button
     if st.button("🔄 Toepassen", type="primary", use_container_width=True):
         # Apply the volume changes to the dataframe
         updated_df = processor.apply_volumes(processor.df, volume_changes)
         processor.df = updated_df
         
-        st.session_state.volume_changes_applied = True  # Add this line
+        st.session_state.volume_changes_applied = True
         st.success("✅ Volumewijzigingen succesvol toegepast!")
         
 # Main Application Steps
