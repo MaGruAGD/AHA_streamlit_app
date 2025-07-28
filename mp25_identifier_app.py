@@ -1156,57 +1156,50 @@ def step_select_codes():
         if run_num not in st.session_state.selected_codes:
             st.session_state.selected_codes[run_num] = []
         
-        # Get currently selected codes for this run (from session state)
-        currently_selected = set(st.session_state.selected_codes[run_num])
-        
         # Get all codes that are already selected in OTHER runs
         other_runs_codes = set()
         for other_run in range(1, st.session_state.num_runs + 1):
             if other_run != run_num:
                 other_runs_codes.update(st.session_state.selected_codes.get(other_run, []))
         
-        # Create columns for better layout
-        num_cols = 3
-        cols = st.columns(num_cols)
+        # Filter available codes for this run (exclude codes used in other runs)
+        available_for_this_run = [code for code in all_available_codes if code not in other_runs_codes]
         
-        # Track new selections for this run
-        new_selections = []
+        # Add sparkle emoji for newly added codes
+        display_options = []
+        code_mapping = {}  # Map display names back to actual codes
         
-        for i, code in enumerate(all_available_codes):
-            col_idx = i % num_cols
-            with cols[col_idx]:
-                # Check if this code is already used in another run
-                is_used_elsewhere = code in other_runs_codes
-                
-                # Add indicator for newly added codes
-                code_label = code
-                if code in added_codes:
-                    code_label = f"{code} ✨"  # Add sparkle emoji for added codes
-                
-                # Create unique key for this checkbox
-                checkbox_key = f"code_{run_num}_{code}"
-                
-                # Set the checkbox value based on current session state
-                checkbox_value = st.checkbox(
-                    code_label,
-                    value=code in currently_selected,  # Use session state as source of truth
-                    key=checkbox_key,
-                    disabled=is_used_elsewhere,
-                    help="Already selected in another run" if is_used_elsewhere else None
-                )
-                
-                # Collect selections (only for enabled checkboxes that are checked)
-                if not is_used_elsewhere and checkbox_value:
-                    new_selections.append(code)
+        for code in available_for_this_run:
+            if code in added_codes:
+                display_name = f"{code} ✨"
+            else:
+                display_name = code
+            display_options.append(display_name)
+            code_mapping[display_name] = code
         
-        # Update session state with the new selection
-        st.session_state.selected_codes[run_num] = new_selections
+        # Use multiselect for code selection
+        selected_display_names = st.multiselect(
+            f"Selecteer analyses voor Run {run_num}:",
+            options=display_options,
+            default=[name for name in display_options if code_mapping[name] in st.session_state.selected_codes[run_num]],
+            key=f"multiselect_run_{run_num}"
+        )
+        
+        # Convert back to actual code names
+        st.session_state.selected_codes[run_num] = [code_mapping[name] for name in selected_display_names]
         
         # Display selected codes for this run
         if st.session_state.selected_codes[run_num]:
             st.write(f"**Geselecteerde analyses:** {', '.join(sorted(st.session_state.selected_codes[run_num]))}")
         else:
             st.write("**Geselecteerde analyses:** Geen")
+        
+        # Show which codes are unavailable (if any)
+        unavailable_codes = other_runs_codes.intersection(set(all_available_codes))
+        if unavailable_codes:
+            st.caption(f"Niet beschikbaar (geselecteerd in andere runs): {', '.join(sorted(unavailable_codes))}")
+        
+        st.write("---")  # Visual separator between runs
         
         st.write("---")  # Visual separator between runs
 def step_process_data():
