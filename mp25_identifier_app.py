@@ -1211,7 +1211,7 @@ def step_select_codes():
         st.write("---")  # Visual separator between runs
 
 def step_process_data():
-    """Step 6: Process Data"""
+    """Step 6: Process Data with row deletion functionality"""
     st.header("Stap 6: Data verwerken")
     
     if st.session_state.processor is None:
@@ -1251,12 +1251,110 @@ def step_process_data():
         st.session_state.data_processed = True
         st.success("✅ Gegevens succesvol verwerkt!")
     
-    # Display processed data
+    # Display processed data with delete functionality
     if st.session_state.data_processed and st.session_state.filtered_data:
         for run_num, df in st.session_state.filtered_data.items():
             st.subheader(f"Run {run_num} - Verwerkte data")
             st.write(f"**Rows:** {len(df)}")
-            st.dataframe(df, use_container_width=True)
+            
+            # Initialize session state for rows to delete if not exists
+            delete_key = f"rows_to_delete_run_{run_num}"
+            if delete_key not in st.session_state:
+                st.session_state[delete_key] = []
+            
+            # Create a container for the dataframe with checkboxes
+            with st.container():
+                # Create columns for the delete functionality
+                col1, col2 = st.columns([4, 1])
+                
+                with col1:
+                    st.write("**Selecteer rijen om te verwijderen:**")
+                
+                with col2:
+                    # Reset selection button
+                    if st.button(f"🔄 Reset selectie", key=f"reset_selection_run_{run_num}", type="secondary"):
+                        st.session_state[delete_key] = []
+                        st.rerun()
+                
+                # Display dataframe with row selection
+                if len(df) > 0:
+                    # Create checkboxes for each row
+                    rows_to_display = []
+                    for idx, (df_idx, row) in enumerate(df.iterrows()):
+                        # Create checkbox for this row
+                        checkbox_key = f"delete_row_{run_num}_{df_idx}"
+                        
+                        # Create columns for checkbox and row data
+                        row_col1, row_col2 = st.columns([0.5, 9.5])
+                        
+                        with row_col1:
+                            is_selected = st.checkbox(
+                                "🗑️", 
+                                key=checkbox_key,
+                                help=f"Selecteer rij {idx + 1} voor verwijdering"
+                            )
+                            
+                            # Update session state based on checkbox
+                            if is_selected and df_idx not in st.session_state[delete_key]:
+                                st.session_state[delete_key].append(df_idx)
+                            elif not is_selected and df_idx in st.session_state[delete_key]:
+                                st.session_state[delete_key].remove(df_idx)
+                        
+                        with row_col2:
+                            # Display row data in a more readable format
+                            with st.expander(f"Rij {idx + 1}: {row.get('SolutionName', 'Unknown')} - {row.get('Step1Volume', 'Unknown')}μL", expanded=False):
+                                # Create a mini dataframe with just this row for better display
+                                single_row_df = pd.DataFrame([row])
+                                st.dataframe(single_row_df, use_container_width=True, hide_index=True)
+                    
+                    # Show selected rows count
+                    if st.session_state[delete_key]:
+                        st.warning(f"⚠️ {len(st.session_state[delete_key])} rij(en) geselecteerd voor verwijdering")
+                        
+                        # Delete selected rows button
+                        col1, col2, col3 = st.columns([2, 2, 2])
+                        
+                        with col1:
+                            if st.button(f"🗑️ Verwijder geselecteerde rijen", key=f"delete_selected_run_{run_num}", type="secondary"):
+                                # Remove selected rows from the filtered dataframe
+                                original_count = len(df)
+                                df_cleaned = df.drop(st.session_state[delete_key]).reset_index(drop=True)
+                                
+                                # Update the filtered data
+                                st.session_state.filtered_data[run_num] = df_cleaned
+                                
+                                # Clear the selection
+                                st.session_state[delete_key] = []
+                                
+                                deleted_count = original_count - len(df_cleaned)
+                                st.success(f"✅ {deleted_count} rij(en) verwijderd uit Run {run_num}")
+                                st.rerun()
+                        
+                        with col2:
+                            # Preview what will be deleted
+                            if st.button(f"👀 Voorvertoning verwijdering", key=f"preview_delete_run_{run_num}", type="secondary"):
+                                st.session_state[f"show_delete_preview_run_{run_num}"] = not st.session_state.get(f"show_delete_preview_run_{run_num}", False)
+                                st.rerun()
+                        
+                        with col3:
+                            if st.button(f"❌ Annuleer selectie", key=f"cancel_delete_run_{run_num}", type="secondary"):
+                                st.session_state[delete_key] = []
+                                st.rerun()
+                        
+                        # Show delete preview if requested
+                        if st.session_state.get(f"show_delete_preview_run_{run_num}", False):
+                            with st.expander("🗑️ Rijen die worden verwijderd:", expanded=True):
+                                rows_to_delete = df.loc[st.session_state[delete_key]]
+                                st.dataframe(rows_to_delete, use_container_width=True)
+                    
+                    else:
+                        st.info("Geen rijen geselecteerd voor verwijdering.")
+                
+                # Display the current dataframe (updated if rows were deleted)
+                current_df = st.session_state.filtered_data[run_num]
+                st.dataframe(current_df, use_container_width=True)
+                
+            st.markdown("---")
             
 def step_download_results():
     """Step 7: Download Results"""
