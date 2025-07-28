@@ -924,12 +924,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
         
         # Format as CSV string
         preview_csv = ",".join([f'"{str(item)}"' if item else '""' for item in preview_row])
-        
-        # Display preview with additional info for control samples
-        st.subheader("Voorvertoning")
-        if sample_type == "Controle" and control_sample_name:
-            st.code(preview_csv, language="csv")
-    
+           
     # Add Sample button - only enabled if Analyseplaat ID is valid
     add_button_disabled = not (poolplaat_id and poolplaat_position and analyseplaat_id and analyseplaat_position and is_valid_analyseplaat_id)
     
