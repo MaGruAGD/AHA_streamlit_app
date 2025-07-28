@@ -1148,76 +1148,59 @@ def step_select_codes():
     if 'selected_codes' not in st.session_state:
         st.session_state.selected_codes = {}
     
-    # Process all runs first to collect current selections
+    # Initialize all runs
     for run_num in range(1, st.session_state.num_runs + 1):
         if run_num not in st.session_state.selected_codes:
             st.session_state.selected_codes[run_num] = []
     
-    # Create display options with sparkles (static for all runs)
-    all_display_options = []
-    all_code_mapping = {}
-    
-    for code in all_available_codes:
-        if code in added_codes:
-            display_name = f"{code} ✨"
-        else:
-            display_name = code
-        all_display_options.append(display_name)
-        all_code_mapping[display_name] = code
-    
-    # Now display and handle selections
+    # Code selection for each run
     for run_num in range(1, st.session_state.num_runs + 1):
         st.subheader(f"Run {run_num}")
         
-        # Get multiselect key
-        multiselect_key = f"multiselect_run_{run_num}"
-        
         # Get all codes that are already selected in OTHER runs
-        other_runs_codes = set()
+        used_in_other_runs = set()
         for other_run in range(1, st.session_state.num_runs + 1):
             if other_run != run_num:
-                other_runs_codes.update(st.session_state.selected_codes.get(other_run, []))
+                used_in_other_runs.update(st.session_state.selected_codes[other_run])
         
-        # Get current selection for this run
-        current_selection_codes = st.session_state.selected_codes[run_num]
-        current_selection_display = [name for name in all_display_options if all_code_mapping[name] in current_selection_codes]
+        # Create columns for better layout
+        num_cols = 3
+        cols = st.columns(num_cols)
         
-        # Use multiselect with ALL options (we'll handle conflicts after)
-        selected_display_names = st.multiselect(
-            f"Selecteer analyses voor Run {run_num}:",
-            options=all_display_options,
-            default=current_selection_display,
-            key=multiselect_key
-        )
+        selected_codes_for_this_run = []
         
-        # Filter out any codes that are selected in other runs
-        valid_selections = []
-        conflicts = []
+        for i, code in enumerate(all_available_codes):
+            col_idx = i % num_cols
+            with cols[col_idx]:
+                # Check if this code is already used in another run
+                is_disabled = code in used_in_other_runs
+                
+                # Add indicator for newly added codes
+                code_label = code
+                if code in added_codes:
+                    code_label = f"{code} ✨"
+                
+                # Create checkbox
+                is_selected = st.checkbox(
+                    code_label,
+                    value=code in st.session_state.selected_codes[run_num],
+                    key=f"checkbox_{run_num}_{code}",
+                    disabled=is_disabled,
+                    help="Already selected in another run" if is_disabled else None
+                )
+                
+                # Add to selection if checked and not disabled
+                if is_selected and not is_disabled:
+                    selected_codes_for_this_run.append(code)
         
-        for display_name in selected_display_names:
-            code = all_code_mapping[display_name]
-            if code in other_runs_codes:
-                conflicts.append(code)
-            else:
-                valid_selections.append(code)
-        
-        # Update session state with valid selections only
-        st.session_state.selected_codes[run_num] = valid_selections
-        
-        # Show conflicts if any
-        if conflicts:
-            st.error(f"Kan niet selecteren (al geselecteerd in andere runs): {', '.join(conflicts)}")
+        # Update the session state for this run
+        st.session_state.selected_codes[run_num] = selected_codes_for_this_run
         
         # Display selected codes for this run
         if st.session_state.selected_codes[run_num]:
             st.write(f"**Geselecteerde analyses:** {', '.join(sorted(st.session_state.selected_codes[run_num]))}")
         else:
             st.write("**Geselecteerde analyses:** Geen")
-        
-        # Show which codes are unavailable
-        unavailable_codes = other_runs_codes.intersection(set(all_available_codes))
-        if unavailable_codes:
-            st.caption(f"Niet beschikbaar (geselecteerd in andere runs): {', '.join(sorted(unavailable_codes))}")
         
         st.write("---")  # Visual separator between runs
         
