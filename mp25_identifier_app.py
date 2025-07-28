@@ -1267,38 +1267,52 @@ def step_process_data():
             if delete_key not in st.session_state:
                 st.session_state[delete_key] = set()
             
-            # Create a copy of the dataframe with a delete column
-            display_df = df.copy()
-            
-            # Add delete checkboxes for each row
-            delete_checkboxes = []
-            for idx, (df_idx, row) in enumerate(df.iterrows()):
-                checkbox_key = f"delete_row_{run_num}_{df_idx}_{idx}"  # Include idx for uniqueness
+            # Create custom table with checkboxes
+            with st.container():
+                # Table header
+                header_cols = st.columns([1] + [2] * len(df.columns))
+                with header_cols[0]:
+                    st.write("**Verwijderen**")
+                for i, col_name in enumerate(df.columns):
+                    with header_cols[i + 1]:
+                        st.write(f"**{col_name}**")
                 
-                # Check if this row is marked for deletion
-                is_selected = df_idx in st.session_state[delete_key]
+                st.markdown("---")
                 
-                # Create checkbox
-                delete_selected = st.checkbox(
-                    "",  # Empty label since we'll put it in the table
-                    key=checkbox_key,
-                    value=is_selected,
-                    help=f"Selecteer rij {idx + 1} voor verwijdering"
-                )
-                
-                # Update session state
-                if delete_selected:
-                    st.session_state[delete_key].add(df_idx)
-                else:
-                    st.session_state[delete_key].discard(df_idx)
-                
-                delete_checkboxes.append("🗑️" if delete_selected else "")
-            
-            # Add the delete column to the display dataframe
-            display_df.insert(0, "Verwijderen", delete_checkboxes)
-            
-            # Display the dataframe with delete column
-            st.dataframe(display_df, use_container_width=True, hide_index=True)
+                # Table rows with checkboxes
+                for idx, (df_idx, row) in enumerate(df.iterrows()):
+                    row_cols = st.columns([1] + [2] * len(df.columns))
+                    
+                    # Checkbox column
+                    with row_cols[0]:
+                        checkbox_key = f"delete_row_{run_num}_{df_idx}_{idx}"
+                        is_selected = df_idx in st.session_state[delete_key]
+                        
+                        delete_selected = st.checkbox(
+                            "🗑️",
+                            key=checkbox_key,
+                            value=is_selected,
+                            help=f"Selecteer rij {idx + 1} voor verwijdering"
+                        )
+                        
+                        # Update session state
+                        if delete_selected:
+                            st.session_state[delete_key].add(df_idx)
+                        else:
+                            st.session_state[delete_key].discard(df_idx)
+                    
+                    # Data columns
+                    for i, (col_name, value) in enumerate(row.items()):
+                        with row_cols[i + 1]:
+                            # Truncate long values for display
+                            display_value = str(value)
+                            if len(display_value) > 50:
+                                display_value = display_value[:47] + "..."
+                            st.write(display_value)
+                    
+                    # Add subtle separator between rows
+                    if idx < len(df) - 1:
+                        st.markdown("<hr style='margin: 0.5rem 0; border: none; border-top: 1px solid #eee;'>", unsafe_allow_html=True)
             
             # Show delete actions if rows are selected
             selected_count = len(st.session_state[delete_key])
