@@ -1357,23 +1357,8 @@ def step_download_results():
                 for i, code in enumerate(sorted_codes):
                     col_idx = i % len(cols)
                     with cols[col_idx]:
-                        # Compact code display with copy button
-                        st.code(code, language=None)
-                        
-                        # JavaScript for copying to clipboard - more compact
-                        copy_key = f"copy_{run_num}_{i}"
-                        copy_script = f"""
-                        <div style="margin-top: -10px;">
-                            <button onclick="navigator.clipboard.writeText('{code}')" 
-                                    style="padding: 2px 6px; font-size: 10px; cursor: pointer; 
-                                           border: 1px solid #ddd; background: #f8f9fa; border-radius: 3px;
-                                           width: 100%;"
-                                    title="Copy {code}">
-                                📋 Copy
-                            </button>
-                        </div>
-                        """
-                        components.html(copy_script, height=25)
+                        # Code display with built-in copy functionality
+                        st.text(code)  # st.text creates selectable text that's easy to copy
         else:
             st.info(f"**Run {run_num}:** Geen MP25 codes gevonden")
         
