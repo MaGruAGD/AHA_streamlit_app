@@ -1148,9 +1148,6 @@ def step_select_codes():
     if 'selected_codes' not in st.session_state:
         st.session_state.selected_codes = {}
     
-    # First pass: collect all current selections from checkboxes
-    all_run_selections = {}
-    
     # Code selection for each run
     for run_num in range(1, st.session_state.num_runs + 1):
         st.subheader(f"Run {run_num}")
@@ -1159,22 +1156,28 @@ def step_select_codes():
         if run_num not in st.session_state.selected_codes:
             st.session_state.selected_codes[run_num] = []
         
+        # Initialize checkbox states for this run if they don't exist
+        for code in all_available_codes:
+            checkbox_key = f"code_{run_num}_{code}"
+            if checkbox_key not in st.session_state:
+                st.session_state[checkbox_key] = code in st.session_state.selected_codes[run_num]
+        
+        # Get all codes that are already selected in OTHER runs
+        other_runs_codes = set()
+        for other_run in range(1, st.session_state.num_runs + 1):
+            if other_run != run_num:
+                other_runs_codes.update(st.session_state.selected_codes.get(other_run, []))
+        
         # Create columns for better layout
         num_cols = 3
         cols = st.columns(num_cols)
         
         # Track changes for this run
-        current_run_selections = []
+        new_selections = []
         
         for i, code in enumerate(all_available_codes):
             col_idx = i % num_cols
             with cols[col_idx]:
-                # Calculate other runs codes based on CURRENT session state (not updated selections)
-                other_runs_codes = set()
-                for other_run in range(1, st.session_state.num_runs + 1):
-                    if other_run != run_num:
-                        other_runs_codes.update(st.session_state.selected_codes.get(other_run, []))
-                
                 # Check if this code is already used in another run
                 is_used_elsewhere = code in other_runs_codes
                 
@@ -1186,15 +1189,7 @@ def step_select_codes():
                 # Create unique key for this checkbox
                 checkbox_key = f"code_{run_num}_{code}"
                 
-                # Initialize checkbox state if it doesn't exist
-                if checkbox_key not in st.session_state:
-                    is_in_current_run = code in st.session_state.selected_codes[run_num]
-                    st.session_state[checkbox_key] = is_in_current_run and not is_used_elsewhere
-                
-                # If code became used elsewhere, uncheck and disable the checkbox
-                if is_used_elsewhere and st.session_state.get(checkbox_key, False):
-                    st.session_state[checkbox_key] = False
-                
+                # Don't set initial value - let Streamlit manage it based on the key
                 # Create checkbox - let Streamlit handle the state
                 checkbox_value = st.checkbox(
                     code_label,
@@ -1205,22 +1200,18 @@ def step_select_codes():
                 
                 # Collect selections (only for enabled checkboxes that are checked)
                 if not is_used_elsewhere and checkbox_value:
-                    current_run_selections.append(code)
+                    new_selections.append(code)
         
-        # Store this run's selections temporarily
-        all_run_selections[run_num] = current_run_selections
+        # Update session state once with the complete new selection
+        st.session_state.selected_codes[run_num] = new_selections
         
-        # Display selected codes for this run using the new selections
-        if current_run_selections:
-            st.write(f"**Geselecteerde analyses:** {', '.join(sorted(current_run_selections))}")
+        # Display selected codes for this run
+        if st.session_state.selected_codes[run_num]:
+            st.write(f"**Geselecteerde analyses:** {', '.join(sorted(st.session_state.selected_codes[run_num]))}")
         else:
             st.write("**Geselecteerde analyses:** Geen")
         
         st.write("---")  # Visual separator between runs
-    
-    # Second pass: update all session states at once
-    for run_num, selections in all_run_selections.items():
-        st.session_state.selected_codes[run_num] = selections
 
 def step_process_data():
     """Step 6: Process Data with integrated delete functionality in table"""
