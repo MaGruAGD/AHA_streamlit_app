@@ -1166,8 +1166,8 @@ def step_select_codes():
         num_cols = 3
         cols = st.columns(num_cols)
         
-        # Store the current selections for this run
-        current_run_selections = st.session_state.selected_codes[run_num].copy()
+        # Track changes for this run
+        new_selections = []
         
         for i, code in enumerate(all_available_codes):
             col_idx = i % num_cols
@@ -1186,21 +1186,21 @@ def step_select_codes():
                 # Determine if checkbox should be checked based on session state
                 is_checked = code in st.session_state.selected_codes[run_num]
                 
-                # Create checkbox with explicit value parameter - disabled if used in another run
+                # Create checkbox - let Streamlit handle the state
                 checkbox_value = st.checkbox(
                     code_label,
                     key=checkbox_key,
-                    value=is_checked,  # Explicitly set the value from session state
+                    value=is_checked,
                     disabled=is_used_elsewhere,
                     help="Already selected in another run" if is_used_elsewhere else None
                 )
                 
-                # Update session state based on checkbox value only if not disabled
-                if not is_used_elsewhere:
-                    if checkbox_value and code not in st.session_state.selected_codes[run_num]:
-                        st.session_state.selected_codes[run_num].append(code)
-                    elif not checkbox_value and code in st.session_state.selected_codes[run_num]:
-                        st.session_state.selected_codes[run_num].remove(code)
+                # Collect selections (only for enabled checkboxes)
+                if not is_used_elsewhere and checkbox_value:
+                    new_selections.append(code)
+        
+        # Update session state once with the complete new selection
+        st.session_state.selected_codes[run_num] = new_selections
         
         # Display selected codes for this run
         if st.session_state.selected_codes[run_num]:
