@@ -1148,27 +1148,6 @@ def step_select_codes():
     if 'selected_codes' not in st.session_state:
         st.session_state.selected_codes = {}
     
-    # Clean up orphaned data if num_runs decreased
-    runs_to_keep = set(range(1, st.session_state.num_runs + 1))
-    for run_num in list(st.session_state.selected_codes.keys()):
-        if run_num not in runs_to_keep:
-            del st.session_state.selected_codes[run_num]
-            # Clean up orphaned checkbox states
-            keys_to_remove = [key for key in st.session_state.keys() 
-                            if key.startswith(f"code_{run_num}_")]
-            for key in keys_to_remove:
-                del st.session_state[key]
-    
-    # Initialize checkbox states for any new codes
-    for run_num in range(1, st.session_state.num_runs + 1):
-        if run_num not in st.session_state.selected_codes:
-            st.session_state.selected_codes[run_num] = []
-        
-        for code in added_codes:
-            checkbox_key = f"code_{run_num}_{code}"
-            if checkbox_key not in st.session_state:
-                st.session_state[checkbox_key] = False
-    
     # First pass: collect all current selections from checkboxes
     all_run_selections = {}
     
@@ -1239,18 +1218,9 @@ def step_select_codes():
         
         st.write("---")  # Visual separator between runs
     
-    # Second pass: update all session states at once and sync checkbox states
+    # Second pass: update all session states at once
     for run_num, selections in all_run_selections.items():
         st.session_state.selected_codes[run_num] = selections
-        
-        # Ensure checkbox states are synced with selections
-        for code in all_available_codes:
-            checkbox_key = f"code_{run_num}_{code}"
-            should_be_checked = code in selections
-            
-            # Only update if there's a mismatch to avoid unnecessary state changes
-            if st.session_state.get(checkbox_key) != should_be_checked:
-                st.session_state[checkbox_key] = should_be_checked
 
 def step_process_data():
     """Step 6: Process Data with integrated delete functionality in table"""
