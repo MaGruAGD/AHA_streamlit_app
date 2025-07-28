@@ -1156,17 +1156,20 @@ def step_select_codes():
         if run_num not in st.session_state.selected_codes:
             st.session_state.selected_codes[run_num] = []
         
-        # Initialize checkbox states for this run if they don't exist
-        for code in all_available_codes:
-            checkbox_key = f"code_{run_num}_{code}"
-            if checkbox_key not in st.session_state:
-                st.session_state[checkbox_key] = code in st.session_state.selected_codes[run_num]
-        
         # Get all codes that are already selected in OTHER runs
         other_runs_codes = set()
         for other_run in range(1, st.session_state.num_runs + 1):
             if other_run != run_num:
                 other_runs_codes.update(st.session_state.selected_codes.get(other_run, []))
+        
+        # Initialize checkbox states for this run if they don't exist
+        for code in all_available_codes:
+            checkbox_key = f"code_{run_num}_{code}"
+            if checkbox_key not in st.session_state:
+                # Only initialize as checked if the code is in this run's selection AND not used elsewhere
+                is_in_current_run = code in st.session_state.selected_codes[run_num]
+                is_available = code not in other_runs_codes
+                st.session_state[checkbox_key] = is_in_current_run and is_available
         
         # Create columns for better layout
         num_cols = 3
