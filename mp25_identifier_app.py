@@ -1156,6 +1156,12 @@ def step_select_codes():
         if run_num not in st.session_state.selected_codes:
             st.session_state.selected_codes[run_num] = []
         
+        # Initialize checkbox states for this run if they don't exist
+        for code in all_available_codes:
+            checkbox_key = f"code_{run_num}_{code}"
+            if checkbox_key not in st.session_state:
+                st.session_state[checkbox_key] = code in st.session_state.selected_codes[run_num]
+        
         # Get all codes that are already selected in OTHER runs
         other_runs_codes = set()
         for other_run in range(1, st.session_state.num_runs + 1):
@@ -1183,19 +1189,16 @@ def step_select_codes():
                 # Create unique key for this checkbox
                 checkbox_key = f"code_{run_num}_{code}"
                 
-                # Determine if checkbox should be checked based on session state
-                is_checked = code in st.session_state.selected_codes[run_num]
-                
+                # Don't set initial value - let Streamlit manage it based on the key
                 # Create checkbox - let Streamlit handle the state
                 checkbox_value = st.checkbox(
                     code_label,
                     key=checkbox_key,
-                    value=is_checked,
                     disabled=is_used_elsewhere,
                     help="Already selected in another run" if is_used_elsewhere else None
                 )
                 
-                # Collect selections (only for enabled checkboxes)
+                # Collect selections (only for enabled checkboxes that are checked)
                 if not is_used_elsewhere and checkbox_value:
                     new_selections.append(code)
         
