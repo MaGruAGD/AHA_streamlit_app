@@ -1266,19 +1266,15 @@ def step_process_data():
                     st.session_state.filtered_data[run_num] = filtered_df
         
         st.session_state.data_processed = True
-        st.success("✅ Data succesvol verwerkt! Ga naar stap 7 om te downloaden.")
-        st.balloons()
+        st.success("✅ Data succesvol verwerkt!")
+        # Lab equipment celebration instead of balloons
+        st.markdown("🧪⚗️🔬🧫🥽🧪⚗️🔬🧫🥽", unsafe_allow_html=True)
     
     # Show processing status
     if st.session_state.data_processed and st.session_state.filtered_data:
-        st.success("✅ Data is verwerkt en klaar voor download!")
-        
         # Simple summary
         total_rows = sum(len(df) for df in st.session_state.filtered_data.values())
         st.info(f"📊 Totaal {total_rows} rijen verwerkt voor {len(st.session_state.filtered_data)} run(s)")
-        
-        # Next step hint
-        st.info("👉 Ga naar **Stap 7: Download CSV** om je bestanden te downloaden.")
             
 def step_download_results():
     """Step 7: Download Results with compact analyseplaat ID display"""
