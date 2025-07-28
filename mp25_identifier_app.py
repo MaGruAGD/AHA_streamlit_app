@@ -516,44 +516,6 @@ def initialize_session_state():
         if key not in st.session_state:
             st.session_state[key] = value
 
-def get_overall_progress():
-    """Calculate overall completion percentage"""
-    completed_steps = 0
-    total_steps = 7
-    
-    # Step 1: CSV uploaded
-    if st.session_state.get('processor') is not None:
-        completed_steps += 1
-    
-    # Step 2: Always complete if step 1 is done (runs default to 1)
-    if completed_steps >= 1:
-        completed_steps += 1
-    
-    # Step 3: Samples added OR codes selected (optional step)
-    added_samples = 0
-    if st.session_state.get('processor') and st.session_state.get('original_row_count'):
-        added_samples = len(st.session_state.processor.df) - st.session_state.original_row_count
-    
-    if added_samples > 0 or any(st.session_state.get('selected_codes', {}).values()):
-        completed_steps += 1
-    
-    # Step 4: Analyses selected
-    if any(st.session_state.get('selected_codes', {}).values()):
-        completed_steps += 1
-    
-    # Step 5: Volume changes applied OR data processed
-    if st.session_state.get('volume_changes_applied') or st.session_state.get('data_processed'):
-        completed_steps += 1
-    
-    # Step 6: Data processed
-    if st.session_state.get('data_processed'):
-        completed_steps += 1
-    
-    # Step 7: Ready for download
-    if st.session_state.get('data_processed') and st.session_state.get('filtered_data'):
-        completed_steps += 1
-    
-    return completed_steps / total_steps
 
 # UI Components
 def create_sidebar():
@@ -1615,10 +1577,6 @@ def main():
     )
     
     initialize_session_state()
-    progress = get_overall_progress()
-    st.progress(progress)
-    st.markdown(f"**Voortgang: {progress:.0%} voltooid**")
-    st.markdown("---")
     
     # Modern database setup section
     if not st.session_state.database_loaded:
