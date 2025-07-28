@@ -1281,7 +1281,7 @@ def step_process_data():
         st.info("👉 Ga naar **Stap 7: Download CSV** om je bestanden te downloaden.")
             
 def step_download_results():
-    """Step 7: Download Results"""
+    """Step 7: Download Results with compact analyseplaat ID display"""
     st.header("Stap 7: Download CSV")
     
     if st.session_state.processor is None:
@@ -1292,7 +1292,9 @@ def step_download_results():
         st.warning("Verwerk eerst de data in Stap 6 (Data verwerken) voordat u kunt downloaden.")
         return
     
-    # Simple download buttons for each run
+    # Download buttons section
+    st.subheader("📥 Download bestanden")
+    
     for run_num, df in st.session_state.filtered_data.items():
         # Use QUOTE_MINIMAL to only quote fields that contain special characters
         csv_data = df.to_csv(index=False, quoting=0)  # 0 = QUOTE_MINIMAL
@@ -1302,77 +1304,82 @@ def step_download_results():
         filename = f"Werklijst - Andrew - {current_date} - Run {run_num}.csv"
         
         st.download_button(
-            label=f"📥 Download Run {run_num}",
+            label=f"📥 Download Run {run_num} ({len(df)} rijen)",
             data=csv_data,
             file_name=filename,
             mime="text/csv",
             use_container_width=True
         )
 
-    # Display MP25 codes for each run with copy functionality
+    st.markdown("---")
+
+    # Compact MP25 codes section
     st.subheader("📋 Analyseplaat ID's")
     
     for run_num, df in st.session_state.filtered_data.items():
-        with st.expander(f"Run {run_num}", expanded=True):
-            # Get the selected codes for this specific run
-            selected_codes_for_run = st.session_state.selected_codes.get(run_num, [])
-            
-            if not selected_codes_for_run:
-                st.info("No codes selected for this run.")
-                continue
-            
-            # Extract MP25 codes from the dataframe using the exact matching logic
-            mp25_codes = set()
-            
-            # Only look for MP25 codes that match the selected codes for this run
-            for selected_code in selected_codes_for_run:
-                # Look through all columns for this specific code using exact matching
-                for col in df.columns:
-                    for value in df[col].astype(str):
-                        # Use the same exact matching logic as CSVProcessor
-                        exact_matches = st.session_state.processor._get_exact_code_matches(value, selected_code)
-                        for match in exact_matches:
-                            if match.startswith('MP25'):
-                                mp25_codes.add(match)
-            
-            # Sort codes for consistent display
-            sorted_codes = sorted(list(mp25_codes))
-            
-            if sorted_codes: 
-                # Display codes with copy buttons
-                for code in sorted_codes:
-                    col1, col2 = st.columns([4, 1])
-                    
-                    with col1:
-                        st.code(code, language=None)
-                    
-                    with col2:
-                        # Create a unique key for each copy button
-                        copy_key = f"copy_{run_num}_{code}"
-                        
-                        # JavaScript for copying to clipboard
-                        copy_script = f"""
-                        <script>
-                        function copyToClipboard_{copy_key.replace('-', '_')}() {{
-                            navigator.clipboard.writeText('{code}').then(function() {{
-                                // You could add a toast notification here if needed
-                            }});
-                        }}
-                        </script>
-                        <button onclick="copyToClipboard_{copy_key.replace('-', '_')}()" 
-                                style="padding: 4px 8px; font-size: 12px; cursor: pointer; 
-                                       border: 1px solid #ccc; background: #f8f9fa; border-radius: 3px;"
-                                title="Copy {code} to clipboard">
-                            📋
-                        </button>
-                        """
-                        
-                        # Use Streamlit's HTML component
-                        components.html(copy_script, height=30)
-            else:
-                st.info(f"No MP25 codes found for the selected codes in this run.")
+        # Get the selected codes for this specific run
+        selected_codes_for_run = st.session_state.selected_codes.get(run_num, [])
         
-        st.markdown("---")
+        if not selected_codes_for_run:
+            continue
+        
+        # Extract MP25 codes from the dataframe using the exact matching logic
+        mp25_codes = set()
+        
+        # Only look for MP25 codes that match the selected codes for this run
+        for selected_code in selected_codes_for_run:
+            # Look through all columns for this specific code using exact matching
+            for col in df.columns:
+                for value in df[col].astype(str):
+                    # Use the same exact matching logic as CSVProcessor
+                    exact_matches = st.session_state.processor._get_exact_code_matches(value, selected_code)
+                    for match in exact_matches:
+                        if match.startswith('MP25'):
+                            mp25_codes.add(match)
+        
+        # Sort codes for consistent display
+        sorted_codes = sorted(list(mp25_codes))
+        
+        if sorted_codes:
+            # Compact display - all codes in one container per run
+            with st.container():
+                st.write(f"**Run {run_num}:**")
+                
+                # Display codes in a compact grid format using columns
+                num_codes = len(sorted_codes)
+                if num_codes <= 3:
+                    cols = st.columns(num_codes)
+                elif num_codes <= 6:
+                    cols = st.columns(3)
+                else:
+                    cols = st.columns(4)
+                
+                for i, code in enumerate(sorted_codes):
+                    col_idx = i % len(cols)
+                    with cols[col_idx]:
+                        # Compact code display with copy button
+                        st.code(code, language=None)
+                        
+                        # JavaScript for copying to clipboard - more compact
+                        copy_key = f"copy_{run_num}_{i}"
+                        copy_script = f"""
+                        <div style="margin-top: -10px;">
+                            <button onclick="navigator.clipboard.writeText('{code}')" 
+                                    style="padding: 2px 6px; font-size: 10px; cursor: pointer; 
+                                           border: 1px solid #ddd; background: #f8f9fa; border-radius: 3px;
+                                           width: 100%;"
+                                    title="Copy {code}">
+                                📋 Copy
+                            </button>
+                        </div>
+                        """
+                        components.html(copy_script, height=25)
+        else:
+            st.info(f"**Run {run_num}:** Geen MP25 codes gevonden")
+        
+        # Add some spacing between runs, but more compact
+        if run_num < max(st.session_state.filtered_data.keys()):
+            st.markdown("<br>", unsafe_allow_html=True)
             
 import streamlit as st
 import requests
