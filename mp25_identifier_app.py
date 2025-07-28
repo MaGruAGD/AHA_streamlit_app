@@ -1153,6 +1153,18 @@ def step_select_codes():
         if run_num not in st.session_state.selected_codes:
             st.session_state.selected_codes[run_num] = []
     
+    # Create display options with sparkles (static for all runs)
+    all_display_options = []
+    all_code_mapping = {}
+    
+    for code in all_available_codes:
+        if code in added_codes:
+            display_name = f"{code} ✨"
+        else:
+            display_name = code
+        all_display_options.append(display_name)
+        all_code_mapping[display_name] = code
+    
     # Now display and handle selections
     for run_num in range(1, st.session_state.num_runs + 1):
         st.subheader(f"Run {run_num}")
@@ -1166,36 +1178,35 @@ def step_select_codes():
             if other_run != run_num:
                 other_runs_codes.update(st.session_state.selected_codes.get(other_run, []))
         
-        # Filter available codes for this run (exclude codes used in other runs)
-        available_for_this_run = [code for code in all_available_codes if code not in other_runs_codes]
+        # Get current selection for this run
+        current_selection_codes = st.session_state.selected_codes[run_num]
+        current_selection_display = [name for name in all_display_options if all_code_mapping[name] in current_selection_codes]
         
-        # Add sparkle emoji for newly added codes
-        display_options = []
-        code_mapping = {}  # Map display names back to actual codes
-        
-        for code in available_for_this_run:
-            if code in added_codes:
-                display_name = f"{code} ✨"
-            else:
-                display_name = code
-            display_options.append(display_name)
-            code_mapping[display_name] = code
-        
-        # Get current selection, but only include codes that are still available
-        current_selection_codes = [code for code in st.session_state.selected_codes[run_num] if code in available_for_this_run]
-        current_selection_display = [name for name in display_options if code_mapping[name] in current_selection_codes]
-        
-        # Use multiselect for code selection
+        # Use multiselect with ALL options (we'll handle conflicts after)
         selected_display_names = st.multiselect(
             f"Selecteer analyses voor Run {run_num}:",
-            options=display_options,
+            options=all_display_options,
             default=current_selection_display,
             key=multiselect_key
         )
         
-        # Update session state based on widget value
-        if selected_display_names is not None:
-            st.session_state.selected_codes[run_num] = [code_mapping[name] for name in selected_display_names]
+        # Filter out any codes that are selected in other runs
+        valid_selections = []
+        conflicts = []
+        
+        for display_name in selected_display_names:
+            code = all_code_mapping[display_name]
+            if code in other_runs_codes:
+                conflicts.append(code)
+            else:
+                valid_selections.append(code)
+        
+        # Update session state with valid selections only
+        st.session_state.selected_codes[run_num] = valid_selections
+        
+        # Show conflicts if any
+        if conflicts:
+            st.error(f"Kan niet selecteren (al geselecteerd in andere runs): {', '.join(conflicts)}")
         
         # Display selected codes for this run
         if st.session_state.selected_codes[run_num]:
@@ -1203,7 +1214,7 @@ def step_select_codes():
         else:
             st.write("**Geselecteerde analyses:** Geen")
         
-        # Show which codes are unavailable (if any)
+        # Show which codes are unavailable
         unavailable_codes = other_runs_codes.intersection(set(all_available_codes))
         if unavailable_codes:
             st.caption(f"Niet beschikbaar (geselecteerd in andere runs): {', '.join(sorted(unavailable_codes))}")
