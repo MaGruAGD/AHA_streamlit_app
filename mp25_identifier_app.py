@@ -1037,7 +1037,7 @@ def volume_manager_interface(processor, allowed_codes):
     volume_changes = {}
     
     for code in relevant_codes:
-        col1, col2, col3 = st.columns([2, 1, 1])
+        col1, col2 = st.columns([2, 1])
         
         with col1:
             st.write(f"**MP25{code}**")
@@ -1057,12 +1057,6 @@ def volume_manager_interface(processor, allowed_codes):
             
             volume_changes[code] = new_volume
         
-        with col3:
-            default_text = f"Default: {CUSTOM_DEFAULTS.get(code, 20)} μL"
-            if code in CUSTOM_DEFAULTS:
-                st.write(f"🔧 {default_text}")
-            else:
-                st.write(default_text)
     
     # Apply changes button
     if st.button("🔄 Toepassen", type="primary", use_container_width=True):
