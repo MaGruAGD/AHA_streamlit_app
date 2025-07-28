@@ -1148,13 +1148,17 @@ def step_select_codes():
     if 'selected_codes' not in st.session_state:
         st.session_state.selected_codes = {}
     
-    # Code selection for each run
+    # Process all runs first to collect current selections
+    for run_num in range(1, st.session_state.num_runs + 1):
+        if run_num not in st.session_state.selected_codes:
+            st.session_state.selected_codes[run_num] = []
+    
+    # Now display and handle selections
     for run_num in range(1, st.session_state.num_runs + 1):
         st.subheader(f"Run {run_num}")
         
-        # Initialize selected codes for this run if not exists
-        if run_num not in st.session_state.selected_codes:
-            st.session_state.selected_codes[run_num] = []
+        # Get multiselect key
+        multiselect_key = f"multiselect_run_{run_num}"
         
         # Get all codes that are already selected in OTHER runs
         other_runs_codes = set()
@@ -1177,16 +1181,21 @@ def step_select_codes():
             display_options.append(display_name)
             code_mapping[display_name] = code
         
+        # Get current selection, but only include codes that are still available
+        current_selection_codes = [code for code in st.session_state.selected_codes[run_num] if code in available_for_this_run]
+        current_selection_display = [name for name in display_options if code_mapping[name] in current_selection_codes]
+        
         # Use multiselect for code selection
         selected_display_names = st.multiselect(
             f"Selecteer analyses voor Run {run_num}:",
             options=display_options,
-            default=[name for name in display_options if code_mapping[name] in st.session_state.selected_codes[run_num]],
-            key=f"multiselect_run_{run_num}"
+            default=current_selection_display,
+            key=multiselect_key
         )
         
-        # Convert back to actual code names
-        st.session_state.selected_codes[run_num] = [code_mapping[name] for name in selected_display_names]
+        # Update session state based on widget value
+        if selected_display_names is not None:
+            st.session_state.selected_codes[run_num] = [code_mapping[name] for name in selected_display_names]
         
         # Display selected codes for this run
         if st.session_state.selected_codes[run_num]:
@@ -1201,7 +1210,6 @@ def step_select_codes():
         
         st.write("---")  # Visual separator between runs
         
-        st.write("---")  # Visual separator between runs
 def step_process_data():
     """Step 6: Process Data with integrated delete functionality in table"""
     st.header("Stap 6: Data verwerken")
