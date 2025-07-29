@@ -1103,7 +1103,7 @@ def step_upload_csv(allowed_codes):
 
 def step_select_runs():
     """Step 2: Select Number of Runs"""
-    st.header("Step 2: Selecteer het aantal runs")
+    st.header("Stap 2: Selecteer het aantal runs")
     
     if st.session_state.processor is None:
         st.warning("Upload eerst een CSV-bestand.")
