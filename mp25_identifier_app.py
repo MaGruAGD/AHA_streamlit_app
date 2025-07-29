@@ -1309,7 +1309,7 @@ def step_download_results():
 
     # Extract codes from all runs first for both sections
     all_mp25_codes = {}  # run_num -> set of MP25 codes
-    all_pp25_codes = {}  # run_num -> set of PP25PLSTA codes
+    all_pp25_codes = set()  # Single set for all PP25PLSTA codes (same for all runs)
     
     for run_num, df in st.session_state.filtered_data.items():
         # Get the selected codes for this specific run
@@ -1320,7 +1320,6 @@ def step_download_results():
         
         # Extract MP25 codes from the dataframe using the exact matching logic
         mp25_codes = set()
-        pp25_plsta_codes = set()
         
         # Look for MP25 codes that match the selected codes for this run
         for selected_code in selected_codes_for_run:
@@ -1333,47 +1332,28 @@ def step_download_results():
                         if match.startswith('MP25'):
                             mp25_codes.add(match)
         
-        # Extract PP25PLSTA codes from all cells in the dataframe
+        # Extract PP25PLSTA codes from all cells in the dataframe (collect from all runs)
         pattern = r'\bPP25PLSTA\d{4}\b'  # Pattern for PP25PLSTA + exactly 4 digits
         for col in df.columns:
             for value in df[col].astype(str):
                 matches = re.findall(pattern, value)
-                pp25_plsta_codes.update(matches)
+                all_pp25_codes.update(matches)
         
-        # Store codes for this run
+        # Store MP25 codes for this run
         all_mp25_codes[run_num] = mp25_codes
-        all_pp25_codes[run_num] = pp25_plsta_codes
     
-    # Section 1: Poolplaat ID's
-    st.subheader("📋 Poolplaat ID's")
+    # Section 1: Poolplaat ID (single ID for all runs)
+    st.subheader("📋 Poolplaat ID")
     
-    for run_num in sorted(all_pp25_codes.keys()):
-        sorted_pp25_codes = sorted(list(all_pp25_codes[run_num]))
+    if all_pp25_codes:
+        # Since there's only one poolplaat ID, get the first (and presumably only) one
+        poolplaat_id = sorted(list(all_pp25_codes))[0]
         
-        if sorted_pp25_codes:
-            with st.container():
-                st.write(f"**Run {run_num}:**")
-                
-                # Display PP25 codes in a compact grid format using columns
-                num_pp25_codes = len(sorted_pp25_codes)
-                if num_pp25_codes <= 3:
-                    cols = st.columns(num_pp25_codes)
-                elif num_pp25_codes <= 6:
-                    cols = st.columns(3)
-                else:
-                    cols = st.columns(4)
-                
-                for i, code in enumerate(sorted_pp25_codes):
-                    col_idx = i % len(cols)
-                    with cols[col_idx]:
-                        # Code display with built-in copy functionality
-                        st.text(code)  # st.text creates selectable text that's easy to copy
-        else:
-            st.info(f"**Run {run_num}:** Geen Poolplaat ID's gevonden")
-        
-        # Add some spacing between runs
-        if run_num < max(all_pp25_codes.keys()):
-            st.markdown("<br>", unsafe_allow_html=True)
+        with st.container():
+            st.write("**Voor alle runs:**")
+            st.text(poolplaat_id)  # Simple text display for single ID
+    else:
+        st.info("Geen Poolplaat ID gevonden")
     
     st.markdown("---")
     
