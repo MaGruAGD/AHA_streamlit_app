@@ -1275,7 +1275,7 @@ def step_process_data():
         st.info(f"📊 Totaal {total_rows} rijen verwerkt voor {len(st.session_state.filtered_data)} run(s)")
             
 def step_download_results():
-    """Step 7: Download Results with compact analyseplaat ID display"""
+    """Step 7: Download Results with compact analyseplaat ID display including PP25PLSTA codes"""
     st.header("Stap 7: Download CSV")
     
     if st.session_state.processor is None:
@@ -1307,8 +1307,9 @@ def step_download_results():
 
     st.markdown("---")
 
-    # Compact MP25 codes section
-    st.subheader("📋 Analyseplaat ID's")
+    # Extract codes from all runs first for both sections
+    all_mp25_codes = {}  # run_num -> set of MP25 codes
+    all_pp25_codes = {}  # run_num -> set of PP25PLSTA codes
     
     for run_num, df in st.session_state.filtered_data.items():
         # Get the selected codes for this specific run
@@ -1319,8 +1320,9 @@ def step_download_results():
         
         # Extract MP25 codes from the dataframe using the exact matching logic
         mp25_codes = set()
+        pp25_plsta_codes = set()
         
-        # Only look for MP25 codes that match the selected codes for this run
+        # Look for MP25 codes that match the selected codes for this run
         for selected_code in selected_codes_for_run:
             # Look through all columns for this specific code using exact matching
             for col in df.columns:
@@ -1331,33 +1333,79 @@ def step_download_results():
                         if match.startswith('MP25'):
                             mp25_codes.add(match)
         
-        # Sort codes for consistent display
-        sorted_codes = sorted(list(mp25_codes))
+        # Extract PP25PLSTA codes from all cells in the dataframe
+        pattern = r'\bPP25PLSTA\d{4}\b'  # Pattern for PP25PLSTA + exactly 4 digits
+        for col in df.columns:
+            for value in df[col].astype(str):
+                matches = re.findall(pattern, value)
+                pp25_plsta_codes.update(matches)
         
-        if sorted_codes:
-            # Compact display - all codes in one container per run
+        # Store codes for this run
+        all_mp25_codes[run_num] = mp25_codes
+        all_pp25_codes[run_num] = pp25_plsta_codes
+    
+    # Section 1: Poolplaat ID's
+    st.subheader("📋 Poolplaat ID's")
+    
+    for run_num in sorted(all_pp25_codes.keys()):
+        sorted_pp25_codes = sorted(list(all_pp25_codes[run_num]))
+        
+        if sorted_pp25_codes:
             with st.container():
                 st.write(f"**Run {run_num}:**")
                 
-                # Display codes in a compact grid format using columns
-                num_codes = len(sorted_codes)
-                if num_codes <= 3:
-                    cols = st.columns(num_codes)
-                elif num_codes <= 6:
+                # Display PP25 codes in a compact grid format using columns
+                num_pp25_codes = len(sorted_pp25_codes)
+                if num_pp25_codes <= 3:
+                    cols = st.columns(num_pp25_codes)
+                elif num_pp25_codes <= 6:
                     cols = st.columns(3)
                 else:
                     cols = st.columns(4)
                 
-                for i, code in enumerate(sorted_codes):
+                for i, code in enumerate(sorted_pp25_codes):
                     col_idx = i % len(cols)
                     with cols[col_idx]:
                         # Code display with built-in copy functionality
                         st.text(code)  # st.text creates selectable text that's easy to copy
         else:
-            st.info(f"**Run {run_num}:** Geen MP25 codes gevonden")
+            st.info(f"**Run {run_num}:** Geen Poolplaat ID's gevonden")
         
-        # Add some spacing between runs, but more compact
-        if run_num < max(st.session_state.filtered_data.keys()):
+        # Add some spacing between runs
+        if run_num < max(all_pp25_codes.keys()):
+            st.markdown("<br>", unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    # Section 2: Analyseplaat ID's
+    st.subheader("📋 Analyseplaat ID's")
+    
+    for run_num in sorted(all_mp25_codes.keys()):
+        sorted_mp25_codes = sorted(list(all_mp25_codes[run_num]))
+        
+        if sorted_mp25_codes:
+            with st.container():
+                st.write(f"**Run {run_num}:**")
+                
+                # Display MP25 codes in a compact grid format using columns
+                num_mp25_codes = len(sorted_mp25_codes)
+                if num_mp25_codes <= 3:
+                    cols = st.columns(num_mp25_codes)
+                elif num_mp25_codes <= 6:
+                    cols = st.columns(3)
+                else:
+                    cols = st.columns(4)
+                
+                for i, code in enumerate(sorted_mp25_codes):
+                    col_idx = i % len(cols)
+                    with cols[col_idx]:
+                        # Code display with built-in copy functionality
+                        st.text(code)  # st.text creates selectable text that's easy to copy
+        else:
+            st.info(f"**Run {run_num}:** Geen Analyseplaat ID's gevonden")
+        
+        # Add some spacing between runs
+        if run_num < max(all_mp25_codes.keys()):
             st.markdown("<br>", unsafe_allow_html=True)
             
 import streamlit as st
