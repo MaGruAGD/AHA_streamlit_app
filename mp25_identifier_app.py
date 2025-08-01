@@ -724,21 +724,38 @@ def add_row_interface(processor, allowed_codes, control_samples):
 
     st.markdown("---")
                            
-    # Sample type selection
-    sample_type = st.radio(
+    # FIXED: Sample type selection with proper state management
+    # Initialize the sample type index if it doesn't exist
+    if 'sample_type_index' not in st.session_state:
+        st.session_state.sample_type_index = 0
+    
+    # Create radio button and capture the selection directly
+    sample_type_selection = st.radio(
         "Monstertype:",
         ["Routine", "Controle"],
         key="sample_type_radio",
-        index=st.session_state.get('sample_type_index', 0)
+        index=st.session_state.sample_type_index
     )
     
-    # Add this right after the radio button to store the state properly
-    if sample_type == "Controle":
-        st.session_state.sample_type = "Control Samples"  # Keep internal English for compatibility
-        st.session_state.sample_type_index = 1
+    # Update session state based on radio button selection
+    if sample_type_selection == "Controle":
+        sample_type = "Controle"
+        if st.session_state.sample_type_index != 1:
+            st.session_state.sample_type_index = 1
+            st.session_state.sample_type = "Control Samples"
+            # Clear any form state that might be cached
+            if 'code_selector' in st.session_state:
+                del st.session_state['code_selector']
+            st.rerun()
     else:
-        st.session_state.sample_type = "Regular Samples"  # Keep internal English for compatibility
-        st.session_state.sample_type_index = 0
+        sample_type = "Routine"  
+        if st.session_state.sample_type_index != 0:
+            st.session_state.sample_type_index = 0
+            st.session_state.sample_type = "Regular Samples"
+            # Clear any form state that might be cached
+            if 'code_selector' in st.session_state:
+                del st.session_state['code_selector']
+            st.rerun()
    
     # Code selection - filter to only show codes with MP25 entries in CSV for control samples
     if sample_type == "Controle":
