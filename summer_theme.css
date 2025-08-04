@@ -1,21 +1,23 @@
-/* Summer Theme - Tropical Paradise Version */
+/* Summer Theme - Enhanced with Custom Background Image */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Poppins:wght@300;400;500;600;700&display=swap');
 
 :root {
-    --primary: #ff6b35;
-    --primary-dark: #e55a2b;
-    --accent: #ffa726;
-    --secondary: #26c6da;
-    --tertiary: #66bb6a;
-    --success: #4caf50;
-    --warning: #ff9800;
-    --error: #f44336;
-    --bg: linear-gradient(135deg, #fff8e1 0%, #ffecb3 50%, #fff3e0 100%);
-    --card: rgba(255,255,255,0.9);
-    --border: #ffcc80;
-    --text: #3e2723;
-    --shadow: 0 8px 32px rgba(255,107,53,0.15);
-    --summer-gradient: linear-gradient(135deg, #ff6b35 0%, #ffa726 25%, #26c6da 50%, #66bb6a 75%, #ff6b35 100%);
+    /* Updated color scheme to complement the new image */
+    --primary: #ff3366;
+    --primary-dark: #e02850;
+    --accent: #ff6b9d;
+    --secondary: #3b82f6;
+    --tertiary: #10b981;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --error: #ef4444;
+    --bg: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+    --card: rgba(255,255,255,0.1);
+    --border: rgba(255,107,157,0.3);
+    --text: #ffffff;
+    --text-secondary: #e2e8f0;
+    --shadow: 0 8px 32px rgba(255,51,102,0.25);
+    --neon-gradient: linear-gradient(135deg, #ff3366 0%, #ff6b9d 25%, #3b82f6 50%, #10b981 75%, #ff3366 100%);
 }
 
 .stApp {
@@ -31,7 +33,7 @@
     backdrop-filter: blur(20px);
     border-radius: 20px;
     box-shadow: var(--shadow);
-    border: 2px solid rgba(255,204,128,0.3);
+    border: 2px solid var(--border);
     margin: 1.5rem;
     max-width: 1200px;
     transition: all 0.3s ease;
@@ -46,7 +48,7 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: var(--summer-gradient);
+    background: var(--neon-gradient);
     background-size: 200% 200%;
     animation: gradientShift 3s ease-in-out infinite;
 }
@@ -57,8 +59,8 @@
 }
 
 .header-container {
-    background-image: url('https://images.unsplash.com/photo-1545558014-8692077e9b5c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80'),
-                      linear-gradient(135deg, rgba(255,107,53,0.7) 0%, rgba(255,167,38,0.7) 30%, rgba(38,198,218,0.5) 70%, rgba(102,187,106,0.7) 100%) !important;
+    background-image: url('https://preview.redd.it/vnaqd4eqdv091.png?width=1080&crop=smart&auto=webp&s=2acf3bb0962f3e27536822f48764bd755401274e'),
+                      linear-gradient(135deg, rgba(255,51,102,0.8) 0%, rgba(255,107,157,0.7) 30%, rgba(59,130,246,0.6) 70%, rgba(16,185,129,0.7) 100%) !important;
     background-size: cover, cover !important;
     background-position: center, center !important;
     background-repeat: no-repeat, no-repeat !important;
@@ -84,9 +86,9 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.2) 0%, transparent 50%),
-                radial-gradient(circle at 70% 80%, rgba(255,167,38,0.3) 0%, transparent 50%),
-                radial-gradient(circle at 20% 80%, rgba(38,198,218,0.2) 0%, transparent 50%);
+    background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.15) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(255,51,102,0.4) 0%, transparent 50%),
+                radial-gradient(circle at 20% 80%, rgba(59,130,246,0.3) 0%, transparent 50%);
     animation: shimmer 4s ease-in-out infinite;
 }
 
@@ -96,12 +98,12 @@
 }
 
 .header-container::after {
-    content: '🌺 🌴 🍍 🥥 🌊 ☀️';
+    content: '✨ 💫 🌟 ⚡ 🔥 💎';
     position: absolute;
     top: 1rem;
     right: 2rem;
     font-size: 1.5rem;
-    opacity: 0.7;
+    opacity: 0.8;
     animation: floatEmojis 6s ease-in-out infinite;
 }
 
@@ -124,7 +126,7 @@ div.header-container .header-title {
     gap: 1rem;
     position: relative;
     z-index: 2;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.7), 0 0 20px rgba(255,51,102,0.5);
     font-family: 'Poppins', sans-serif;
 }
 
@@ -140,7 +142,7 @@ div.header-container .header-subtitle {
     letter-spacing: 0.02em;
     position: relative;
     z-index: 2;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
     font-style: italic;
 }
 
@@ -153,7 +155,7 @@ div.header-container .header-subtitle {
 .header-container > *,
 .header-container .header-title,
 .header-container .header-subtitle,
-.header-container .summer-icon {
+.header-container .neon-icon {
     color: white !important;
 }
 
@@ -172,25 +174,26 @@ div.header-container .header-subtitle {
     color: var(--text) !important;
 }
 
-/* Ensure buttons in header have proper styling */
+/* Ensure buttons in header have proper styling with neon effect */
 .header-container button,
 .header-container .stButton > button,
 .header-container [data-testid="stButton"] button {
-    background: rgba(255,255,255,0.25) !important;
-    border: 2px solid rgba(255,255,255,0.4) !important;
+    background: rgba(255,51,102,0.3) !important;
+    border: 2px solid rgba(255,255,255,0.6) !important;
     backdrop-filter: blur(15px);
     font-weight: 600 !important;
     border-radius: 25px;
     padding: 0.75rem 1.5rem;
     transition: all 0.3s ease;
+    box-shadow: 0 0 20px rgba(255,51,102,0.4);
 }
 
 .header-container button:hover,
 .header-container .stButton > button:hover {
-    background: rgba(255,255,255,0.35) !important;
-    border: 2px solid rgba(255,255,255,0.6) !important;
+    background: rgba(255,51,102,0.5) !important;
+    border: 2px solid rgba(255,255,255,0.8) !important;
     transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 10px 25px rgba(255,107,53,0.3);
+    box-shadow: 0 10px 25px rgba(255,51,102,0.5), 0 0 30px rgba(255,51,102,0.6);
 }
 
 /* Fix visibility for SVG icons and symbols */
@@ -234,7 +237,7 @@ div.header-container .header-subtitle {
 }
 
 .step-container {
-    background: linear-gradient(135deg, rgba(255,248,225,0.9) 0%, rgba(255,236,179,0.8) 100%);
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
     border: 2px solid var(--border);
     border-left: 6px solid var(--primary);
     padding: 1.25rem 1.75rem;
@@ -247,6 +250,7 @@ div.header-container .header-subtitle {
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    backdrop-filter: blur(10px);
 }
 
 .step-container::before {
@@ -256,14 +260,14 @@ div.header-container .header-subtitle {
     left: 0;
     width: 100%;
     height: 2px;
-    background: var(--summer-gradient);
+    background: var(--neon-gradient);
     background-size: 200% 200%;
     animation: gradientShift 2s ease-in-out infinite;
 }
 
 .step-container:hover { 
     transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 12px 25px rgba(255,107,53,0.2);
+    box-shadow: 0 12px 25px rgba(255,51,102,0.3), 0 0 20px rgba(255,51,102,0.2);
 }
 
 .status-card {
@@ -281,7 +285,7 @@ div.header-container .header-subtitle {
 
 .status-card:hover { 
     transform: translateY(-5px) scale(1.02);
-    box-shadow: 0 15px 35px rgba(255,107,53,0.2);
+    box-shadow: 0 15px 35px rgba(255,51,102,0.3), 0 0 25px rgba(255,51,102,0.2);
 }
 
 .status-card::before {
@@ -297,39 +301,39 @@ div.header-container .header-subtitle {
 }
 
 .status-success { 
-    border-color: rgba(76,175,80,0.3); 
-    background: linear-gradient(135deg, rgba(232,245,233,0.9) 0%, rgba(200,230,201,0.8) 100%);
+    border-color: rgba(34,197,94,0.4); 
+    background: linear-gradient(135deg, rgba(34,197,94,0.1) 0%, rgba(34,197,94,0.05) 100%);
 }
 .status-success::before { 
-    background: linear-gradient(135deg, var(--success), #8bc34a); 
-    box-shadow: 0 0 20px rgba(76,175,80,0.4); 
+    background: linear-gradient(135deg, var(--success), #16a34a); 
+    box-shadow: 0 0 20px rgba(34,197,94,0.4); 
 }
 
 .status-warning { 
-    border-color: rgba(255,152,0,0.3); 
-    background: linear-gradient(135deg, rgba(255,248,225,0.9) 0%, rgba(255,236,179,0.8) 100%);
+    border-color: rgba(245,158,11,0.4); 
+    background: linear-gradient(135deg, rgba(245,158,11,0.1) 0%, rgba(245,158,11,0.05) 100%);
 }
 .status-warning::before { 
-    background: linear-gradient(135deg, var(--warning), #ffb74d); 
-    box-shadow: 0 0 20px rgba(255,152,0,0.4); 
+    background: linear-gradient(135deg, var(--warning), #d97706); 
+    box-shadow: 0 0 20px rgba(245,158,11,0.4); 
 }
 
 .status-error { 
-    border-color: rgba(244,67,54,0.3); 
-    background: linear-gradient(135deg, rgba(255,235,238,0.9) 0%, rgba(255,205,210,0.8) 100%);
+    border-color: rgba(239,68,68,0.4); 
+    background: linear-gradient(135deg, rgba(239,68,68,0.1) 0%, rgba(239,68,68,0.05) 100%);
 }
 .status-error::before { 
-    background: linear-gradient(135deg, var(--error), #e57373); 
-    box-shadow: 0 0 20px rgba(244,67,54,0.4); 
+    background: linear-gradient(135deg, var(--error), #dc2626); 
+    box-shadow: 0 0 20px rgba(239,68,68,0.4); 
 }
 
 .status-info { 
-    border-color: rgba(255,107,53,0.3); 
-    background: linear-gradient(135deg, rgba(255,243,224,0.9) 0%, rgba(255,224,178,0.8) 100%);
+    border-color: rgba(255,51,102,0.4); 
+    background: linear-gradient(135deg, rgba(255,51,102,0.1) 0%, rgba(255,51,102,0.05) 100%);
 }
 .status-info::before { 
     background: linear-gradient(135deg, var(--primary), var(--accent)); 
-    box-shadow: 0 0 20px rgba(255,107,53,0.4); 
+    box-shadow: 0 0 20px rgba(255,51,102,0.4); 
 }
 
 .stButton > button {
@@ -341,7 +345,7 @@ div.header-container .header-subtitle {
     font-weight: 600;
     font-family: 'Poppins', sans-serif;
     transition: all 0.3s ease;
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow), 0 0 20px rgba(255,51,102,0.3);
     position: relative;
     overflow: hidden;
     text-transform: uppercase;
@@ -356,7 +360,7 @@ div.header-container .header-subtitle {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
     transition: left 0.5s;
 }
 
@@ -366,7 +370,7 @@ div.header-container .header-subtitle {
 
 .stButton > button:hover {
     transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 15px 35px rgba(255,107,53,0.3);
+    box-shadow: 0 15px 35px rgba(255,51,102,0.4), 0 0 30px rgba(255,51,102,0.5);
     background: linear-gradient(135deg, var(--accent), var(--secondary));
 }
 
@@ -376,7 +380,7 @@ div.header-container .header-subtitle {
     padding: 2rem;
     border-radius: 20px;
     text-align: center;
-    border: 2px solid rgba(255,204,128,0.3);
+    border: 2px solid var(--border);
     margin: 0.75rem;
     transition: all 0.3s ease;
     box-shadow: var(--shadow);
@@ -391,14 +395,14 @@ div.header-container .header-subtitle {
     left: 0;
     right: 0;
     height: 4px;
-    background: var(--summer-gradient);
+    background: var(--neon-gradient);
     background-size: 200% 200%;
     animation: gradientShift 3s ease-in-out infinite;
 }
 
 .metric-container:hover { 
     transform: translateY(-5px) scale(1.05);
-    box-shadow: 0 20px 40px rgba(255,107,53,0.2);
+    box-shadow: 0 20px 40px rgba(255,51,102,0.3), 0 0 25px rgba(255,51,102,0.2);
 }
 
 .metric-value {
@@ -412,11 +416,12 @@ div.header-container .header-subtitle {
     -webkit-text-fill-color: transparent;
     background-clip: text;
     animation: gradientShift 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 10px rgba(255,51,102,0.3));
 }
 
 .metric-label {
     font-size: 0.8rem;
-    color: #8d6e63;
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.1em;
     margin-top: 0.75rem;
@@ -429,20 +434,21 @@ div.header-container .header-subtitle {
     border-radius: 20px;
     padding: 3rem;
     text-align: center;
-    background: linear-gradient(135deg, rgba(255,248,225,0.6) 0%, rgba(255,236,179,0.4) 100%);
+    background: linear-gradient(135deg, rgba(255,51,102,0.1) 0%, rgba(255,51,102,0.05) 100%);
     transition: all 0.3s ease;
     cursor: pointer;
     position: relative;
     overflow: hidden;
+    backdrop-filter: blur(10px);
 }
 
 .stFileUploader::before {
-    content: '🏖️';
+    content: '💫';
     position: absolute;
     top: 1rem;
     right: 1rem;
     font-size: 2rem;
-    opacity: 0.3;
+    opacity: 0.6;
     animation: bounce 2s ease-in-out infinite;
 }
 
@@ -453,27 +459,27 @@ div.header-container .header-subtitle {
 
 .stFileUploader:hover {
     border-color: var(--accent);
-    background: linear-gradient(135deg, rgba(255,243,224,0.8) 0%, rgba(255,224,178,0.6) 100%);
+    background: linear-gradient(135deg, rgba(255,51,102,0.15) 0%, rgba(255,51,102,0.1) 100%);
     transform: translateY(-5px) scale(1.02);
-    box-shadow: 0 15px 35px rgba(255,107,53,0.2);
+    box-shadow: 0 15px 35px rgba(255,51,102,0.3), 0 0 20px rgba(255,51,102,0.2);
 }
 
 .breadcrumb-container {
     background: var(--card);
     backdrop-filter: blur(15px);
-    border: 2px solid rgba(255,204,128,0.3);
+    border: 2px solid var(--border);
     border-radius: 15px;
     padding: 1rem 1.5rem;
     margin-bottom: 1.5rem;
     font-family: 'Poppins', sans-serif;
     font-size: 0.85rem;
-    color: #8d6e63;
+    color: var(--text-secondary);
     box-shadow: var(--shadow);
     position: relative;
 }
 
 .breadcrumb-container::before {
-    content: '🌴';
+    content: '✨';
     margin-right: 0.5rem;
 }
 
@@ -483,7 +489,7 @@ div.header-container .header-subtitle {
     margin-bottom: 1.5rem;
     padding-bottom: 0.75rem;
     border-bottom: 4px solid transparent;
-    border-image: var(--summer-gradient) 1;
+    border-image: var(--neon-gradient) 1;
     font-size: 1.5rem;
     display: flex;
     align-items: center;
@@ -491,55 +497,68 @@ div.header-container .header-subtitle {
     font-family: 'Poppins', sans-serif;
 }
 
-.summer-icon {
+.neon-icon {
     font-size: 2rem;
     margin-right: 0.75rem;
     vertical-align: middle;
     transition: transform 0.3s ease;
-    filter: drop-shadow(2px 2px 4px rgba(255,107,53,0.3));
+    filter: drop-shadow(0 0 10px rgba(255,51,102,0.5));
 }
 
-.header-title .summer-icon {
+.header-title .neon-icon {
     font-size: 2.5rem;
-    animation: summerPulse 3s ease-in-out infinite;
+    animation: neonPulse 3s ease-in-out infinite;
     color: white !important;
 }
 
-@keyframes summerPulse {
-    0%, 100% { transform: scale(1) rotate(0deg); }
-    25% { transform: scale(1.1) rotate(5deg); }
-    50% { transform: scale(1.05) rotate(0deg); }
-    75% { transform: scale(1.1) rotate(-5deg); }
+@keyframes neonPulse {
+    0%, 100% { 
+        transform: scale(1) rotate(0deg); 
+        filter: drop-shadow(0 0 10px rgba(255,51,102,0.5));
+    }
+    25% { 
+        transform: scale(1.1) rotate(5deg); 
+        filter: drop-shadow(0 0 20px rgba(255,51,102,0.8));
+    }
+    50% { 
+        transform: scale(1.05) rotate(0deg); 
+        filter: drop-shadow(0 0 15px rgba(59,130,246,0.6));
+    }
+    75% { 
+        transform: scale(1.1) rotate(-5deg); 
+        filter: drop-shadow(0 0 20px rgba(16,185,129,0.7));
+    }
 }
 
 .validation-success { 
     color: var(--success); 
     font-weight: 600; 
-    text-shadow: 1px 1px 2px rgba(76,175,80,0.2);
+    text-shadow: 0 0 10px rgba(34,197,94,0.4);
 }
 .validation-error { 
     color: var(--error); 
     font-weight: 600; 
-    text-shadow: 1px 1px 2px rgba(244,67,54,0.2);
+    text-shadow: 0 0 10px rgba(239,68,68,0.4);
 }
 .validation-warning { 
     color: var(--warning); 
     font-weight: 600; 
-    text-shadow: 1px 1px 2px rgba(255,152,0,0.2);
+    text-shadow: 0 0 10px rgba(245,158,11,0.4);
 }
 
-/* Summer-specific enhancements */
-.tropical-divider {
+/* Neon-specific enhancements */
+.neon-divider {
     height: 3px;
-    background: var(--summer-gradient);
+    background: var(--neon-gradient);
     background-size: 200% 200%;
     animation: gradientShift 3s ease-in-out infinite;
     border: none;
     border-radius: 3px;
     margin: 2rem 0;
+    box-shadow: 0 0 15px rgba(255,51,102,0.4);
 }
 
-.summer-badge {
+.neon-badge {
     display: inline-block;
     background: linear-gradient(135deg, var(--primary), var(--accent));
     color: white;
@@ -549,24 +568,24 @@ div.header-container .header-subtitle {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    box-shadow: 0 4px 15px rgba(255,107,53,0.3);
+    box-shadow: 0 4px 15px rgba(255,51,102,0.4), 0 0 20px rgba(255,51,102,0.3);
     margin: 0.25rem;
     position: relative;
     overflow: hidden;
 }
 
-.summer-badge::before {
+.neon-badge::before {
     content: '';
     position: absolute;
     top: 0;
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
     transition: left 0.6s;
 }
 
-.summer-badge:hover::before {
+.neon-badge:hover::before {
     left: 100%;
 }
 
@@ -577,7 +596,7 @@ div.header-container .header-subtitle {
     }
     .header-container { 
         padding: 2rem 1.5rem; 
-        background-size: 300px 300px, cover;
+        background-size: cover, cover;
     }
     .metric-container { margin: 0.5rem; }
     .header-container::after {
