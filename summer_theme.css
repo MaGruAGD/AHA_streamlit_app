@@ -46,12 +46,15 @@
     isolation: isolate;
 }
 
-.header-container::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-    opacity: 0.3;
+.header-container {
+    background: url('https://preview.redd.it/vnaqd4eqdv091.png?width=5481&format=png&auto=webp&s=c0a3778628802bff5b646d13a2e80dac8f836f4d') center/cover no-repeat;
+    padding: 2rem;
+    margin: -2rem -2rem 2rem -2rem;
+    border-radius: 12px 12px 0 0;
+    position: relative;
+    overflow: hidden;
+    color: white !important;
+    isolation: isolate;
 }
 
 /* Header Titles */
