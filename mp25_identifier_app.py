@@ -1690,6 +1690,7 @@ def add_theme_selector():
         theme_options = {
             "☀️ Lichtmodus": "theme.css",
             "🌙 Donkermodus": "dark_theme_css.css",
+            "🏖️ Zomer Thema": "summer_theme.css",
         }
         
         # Initialize theme selection in session state
