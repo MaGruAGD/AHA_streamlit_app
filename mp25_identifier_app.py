@@ -1695,13 +1695,65 @@ def add_theme_selector():
         if 'selected_theme' not in st.session_state:
             st.session_state.selected_theme = "☀️ Lichtmodus"
         
+        # Create a container for the theme selector with tooltip
+        st.markdown("""
+        <style>
+        .theme-selector-container {
+            position: relative;
+        }
+        .tooltip-icon {
+            display: inline-block;
+            margin-left: 5px;
+            color: #666;
+            cursor: help;
+            font-size: 12px;
+        }
+        .tooltip-icon:hover::after {
+            content: "voor browsers met donkere modus";
+            position: absolute;
+            top: -30px;
+            left: 0;
+            background: #333;
+            color: white;
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .tooltip-icon:hover::before {
+            content: "";
+            position: absolute;
+            top: -5px;
+            left: 10px;
+            border: 5px solid transparent;
+            border-top-color: #333;
+            z-index: 1000;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        # Custom label with tooltip for dark mode
+        st.markdown('<div class="theme-selector-container">', unsafe_allow_html=True)
+        
         # Theme selector with callback
         selected_theme = st.selectbox(
             "Thema kiezen",
             options=list(theme_options.keys()),
             index=list(theme_options.keys()).index(st.session_state.selected_theme),
-            key="theme_selector"
+            key="theme_selector",
+            format_func=lambda x: x + ' <span class="tooltip-icon">?</span>' if "Donkermodus" in x else x
         )
+        
+        # Add tooltip specifically for dark mode option
+        if "🌙 Donkermodus" in theme_options:
+            st.markdown(
+                '<small style="color: #666;">🌙 Donkermodus <span class="tooltip-icon" title="voor browsers met donkere modus">?</span></small>',
+                unsafe_allow_html=True
+            )
+        
+        st.markdown('</div>', unsafe_allow_html=True)
         
         # Auto-apply theme when selection changes
         if selected_theme != st.session_state.selected_theme:
