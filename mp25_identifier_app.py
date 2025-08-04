@@ -1521,6 +1521,7 @@ def main():
     theme_options = {
         "☀️ Lichtmodus": "theme.css",
         "🌙 Donkermodus": "dark_theme_css.css",
+        "🏖️ Zomer Thema": "summer_theme.css",
         
     }
     
