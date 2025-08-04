@@ -21,21 +21,20 @@
 }
 
 .header-container {
-    background: linear-gradient(135deg, #ff9a76, #ff6f61);
+    background: linear-gradient(135deg, #0066cc, #00a896);
     padding: 2rem;
     margin: -2rem -2rem 2rem -2rem;
     border-radius: 12px 12px 0 0;
     color: white;
-    box-shadow: 0 4px 12px rgba(255, 111, 97, 0.6);
     display: flex;
-    align-items: center;
-    gap: 1rem;
+    flex-direction: column;  /* Stack children vertically */
+    align-items: flex-start; /* Align left */
 }
 
 .header-title {
     font-size: 2rem;
     font-weight: 700;
-    margin: 0;
+    margin: 0;  /* Remove default margin */
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -43,7 +42,7 @@
 
 .header-subtitle {
     font-size: 0.875rem;
-    margin: 0.75rem 0 0 0;
+    margin: 0.25rem 0 0 0; /* Small top margin to separate from header */
     opacity: 0.85;
     text-transform: uppercase;
     letter-spacing: 0.05em;
