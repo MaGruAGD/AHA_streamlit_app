@@ -34,20 +34,11 @@
     transition: all 0.3s ease;
 }
 
-/* Header Styling */
+/* Header Styling with Background Image + Gradient Overlay */
 .header-container {
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    padding: 2rem;
-    margin: -2rem -2rem 2rem -2rem;
-    border-radius: 12px 12px 0 0;
-    position: relative;
-    overflow: hidden;
-    color: white !important;
-    isolation: isolate;
-}
-
-.header-container {
-    background: url('https://preview.redd.it/vnaqd4eqdv091.png?width=5481&format=png&auto=webp&s=c0a3778628802bff5b646d13a2e80dac8f836f4d') center/cover no-repeat;
+    background: 
+        linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+        url('https://preview.redd.it/vnaqd4eqdv091.png?width=5481&format=png&auto=webp&s=c0a3778628802bff5b646d13a2e80dac8f836f4d') center/cover no-repeat;
     padding: 2rem;
     margin: -2rem -2rem 2rem -2rem;
     border-radius: 12px 12px 0 0;
