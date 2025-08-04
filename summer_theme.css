@@ -1,23 +1,23 @@
-/* Summer Theme - Enhanced with Custom Background Image */
+/* Summer Theme - Bright Tropical Paradise with Pineapples */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Poppins:wght@300;400;500;600;700&display=swap');
 
 :root {
-    /* Updated color scheme to complement the new image */
-    --primary: #ff3366;
-    --primary-dark: #e02850;
-    --accent: #ff6b9d;
-    --secondary: #3b82f6;
-    --tertiary: #10b981;
-    --success: #22c55e;
-    --warning: #f59e0b;
-    --error: #ef4444;
-    --bg: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
-    --card: rgba(255,255,255,0.1);
-    --border: rgba(255,107,157,0.3);
-    --text: #ffffff;
-    --text-secondary: #e2e8f0;
-    --shadow: 0 8px 32px rgba(255,51,102,0.25);
-    --neon-gradient: linear-gradient(135deg, #ff3366 0%, #ff6b9d 25%, #3b82f6 50%, #10b981 75%, #ff3366 100%);
+    /* Bright summer color scheme */
+    --primary: #ff6b35;
+    --primary-dark: #e55a2b;
+    --accent: #ffa726;
+    --secondary: #26c6da;
+    --tertiary: #66bb6a;
+    --success: #4caf50;
+    --warning: #ff9800;
+    --error: #f44336;
+    --bg: linear-gradient(135deg, #fff8e1 0%, #ffecb3 30%, #e1f5fe 70%, #f3e5f5 100%);
+    --card: rgba(255,255,255,0.85);
+    --border: #ffcc80;
+    --text: #3e2723;
+    --text-secondary: #5d4037;
+    --shadow: 0 8px 32px rgba(255,107,53,0.15);
+    --summer-gradient: linear-gradient(135deg, #ff6b35 0%, #ffa726 25%, #26c6da 50%, #66bb6a 75%, #ff6b35 100%);
 }
 
 .stApp {
@@ -33,7 +33,7 @@
     backdrop-filter: blur(20px);
     border-radius: 20px;
     box-shadow: var(--shadow);
-    border: 2px solid var(--border);
+    border: 2px solid rgba(255,204,128,0.3);
     margin: 1.5rem;
     max-width: 1200px;
     transition: all 0.3s ease;
@@ -48,7 +48,7 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: var(--neon-gradient);
+    background: var(--summer-gradient);
     background-size: 200% 200%;
     animation: gradientShift 3s ease-in-out infinite;
 }
@@ -60,45 +60,46 @@
 
 .header-container {
     background-image: url('https://preview.redd.it/vnaqd4eqdv091.png?width=1080&crop=smart&auto=webp&s=2acf3bb0962f3e27536822f48764bd755401274e'),
-                      linear-gradient(135deg, rgba(255,51,102,0.8) 0%, rgba(255,107,157,0.7) 30%, rgba(59,130,246,0.6) 70%, rgba(16,185,129,0.7) 100%) !important;
-    background-size: cover, cover !important;
-    background-position: center, center !important;
+                      linear-gradient(135deg, rgba(255,107,53,0.3) 0%, rgba(255,167,38,0.25) 30%, rgba(38,198,218,0.2) 70%, rgba(102,187,106,0.3) 100%) !important;
+    background-size: contain, cover !important;
+    background-position: center top, center !important;
     background-repeat: no-repeat, no-repeat !important;
-    background-blend-mode: overlay !important;
-    padding: 3rem 2rem;
+    background-blend-mode: soft-light !important;
+    padding: 4rem 2rem;
     margin: -2rem -2rem 2rem -2rem;
     border-radius: 20px 20px 0 0;
     position: relative;
     overflow: hidden;
-    color: white !important;
+    color: var(--text) !important;
     isolation: isolate;
     animation: backgroundFloat 8s ease-in-out infinite;
+    min-height: 300px;
 }
 
 @keyframes backgroundFloat {
-    0%, 100% { background-position: 0px 0px, center; }
-    25% { background-position: 20px -10px, center; }
-    50% { background-position: -15px 15px, center; }
-    75% { background-position: 10px -20px, center; }
+    0%, 100% { background-position: center top, center; }
+    25% { background-position: center calc(top + 5px), center; }
+    50% { background-position: center calc(top - 5px), center; }
+    75% { background-position: center calc(top + 3px), center; }
 }
 
 .header-container::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.15) 0%, transparent 50%),
-                radial-gradient(circle at 70% 80%, rgba(255,51,102,0.4) 0%, transparent 50%),
-                radial-gradient(circle at 20% 80%, rgba(59,130,246,0.3) 0%, transparent 50%);
-    animation: shimmer 4s ease-in-out infinite;
+    background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.4) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(255,167,38,0.2) 0%, transparent 50%),
+                radial-gradient(circle at 20% 80%, rgba(38,198,218,0.2) 0%, transparent 50%);
+    animation: shimmer 6s ease-in-out infinite;
 }
 
 @keyframes shimmer {
-    0%, 100% { opacity: 0.6; }
+    0%, 100% { opacity: 0.8; }
     50% { opacity: 1; }
 }
 
 .header-container::after {
-    content: '✨ 💫 🌟 ⚡ 🔥 💎';
+    content: '🍍 🌺 🌴 🥥 🌊 ☀️ 🏖️ 🦩';
     position: absolute;
     top: 1rem;
     right: 2rem;
@@ -113,50 +114,43 @@
     66% { transform: translateY(5px) rotate(-1deg); }
 }
 
-/* Enhanced header title with higher specificity */
+/* Enhanced header title with summer styling */
 .header-container .header-title,
 .header-container h1.header-title,
 div.header-container .header-title {
-    font-size: clamp(2rem, 5vw, 3rem);
+    font-size: clamp(2rem, 5vw, 3.5rem);
     font-weight: 700;
-    color: white !important;
+    color: var(--text) !important;
     margin: 0;
     display: flex;
     align-items: center;
     gap: 1rem;
     position: relative;
     z-index: 2;
-    text-shadow: 2px 2px 8px rgba(0,0,0,0.7), 0 0 20px rgba(255,51,102,0.5);
+    text-shadow: 2px 2px 4px rgba(255,255,255,0.8), 0 0 20px rgba(255,107,53,0.3);
     font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, var(--primary), var(--accent), var(--secondary));
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientShift 4s ease-in-out infinite;
 }
 
-/* Enhanced header subtitle with higher specificity */
+/* Enhanced header subtitle */
 .header-container .header-subtitle,
 .header-container p.header-subtitle,
 div.header-container .header-subtitle {
-    font-size: 1rem;
-    color: rgba(255,255,255,0.95) !important;
+    font-size: 1.1rem;
+    color: var(--text-secondary) !important;
     margin: 1rem 0 0 0;
     font-weight: 500;
     text-transform: none;
     letter-spacing: 0.02em;
     position: relative;
     z-index: 2;
-    text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+    text-shadow: 1px 1px 2px rgba(255,255,255,0.6);
     font-style: italic;
-}
-
-/* Ensure all text inside header is white */
-.header-container * {
-    color: white !important;
-}
-
-/* Only apply white text to direct children and specific elements within header */
-.header-container > *,
-.header-container .header-title,
-.header-container .header-subtitle,
-.header-container .neon-icon {
-    color: white !important;
 }
 
 /* Ensure main content area has proper text color */
@@ -174,70 +168,44 @@ div.header-container .header-subtitle {
     color: var(--text) !important;
 }
 
-/* Ensure buttons in header have proper styling with neon effect */
+/* Bright summer buttons in header */
 .header-container button,
 .header-container .stButton > button,
 .header-container [data-testid="stButton"] button {
-    background: rgba(255,51,102,0.3) !important;
+    background: linear-gradient(135deg, rgba(255,167,38,0.9), rgba(255,107,53,0.9)) !important;
     border: 2px solid rgba(255,255,255,0.6) !important;
     backdrop-filter: blur(15px);
     font-weight: 600 !important;
     border-radius: 25px;
     padding: 0.75rem 1.5rem;
     transition: all 0.3s ease;
-    box-shadow: 0 0 20px rgba(255,51,102,0.4);
+    color: white !important;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
 }
 
 .header-container button:hover,
 .header-container .stButton > button:hover {
-    background: rgba(255,51,102,0.5) !important;
+    background: linear-gradient(135deg, rgba(255,107,53,0.95), rgba(38,198,218,0.9)) !important;
     border: 2px solid rgba(255,255,255,0.8) !important;
     transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 10px 25px rgba(255,51,102,0.5), 0 0 30px rgba(255,51,102,0.6);
+    box-shadow: 0 10px 25px rgba(255,107,53,0.4);
 }
 
-/* Fix visibility for SVG icons and symbols */
+/* Fix visibility for icons in header */
 .header-container svg,
 .header-container path,
 .header-container svg *,
 .header-container [class*="plus"],
 .header-container [class*="icon"],
 .header-container [class*="symbol"] {
-    color: white !important;
-    fill: white !important;
-    stroke: white !important;
+    color: var(--text) !important;
+    fill: var(--text) !important;
+    stroke: var(--text) !important;
     opacity: 1 !important;
 }
 
-/* Ensure step headers and content outside header are properly visible */
-.main .block-container h1:not(.header-title),
-.main .block-container h2:not(.header-title),
-.main .block-container h3:not(.header-title) {
-    color: var(--text) !important;
-    background: none !important;
-    text-shadow: none !important;
-}
-
-/* If there's any overlap with header styling, force normal text color */
-.stApp > .main h1,
-.stApp > .main h2, 
-.stApp > .main h3,
-.stApp > .main .step-header {
-    color: var(--text) !important;
-    background: transparent !important;
-}
-
-/* Specific fix for step content that might be getting header styling */
-.main [data-testid="block-container"] h1,
-.main [data-testid="block-container"] h2,
-.main [data-testid="block-container"] h3 {
-    color: var(--text) !important;
-    text-shadow: none !important;
-    background: none !important;
-}
-
 .step-container {
-    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    background: linear-gradient(135deg, rgba(255,248,225,0.9) 0%, rgba(255,236,179,0.8) 100%);
     border: 2px solid var(--border);
     border-left: 6px solid var(--primary);
     padding: 1.25rem 1.75rem;
@@ -250,7 +218,6 @@ div.header-container .header-subtitle {
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
-    backdrop-filter: blur(10px);
 }
 
 .step-container::before {
@@ -260,14 +227,14 @@ div.header-container .header-subtitle {
     left: 0;
     width: 100%;
     height: 2px;
-    background: var(--neon-gradient);
+    background: var(--summer-gradient);
     background-size: 200% 200%;
     animation: gradientShift 2s ease-in-out infinite;
 }
 
 .step-container:hover { 
     transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 12px 25px rgba(255,51,102,0.3), 0 0 20px rgba(255,51,102,0.2);
+    box-shadow: 0 12px 25px rgba(255,107,53,0.2);
 }
 
 .status-card {
@@ -285,7 +252,7 @@ div.header-container .header-subtitle {
 
 .status-card:hover { 
     transform: translateY(-5px) scale(1.02);
-    box-shadow: 0 15px 35px rgba(255,51,102,0.3), 0 0 25px rgba(255,51,102,0.2);
+    box-shadow: 0 15px 35px rgba(255,107,53,0.2);
 }
 
 .status-card::before {
@@ -301,39 +268,39 @@ div.header-container .header-subtitle {
 }
 
 .status-success { 
-    border-color: rgba(34,197,94,0.4); 
-    background: linear-gradient(135deg, rgba(34,197,94,0.1) 0%, rgba(34,197,94,0.05) 100%);
+    border-color: rgba(76,175,80,0.3); 
+    background: linear-gradient(135deg, rgba(232,245,233,0.9) 0%, rgba(200,230,201,0.8) 100%);
 }
 .status-success::before { 
-    background: linear-gradient(135deg, var(--success), #16a34a); 
-    box-shadow: 0 0 20px rgba(34,197,94,0.4); 
+    background: linear-gradient(135deg, var(--success), #8bc34a); 
+    box-shadow: 0 0 20px rgba(76,175,80,0.4); 
 }
 
 .status-warning { 
-    border-color: rgba(245,158,11,0.4); 
-    background: linear-gradient(135deg, rgba(245,158,11,0.1) 0%, rgba(245,158,11,0.05) 100%);
+    border-color: rgba(255,152,0,0.3); 
+    background: linear-gradient(135deg, rgba(255,248,225,0.9) 0%, rgba(255,236,179,0.8) 100%);
 }
 .status-warning::before { 
-    background: linear-gradient(135deg, var(--warning), #d97706); 
-    box-shadow: 0 0 20px rgba(245,158,11,0.4); 
+    background: linear-gradient(135deg, var(--warning), #ffb74d); 
+    box-shadow: 0 0 20px rgba(255,152,0,0.4); 
 }
 
 .status-error { 
-    border-color: rgba(239,68,68,0.4); 
-    background: linear-gradient(135deg, rgba(239,68,68,0.1) 0%, rgba(239,68,68,0.05) 100%);
+    border-color: rgba(244,67,54,0.3); 
+    background: linear-gradient(135deg, rgba(255,235,238,0.9) 0%, rgba(255,205,210,0.8) 100%);
 }
 .status-error::before { 
-    background: linear-gradient(135deg, var(--error), #dc2626); 
-    box-shadow: 0 0 20px rgba(239,68,68,0.4); 
+    background: linear-gradient(135deg, var(--error), #e57373); 
+    box-shadow: 0 0 20px rgba(244,67,54,0.4); 
 }
 
 .status-info { 
-    border-color: rgba(255,51,102,0.4); 
-    background: linear-gradient(135deg, rgba(255,51,102,0.1) 0%, rgba(255,51,102,0.05) 100%);
+    border-color: rgba(255,107,53,0.3); 
+    background: linear-gradient(135deg, rgba(255,243,224,0.9) 0%, rgba(255,224,178,0.8) 100%);
 }
 .status-info::before { 
     background: linear-gradient(135deg, var(--primary), var(--accent)); 
-    box-shadow: 0 0 20px rgba(255,51,102,0.4); 
+    box-shadow: 0 0 20px rgba(255,107,53,0.4); 
 }
 
 .stButton > button {
@@ -345,7 +312,7 @@ div.header-container .header-subtitle {
     font-weight: 600;
     font-family: 'Poppins', sans-serif;
     transition: all 0.3s ease;
-    box-shadow: var(--shadow), 0 0 20px rgba(255,51,102,0.3);
+    box-shadow: var(--shadow);
     position: relative;
     overflow: hidden;
     text-transform: uppercase;
@@ -360,7 +327,7 @@ div.header-container .header-subtitle {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
     transition: left 0.5s;
 }
 
@@ -370,7 +337,7 @@ div.header-container .header-subtitle {
 
 .stButton > button:hover {
     transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 15px 35px rgba(255,51,102,0.4), 0 0 30px rgba(255,51,102,0.5);
+    box-shadow: 0 15px 35px rgba(255,107,53,0.3);
     background: linear-gradient(135deg, var(--accent), var(--secondary));
 }
 
@@ -380,7 +347,7 @@ div.header-container .header-subtitle {
     padding: 2rem;
     border-radius: 20px;
     text-align: center;
-    border: 2px solid var(--border);
+    border: 2px solid rgba(255,204,128,0.3);
     margin: 0.75rem;
     transition: all 0.3s ease;
     box-shadow: var(--shadow);
@@ -395,14 +362,14 @@ div.header-container .header-subtitle {
     left: 0;
     right: 0;
     height: 4px;
-    background: var(--neon-gradient);
+    background: var(--summer-gradient);
     background-size: 200% 200%;
     animation: gradientShift 3s ease-in-out infinite;
 }
 
 .metric-container:hover { 
     transform: translateY(-5px) scale(1.05);
-    box-shadow: 0 20px 40px rgba(255,51,102,0.3), 0 0 25px rgba(255,51,102,0.2);
+    box-shadow: 0 20px 40px rgba(255,107,53,0.2);
 }
 
 .metric-value {
@@ -416,7 +383,6 @@ div.header-container .header-subtitle {
     -webkit-text-fill-color: transparent;
     background-clip: text;
     animation: gradientShift 3s ease-in-out infinite;
-    filter: drop-shadow(0 0 10px rgba(255,51,102,0.3));
 }
 
 .metric-label {
@@ -434,16 +400,15 @@ div.header-container .header-subtitle {
     border-radius: 20px;
     padding: 3rem;
     text-align: center;
-    background: linear-gradient(135deg, rgba(255,51,102,0.1) 0%, rgba(255,51,102,0.05) 100%);
+    background: linear-gradient(135deg, rgba(255,248,225,0.6) 0%, rgba(255,236,179,0.4) 100%);
     transition: all 0.3s ease;
     cursor: pointer;
     position: relative;
     overflow: hidden;
-    backdrop-filter: blur(10px);
 }
 
 .stFileUploader::before {
-    content: '💫';
+    content: '🍍';
     position: absolute;
     top: 1rem;
     right: 1rem;
@@ -453,21 +418,21 @@ div.header-container .header-subtitle {
 }
 
 @keyframes bounce {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(10deg); }
 }
 
 .stFileUploader:hover {
     border-color: var(--accent);
-    background: linear-gradient(135deg, rgba(255,51,102,0.15) 0%, rgba(255,51,102,0.1) 100%);
+    background: linear-gradient(135deg, rgba(255,243,224,0.8) 0%, rgba(255,224,178,0.6) 100%);
     transform: translateY(-5px) scale(1.02);
-    box-shadow: 0 15px 35px rgba(255,51,102,0.3), 0 0 20px rgba(255,51,102,0.2);
+    box-shadow: 0 15px 35px rgba(255,107,53,0.2);
 }
 
 .breadcrumb-container {
     background: var(--card);
     backdrop-filter: blur(15px);
-    border: 2px solid var(--border);
+    border: 2px solid rgba(255,204,128,0.3);
     border-radius: 15px;
     padding: 1rem 1.5rem;
     margin-bottom: 1.5rem;
@@ -479,7 +444,7 @@ div.header-container .header-subtitle {
 }
 
 .breadcrumb-container::before {
-    content: '✨';
+    content: '🍍';
     margin-right: 0.5rem;
 }
 
@@ -489,7 +454,7 @@ div.header-container .header-subtitle {
     margin-bottom: 1.5rem;
     padding-bottom: 0.75rem;
     border-bottom: 4px solid transparent;
-    border-image: var(--neon-gradient) 1;
+    border-image: var(--summer-gradient) 1;
     font-size: 1.5rem;
     display: flex;
     align-items: center;
@@ -497,68 +462,54 @@ div.header-container .header-subtitle {
     font-family: 'Poppins', sans-serif;
 }
 
-.neon-icon {
+.summer-icon {
     font-size: 2rem;
     margin-right: 0.75rem;
     vertical-align: middle;
     transition: transform 0.3s ease;
-    filter: drop-shadow(0 0 10px rgba(255,51,102,0.5));
+    filter: drop-shadow(2px 2px 4px rgba(255,107,53,0.3));
 }
 
-.header-title .neon-icon {
+.header-title .summer-icon {
     font-size: 2.5rem;
-    animation: neonPulse 3s ease-in-out infinite;
-    color: white !important;
+    animation: summerPulse 3s ease-in-out infinite;
 }
 
-@keyframes neonPulse {
-    0%, 100% { 
-        transform: scale(1) rotate(0deg); 
-        filter: drop-shadow(0 0 10px rgba(255,51,102,0.5));
-    }
-    25% { 
-        transform: scale(1.1) rotate(5deg); 
-        filter: drop-shadow(0 0 20px rgba(255,51,102,0.8));
-    }
-    50% { 
-        transform: scale(1.05) rotate(0deg); 
-        filter: drop-shadow(0 0 15px rgba(59,130,246,0.6));
-    }
-    75% { 
-        transform: scale(1.1) rotate(-5deg); 
-        filter: drop-shadow(0 0 20px rgba(16,185,129,0.7));
-    }
+@keyframes summerPulse {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    25% { transform: scale(1.1) rotate(5deg); }
+    50% { transform: scale(1.05) rotate(0deg); }
+    75% { transform: scale(1.1) rotate(-5deg); }
 }
 
 .validation-success { 
     color: var(--success); 
     font-weight: 600; 
-    text-shadow: 0 0 10px rgba(34,197,94,0.4);
+    text-shadow: 1px 1px 2px rgba(76,175,80,0.2);
 }
 .validation-error { 
     color: var(--error); 
     font-weight: 600; 
-    text-shadow: 0 0 10px rgba(239,68,68,0.4);
+    text-shadow: 1px 1px 2px rgba(244,67,54,0.2);
 }
 .validation-warning { 
     color: var(--warning); 
     font-weight: 600; 
-    text-shadow: 0 0 10px rgba(245,158,11,0.4);
+    text-shadow: 1px 1px 2px rgba(255,152,0,0.2);
 }
 
-/* Neon-specific enhancements */
-.neon-divider {
+/* Tropical summer divider */
+.tropical-divider {
     height: 3px;
-    background: var(--neon-gradient);
+    background: var(--summer-gradient);
     background-size: 200% 200%;
     animation: gradientShift 3s ease-in-out infinite;
     border: none;
     border-radius: 3px;
     margin: 2rem 0;
-    box-shadow: 0 0 15px rgba(255,51,102,0.4);
 }
 
-.neon-badge {
+.summer-badge {
     display: inline-block;
     background: linear-gradient(135deg, var(--primary), var(--accent));
     color: white;
@@ -568,24 +519,24 @@ div.header-container .header-subtitle {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    box-shadow: 0 4px 15px rgba(255,51,102,0.4), 0 0 20px rgba(255,51,102,0.3);
+    box-shadow: 0 4px 15px rgba(255,107,53,0.3);
     margin: 0.25rem;
     position: relative;
     overflow: hidden;
 }
 
-.neon-badge::before {
+.summer-badge::before {
     content: '';
     position: absolute;
     top: 0;
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
     transition: left 0.6s;
 }
 
-.neon-badge:hover::before {
+.summer-badge:hover::before {
     left: 100%;
 }
 
@@ -595,8 +546,9 @@ div.header-container .header-subtitle {
         padding: 1.5rem;
     }
     .header-container { 
-        padding: 2rem 1.5rem; 
-        background-size: cover, cover;
+        padding: 3rem 1.5rem; 
+        background-size: contain, cover;
+        min-height: 250px;
     }
     .metric-container { margin: 0.5rem; }
     .header-container::after {
