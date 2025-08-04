@@ -1734,26 +1734,14 @@ def add_theme_selector():
         </style>
         """, unsafe_allow_html=True)
         
-        # Custom label with tooltip for dark mode
-        st.markdown('<div class="theme-selector-container">', unsafe_allow_html=True)
-        
         # Theme selector with callback
         selected_theme = st.selectbox(
             "Thema kiezen",
             options=list(theme_options.keys()),
             index=list(theme_options.keys()).index(st.session_state.selected_theme),
             key="theme_selector",
-            format_func=lambda x: x + ' <span class="tooltip-icon">?</span>' if "Donkermodus" in x else x
+            help="🌙 Donkermodus: voor browsers met donkere modus"
         )
-        
-        # Add tooltip specifically for dark mode option
-        if "🌙 Donkermodus" in theme_options:
-            st.markdown(
-                '<small style="color: #666;">🌙 Donkermodus <span class="tooltip-icon" title="voor browsers met donkere modus">?</span></small>',
-                unsafe_allow_html=True
-            )
-        
-        st.markdown('</div>', unsafe_allow_html=True)
         
         # Auto-apply theme when selection changes
         if selected_theme != st.session_state.selected_theme:
