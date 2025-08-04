@@ -37,8 +37,7 @@
 /* Header Styling with Background Image + Gradient Overlay */
 .header-container {
     background: 
-        linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
-        url('https://preview.redd.it/vnaqd4eqdv091.png?width=5481&format=png&auto=webp&s=c0a3778628802bff5b646d13a2e80dac8f836f4d') center top / 120% auto no-repeat;
+        url('https://preview.redd.it/vnaqd4eqdv091.png?width=5481&format=png&auto=webp&s=c0a3778628802bff5b646d13a2e80dac8f836f4d') center top / 100% auto no-repeat;
     padding: 2rem;
     margin: -2rem -2rem 2rem -2rem;
     border-radius: 12px 12px 0 0;
