@@ -1136,7 +1136,7 @@ def step_select_runs():
     st.success(f"{st.session_state.num_runs} run(s) geselecteerd")
 
 def step_select_codes():
-    """Step 4: Select Codes and Volumes - FIXED VERSION"""
+    """Step 4: Select Codes and Volumes - FULLY FIXED VERSION"""
     st.header("Stap 4: Selecteer analyses")
     
     if st.session_state.processor is None:
@@ -1170,77 +1170,102 @@ def step_select_codes():
             st.session_state.selected_codes[run_num] = []
     
     # Initialize checkbox states based on current session state
-    # This ensures checkboxes reflect the saved state when returning to this step
     for run_num in range(1, st.session_state.num_runs + 1):
         for code in all_available_codes:
             checkbox_key = f"checkbox_{run_num}_{code}"
             if checkbox_key not in st.session_state:
-                # Set initial state based on whether code is in selected_codes
                 st.session_state[checkbox_key] = code in st.session_state.selected_codes[run_num]
     
     # ==========================================
-    # DISPLAY THE UI AND HANDLE INTERACTIONS
+    # PROCESS ALL CHECKBOX STATES BEFORE RENDERING UI
     # ==========================================
+    
+    # First pass: collect all current checkbox states
+    current_checkbox_states = {}
+    for run_num in range(1, st.session_state.num_runs + 1):
+        current_checkbox_states[run_num] = []
+        for code in all_available_codes:
+            checkbox_key = f"checkbox_{run_num}_{code}"
+            if st.session_state.get(checkbox_key, False):
+                current_checkbox_states[run_num].append(code)
+    
+    # Second pass: resolve conflicts and update both checkbox states and selected_codes
+    used_codes = set()
+    for run_num in range(1, st.session_state.num_runs + 1):
+        # Clean selection for this run
+        clean_selection = []
+        
+        for code in current_checkbox_states[run_num]:
+            if code not in used_codes:
+                # Code is available, keep it
+                clean_selection.append(code)
+                used_codes.add(code)
+            else:
+                # Code is already used in an earlier run, remove it from this run
+                checkbox_key = f"checkbox_{run_num}_{code}"
+                st.session_state[checkbox_key] = False
+        
+        # Update the session state immediately
+        st.session_state.selected_codes[run_num] = clean_selection
+    
+    # ==========================================
+    # NOW DISPLAY THE UI WITH CORRECT STATES
+    # ==========================================
+    
     for run_num in range(1, st.session_state.num_runs + 1):
         st.subheader(f"Run {run_num}")
+        
+        # Get codes that are used in OTHER runs (for disabling)
+        used_in_other_runs = set()
+        for other_run in range(1, st.session_state.num_runs + 1):
+            if other_run != run_num:
+                used_in_other_runs.update(st.session_state.selected_codes[other_run])
         
         # Create columns for better layout
         num_cols = 3
         cols = st.columns(num_cols)
-        
-        # Track changes for this run
-        current_run_selection = []
         
         for i, code in enumerate(all_available_codes):
             col_idx = i % num_cols
             with cols[col_idx]:
                 checkbox_key = f"checkbox_{run_num}_{code}"
                 
-                # Check if this code is selected in OTHER runs (for disabling)
-                used_in_other_runs = False
-                for other_run in range(1, st.session_state.num_runs + 1):
-                    if other_run != run_num and code in st.session_state.selected_codes[other_run]:
-                        used_in_other_runs = True
-                        break
+                # Check if this code is used in other runs
+                is_disabled = code in used_in_other_runs
                 
                 # Add indicator for newly added codes
                 code_label = code
                 if code in added_codes:
                     code_label = f"{code} ✨"
                 
-                # Create checkbox
-                is_checked = st.checkbox(
+                # Create checkbox with current state from session_state
+                checkbox_value = st.checkbox(
                     code_label,
                     key=checkbox_key,
-                    disabled=used_in_other_runs,
-                    help="Already selected in another run" if used_in_other_runs else None,
-                    value=st.session_state.get(checkbox_key, False)
+                    disabled=is_disabled,
+                    help="Already selected in another run" if is_disabled else None
                 )
                 
-                # If checkbox is checked and not disabled, add to current selection
-                if is_checked and not used_in_other_runs:
-                    current_run_selection.append(code)
-                elif used_in_other_runs and is_checked:
-                    # If it's disabled but somehow checked, uncheck it
-                    st.session_state[checkbox_key] = False
-        
-        # Update session state for this run
-        st.session_state.selected_codes[run_num] = current_run_selection
-        
-        # Handle conflicts: if a code appears in multiple runs, keep it only in the first run
-        # and clear it from later runs
-        for other_run in range(run_num + 1, st.session_state.num_runs + 1):
-            codes_to_remove = []
-            for code in st.session_state.selected_codes[other_run]:
-                if code in current_run_selection:
-                    codes_to_remove.append(code)
-                    # Also uncheck the checkbox for the other run
-                    other_checkbox_key = f"checkbox_{other_run}_{code}"
-                    st.session_state[other_checkbox_key] = False
-            
-            # Remove conflicting codes from the other run
-            for code in codes_to_remove:
-                st.session_state.selected_codes[other_run].remove(code)
+                # Handle immediate state changes (this fixes the "1 step behind" issue)
+                if checkbox_value != st.session_state.get(checkbox_key, False):
+                    # Checkbox state changed, update immediately
+                    if checkbox_value and not is_disabled:
+                        # Adding a code
+                        if code not in st.session_state.selected_codes[run_num]:
+                            st.session_state.selected_codes[run_num].append(code)
+                            # Remove from other runs if it exists there
+                            for other_run in range(1, st.session_state.num_runs + 1):
+                                if other_run != run_num and code in st.session_state.selected_codes[other_run]:
+                                    st.session_state.selected_codes[other_run].remove(code)
+                                    other_checkbox_key = f"checkbox_{other_run}_{code}"
+                                    st.session_state[other_checkbox_key] = False
+                    elif not checkbox_value:
+                        # Removing a code
+                        if code in st.session_state.selected_codes[run_num]:
+                            st.session_state.selected_codes[run_num].remove(code)
+                    
+                    # Force rerun to update UI immediately
+                    st.rerun()
         
         # Display selected codes for this run
         if st.session_state.selected_codes[run_num]:
