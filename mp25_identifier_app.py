@@ -1119,20 +1119,37 @@ def step_upload_csv(allowed_codes):
             st.error(f"Error reading CSV file: {str(e)}")
 
 def step_select_runs():
-    """Step 2: Select Number of Runs"""
+    """Step 2: Select Number of Runs - FIXED VERSION"""
     st.header("Stap 2: Selecteer het aantal runs")
     
     if st.session_state.processor is None:
         st.warning("Upload eerst een CSV-bestand.")
         return
     
-    st.session_state.num_runs = st.radio(
+    # Get current selection from radio button directly
+    selected_runs = st.radio(
         "Aantal runs:",
         options=[1, 2, 3],
         index=st.session_state.num_runs - 1,
-        horizontal=True
+        horizontal=True,
+        key="runs_radio"
     )
     
+    # Update session state immediately when selection changes
+    if selected_runs != st.session_state.num_runs:
+        st.session_state.num_runs = selected_runs
+        
+        # Clean up selected_codes for runs that no longer exist
+        if 'selected_codes' in st.session_state:
+            # Remove any runs beyond the selected number
+            runs_to_remove = [run for run in st.session_state.selected_codes.keys() if run > selected_runs]
+            for run in runs_to_remove:
+                del st.session_state.selected_codes[run]
+        
+        # Force immediate rerun to update UI
+        st.rerun()
+    
+    # Show confirmation
     st.success(f"{st.session_state.num_runs} run(s) geselecteerd")
 
 def step_select_codes():
