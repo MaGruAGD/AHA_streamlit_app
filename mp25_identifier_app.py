@@ -1255,7 +1255,7 @@ def step_select_codes():
         
         # Create select all checkbox
         select_all_checked = st.checkbox(
-            f"🔲 Alles selecteren (Run {run_num})",
+            f"Alles selecteren (Run {run_num})",
             key=f"select_all_checkbox_{run_num}",
             value=st.session_state[select_all_key],
             disabled=len(available_codes_for_run) == 0
