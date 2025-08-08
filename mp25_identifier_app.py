@@ -1271,28 +1271,25 @@ def step_select_codes():
         # Update select all state based on current selection
         st.session_state[select_all_key] = all_selected
         
-        # FIXED: Use Streamlit's native container with custom CSS
-        # Add custom CSS for this specific container
+        # FIXED: Use st.container() with CSS targeting the container directly
+        container_key = f"run_container_{run_num}"
+        
+        # Apply CSS that targets the next container
         st.markdown(f"""
         <style>
-        .run-container-{run_num} {{
-            background-color: rgba(240, 242, 246, 0.5);
-            padding: 1rem;
-            border-radius: 8px;
-            border-left: 4px solid #1f77b4;
-            margin-bottom: 1rem;
-        }}
-        .run-container-{run_num} .stCheckbox {{
-            margin: 0.2rem 0;
+        div[data-testid="stVerticalBlock"]:has([data-testid="stCheckbox"]) {{
+            background-color: rgba(240, 242, 246, 0.8) !important;
+            padding: 1rem !important;
+            border-radius: 8px !important;
+            border-left: 4px solid #1f77b4 !important;
+            margin-bottom: 1rem !important;
         }}
         </style>
         """, unsafe_allow_html=True)
         
-        # Create the styled container
-        with st.container():
-            st.markdown(f'<div class="run-container-{run_num}">', unsafe_allow_html=True)
-            
-            # Select all checkbox INSIDE the styled container
+        # Create a container with all content
+        with st.container(border=True):
+            # Select all checkbox
             select_all_checked = st.checkbox(
                 f"Alles selecteren",
                 key=f"select_all_checkbox_{run_num}",
@@ -1321,10 +1318,10 @@ def step_select_codes():
                 st.session_state[select_all_key] = select_all_checked
                 st.rerun()
             
-            # Add section header for individual analyses (also inside container)
+            # Add section header for individual analyses
             st.markdown("**Analyses:**")
                     
-            # Create columns for better layout (inside container)
+            # Create columns for better layout
             num_cols = 3
             cols = st.columns(num_cols)
             
@@ -1369,9 +1366,6 @@ def step_select_codes():
                         
                         # Force rerun to update UI immediately
                         st.rerun()
-            
-            # Close the styling div
-            st.markdown("</div>", unsafe_allow_html=True)
         
         # Display selected codes for this run (OUTSIDE the styled container)
         if st.session_state.selected_codes[run_num]:
