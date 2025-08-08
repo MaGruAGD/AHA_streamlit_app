@@ -886,14 +886,25 @@ def add_row_interface(processor, allowed_codes, control_samples):
                 control_options = control_samples[selected_code]['names']
                 control_positions = control_samples[selected_code]['positions']
                 
-                # FIXED: Create unique key for control sample selector to avoid conflicts
+                # FIXED: Create unique key for control sample selector with session state persistence
                 control_selector_key = f"control_sample_{selected_code}"
+                control_state_key = f"control_idx_{selected_code}"
+                
+                # Initialize control selection state if it doesn't exist
+                if control_state_key not in st.session_state:
+                    st.session_state[control_state_key] = 0
+                
                 selected_control_idx = st.selectbox(
                     "Controlemonster:",
                     options=range(len(control_options)),
                     format_func=lambda x: control_options[x],
+                    index=st.session_state[control_state_key],
                     key=control_selector_key
                 )
+                
+                # Update session state when selection changes
+                if selected_control_idx != st.session_state[control_state_key]:
+                    st.session_state[control_state_key] = selected_control_idx
                 
                 # Store control sample name for later use (for UI display only)
                 control_sample_name = control_options[selected_control_idx]
