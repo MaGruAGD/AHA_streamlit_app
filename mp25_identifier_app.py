@@ -1171,7 +1171,7 @@ def step_select_runs():
     st.success(f"{st.session_state.num_runs} run(s) geselecteerd")
 
 def step_select_codes():
-    """Step 4: Select Codes and Volumes - FULLY FIXED VERSION"""
+    """Step 4: Select Codes and Volumes - FULLY FIXED VERSION with proper container styling"""
     st.header("Stap 4: Selecteer analyses")
     
     if st.session_state.processor is None:
@@ -1255,12 +1255,6 @@ def step_select_codes():
         for other_run in range(1, st.session_state.num_runs + 1):
             if other_run != run_num:
                 used_in_other_runs.update(st.session_state.selected_codes[other_run])
-                
-        # Get codes that are used in OTHER runs (for disabling) - MOVE THIS UP
-        used_in_other_runs = set()
-        for other_run in range(1, st.session_state.num_runs + 1):
-            if other_run != run_num:
-                used_in_other_runs.update(st.session_state.selected_codes[other_run])
         
         # Select All checkbox for this run
         select_all_key = f"select_all_{run_num}"
@@ -1277,9 +1271,9 @@ def step_select_codes():
         # Update select all state based on current selection
         st.session_state[select_all_key] = all_selected
         
-        # OPTION 3: Container-style visual grouping
+        # FIXED: Container-style visual grouping with "Alles selecteren" INSIDE the container
         with st.container():
-            # Add subtle background styling
+            # Add the styled container div
             st.markdown("""
             <div style="background-color: rgba(240, 242, 246, 0.5); 
                         padding: 1rem; 
@@ -1288,7 +1282,7 @@ def step_select_codes():
                         margin-bottom: 1rem;">
             """, unsafe_allow_html=True)
             
-            # Select all checkbox with better visual hierarchy
+            # Select all checkbox INSIDE the styled container
             select_all_checked = st.checkbox(
                 f"Alles selecteren",
                 key=f"select_all_checkbox_{run_num}",
@@ -1317,59 +1311,59 @@ def step_select_codes():
                 st.session_state[select_all_key] = select_all_checked
                 st.rerun()
             
-            # Close the styling div
+            # Add section header for individual analyses (also inside container)
+            st.markdown("**Analyses:**")
+                    
+            # Create columns for better layout (inside container)
+            num_cols = 3
+            cols = st.columns(num_cols)
+            
+            for i, code in enumerate(all_available_codes):
+                col_idx = i % num_cols
+                with cols[col_idx]:
+                    checkbox_key = f"checkbox_{run_num}_{code}"
+                    
+                    # Check if this code is used in other runs
+                    is_disabled = code in used_in_other_runs
+                    
+                    # Add indicator for newly added codes
+                    code_label = code
+                    if code in added_codes:
+                        code_label = f"{code} ✨"
+                    
+                    # Create checkbox with current state from session_state
+                    checkbox_value = st.checkbox(
+                        code_label,
+                        key=checkbox_key,
+                        disabled=is_disabled,
+                        help="Already selected in another run" if is_disabled else None
+                    )
+                    
+                    # Handle immediate state changes (this fixes the "1 step behind" issue)
+                    if checkbox_value != st.session_state.get(checkbox_key, False):
+                        # Checkbox state changed, update immediately
+                        if checkbox_value and not is_disabled:
+                            # Adding a code
+                            if code not in st.session_state.selected_codes[run_num]:
+                                st.session_state.selected_codes[run_num].append(code)
+                                # Remove from other runs if it exists there
+                                for other_run in range(1, st.session_state.num_runs + 1):
+                                    if other_run != run_num and code in st.session_state.selected_codes[other_run]:
+                                        st.session_state.selected_codes[other_run].remove(code)
+                                        other_checkbox_key = f"checkbox_{other_run}_{code}"
+                                        st.session_state[other_checkbox_key] = False
+                        elif not checkbox_value:
+                            # Removing a code
+                            if code in st.session_state.selected_codes[run_num]:
+                                st.session_state.selected_codes[run_num].remove(code)
+                        
+                        # Force rerun to update UI immediately
+                        st.rerun()
+            
+            # Close the styling div (MOVED INSIDE THE CONTAINER)
             st.markdown("</div>", unsafe_allow_html=True)
         
-        # Add section header for individual analyses
-        st.markdown("**Analyses:**")
-                
-        # Create columns for better layout
-        num_cols = 3
-        cols = st.columns(num_cols)
-        
-        for i, code in enumerate(all_available_codes):
-            col_idx = i % num_cols
-            with cols[col_idx]:
-                checkbox_key = f"checkbox_{run_num}_{code}"
-                
-                # Check if this code is used in other runs
-                is_disabled = code in used_in_other_runs
-                
-                # Add indicator for newly added codes
-                code_label = code
-                if code in added_codes:
-                    code_label = f"{code} ✨"
-                
-                # Create checkbox with current state from session_state
-                checkbox_value = st.checkbox(
-                    code_label,
-                    key=checkbox_key,
-                    disabled=is_disabled,
-                    help="Already selected in another run" if is_disabled else None
-                )
-                
-                # Handle immediate state changes (this fixes the "1 step behind" issue)
-                if checkbox_value != st.session_state.get(checkbox_key, False):
-                    # Checkbox state changed, update immediately
-                    if checkbox_value and not is_disabled:
-                        # Adding a code
-                        if code not in st.session_state.selected_codes[run_num]:
-                            st.session_state.selected_codes[run_num].append(code)
-                            # Remove from other runs if it exists there
-                            for other_run in range(1, st.session_state.num_runs + 1):
-                                if other_run != run_num and code in st.session_state.selected_codes[other_run]:
-                                    st.session_state.selected_codes[other_run].remove(code)
-                                    other_checkbox_key = f"checkbox_{other_run}_{code}"
-                                    st.session_state[other_checkbox_key] = False
-                    elif not checkbox_value:
-                        # Removing a code
-                        if code in st.session_state.selected_codes[run_num]:
-                            st.session_state.selected_codes[run_num].remove(code)
-                    
-                    # Force rerun to update UI immediately
-                    st.rerun()
-        
-        # Display selected codes for this run
+        # Display selected codes for this run (OUTSIDE the styled container)
         if st.session_state.selected_codes[run_num]:
             st.write(f"**Geselecteerde analyses:** {', '.join(sorted(st.session_state.selected_codes[run_num]))}")
         else:
