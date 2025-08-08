@@ -1271,16 +1271,26 @@ def step_select_codes():
         # Update select all state based on current selection
         st.session_state[select_all_key] = all_selected
         
-        # FIXED: Container-style visual grouping with "Alles selecteren" INSIDE the container
+        # FIXED: Use Streamlit's native container with custom CSS
+        # Add custom CSS for this specific container
+        st.markdown(f"""
+        <style>
+        .run-container-{run_num} {{
+            background-color: rgba(240, 242, 246, 0.5);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #1f77b4;
+            margin-bottom: 1rem;
+        }}
+        .run-container-{run_num} .stCheckbox {{
+            margin: 0.2rem 0;
+        }}
+        </style>
+        """, unsafe_allow_html=True)
+        
+        # Create the styled container
         with st.container():
-            # Add the styled container div
-            st.markdown("""
-            <div style="background-color: rgba(240, 242, 246, 0.5); 
-                        padding: 1rem; 
-                        border-radius: 8px; 
-                        border-left: 4px solid #1f77b4; 
-                        margin-bottom: 1rem;">
-            """, unsafe_allow_html=True)
+            st.markdown(f'<div class="run-container-{run_num}">', unsafe_allow_html=True)
             
             # Select all checkbox INSIDE the styled container
             select_all_checked = st.checkbox(
@@ -1360,7 +1370,7 @@ def step_select_codes():
                         # Force rerun to update UI immediately
                         st.rerun()
             
-            # Close the styling div (MOVED INSIDE THE CONTAINER)
+            # Close the styling div
             st.markdown("</div>", unsafe_allow_html=True)
         
         # Display selected codes for this run (OUTSIDE the styled container)
