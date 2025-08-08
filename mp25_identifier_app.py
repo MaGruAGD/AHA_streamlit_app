@@ -812,9 +812,10 @@ def add_row_interface(processor, allowed_codes, control_samples):
                 help="Voer PP25PLSTA ID in (formaat: PP25PLSTAXXXX)"
             )
         
-        # Use the improved well plate selector
+        # FIXED: Use unique keys for poolplaat position selector to avoid conflicts
+        poolplaat_position_key = f"poolplaat_pos_{sample_type}_{selected_code}"
         poolplaat_position = well_plate_selector(
-            key="poolplaat_position_selector",
+            key=poolplaat_position_key,
             title="Selecteer positie op poolplaat",
             default_position="A1"
         )
@@ -885,11 +886,13 @@ def add_row_interface(processor, allowed_codes, control_samples):
                 control_options = control_samples[selected_code]['names']
                 control_positions = control_samples[selected_code]['positions']
                 
+                # FIXED: Create unique key for control sample selector to avoid conflicts
+                control_selector_key = f"control_sample_{selected_code}"
                 selected_control_idx = st.selectbox(
                     "Controlemonster:",
                     options=range(len(control_options)),
                     format_func=lambda x: control_options[x],
-                    key="control_sample_selector"
+                    key=control_selector_key
                 )
                 
                 # Store control sample name for later use (for UI display only)
@@ -897,20 +900,24 @@ def add_row_interface(processor, allowed_codes, control_samples):
                 
                 # Automatically set position based on control sample
                 analyseplaat_position = control_positions[selected_control_idx]
+                
+                # FIXED: Create unique key for position display to avoid conflicts
+                position_display_key = f"analyseplaat_position_control_{selected_code}_{selected_control_idx}"
                 st.text_input(
                     "Positie op analyseplaat:",
                     value=analyseplaat_position,
                     disabled=True,
-                    key="analyseplaat_position_control",
+                    key=position_display_key,
                     help="Positie automatisch ingesteld op basis van controlemonster"
                 )
             else:
                 st.warning(f"Geen Controle gedefinieerd voor code {selected_code}")
                 analyseplaat_position = "A1"
         else:
-            # Regular samples - use improved well plate selector
+            # Regular samples - use improved well plate selector with unique key
+            analyseplaat_position_key = f"analyseplaat_pos_{sample_type}_{selected_code}"
             analyseplaat_position = well_plate_selector(
-                key="analyseplaat_position_selector",
+                key=analyseplaat_position_key,
                 title="Selecteer positie op analyseplaat",
                 default_position="A1"
             )
