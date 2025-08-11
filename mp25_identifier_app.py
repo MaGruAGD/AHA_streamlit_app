@@ -687,7 +687,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
                             # Delete checkbox
                             delete_key = f"delete_sample_{idx}_{df_idx}"
                             st.write("**Verwijderen**")
-                            if st.checkbox(key=delete_key, help="Markeer voor verwijdering"):
+                            if st.checkbox("", key=delete_key, help="Markeer voor verwijdering"):
                                 samples_to_delete.append(df_idx)
                                 metadata_indices_to_delete.append(idx)
                     
