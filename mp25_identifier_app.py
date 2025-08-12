@@ -583,144 +583,139 @@ def add_row_interface(processor, allowed_codes, control_samples):
     # Display current status
     added_rows_count = display_sample_status()
 
-    # Manage Added Samples button - now always visible
-    if st.button("🗂️ Toegevoegde monsters beheren", type="secondary", use_container_width=True):
-        st.session_state.show_sample_manager = not st.session_state.get('show_sample_manager', False)
+# Single toggle button with dynamic text and state
+current_manager_state = st.session_state.get('show_sample_manager', False)
+button_text = "❌ Sluiten monsters beheer" if current_manager_state else "🗂️ Toegevoegde monsters beheren"
+button_type = "primary" if current_manager_state else "secondary"
 
+if st.button(button_text, type=button_type, use_container_width=True, key="toggle_sample_manager"):
+    st.session_state.show_sample_manager = not current_manager_state
 
-    # Sample manager interface
-    if st.session_state.get('show_sample_manager', False):
-        with st.expander("🗂️ Toegevoegde monsters:", expanded=True):
+# Sample manager interface (remove the internal close button)
+if st.session_state.get('show_sample_manager', False):
+    with st.expander("🗂️ Toegevoegde monsters:", expanded=True):
+        
+        # Get added rows (rows beyond the original count)
+        original_count = st.session_state.get('original_row_count', 0)
+        added_rows = processor.df.iloc[original_count:].copy()
+        
+        if len(added_rows) > 0:
+            # Create a list to track which samples to delete
+            samples_to_delete = []
+            metadata_indices_to_delete = []
             
-            # Get added rows (rows beyond the original count)
-            original_count = st.session_state.get('original_row_count', 0)
-            added_rows = processor.df.iloc[original_count:].copy()
-            
-            if len(added_rows) > 0:
-                # Create a list to track which samples to delete
-                samples_to_delete = []
-                metadata_indices_to_delete = []
+            # Display each added sample with delete option
+            for idx, (df_idx, row) in enumerate(added_rows.iterrows()):
+                # Get the metadata for this sample
+                metadata = None
+                if 'added_samples_metadata' in st.session_state and idx < len(st.session_state.added_samples_metadata):
+                    metadata = st.session_state.added_samples_metadata[idx]
                 
-                # Display each added sample with delete option
-                for idx, (df_idx, row) in enumerate(added_rows.iterrows()):
-                    # Get the metadata for this sample
-                    metadata = None
-                    if 'added_samples_metadata' in st.session_state and idx < len(st.session_state.added_samples_metadata):
-                        metadata = st.session_state.added_samples_metadata[idx]
+                with st.container():
+                    # Create columns for sample info and delete button
+                    col1, col2, col3, col4, col5 = st.columns([2, 1.5, 1.5, 2, 1])
                     
-                    with st.container():
-                        # Create columns for sample info and delete button
-                        col1, col2, col3, col4, col5 = st.columns([2, 1.5, 1.5, 2, 1])
-                        
-                        # Extract sample information from the row
-                        solution_name = row.get('SolutionName', 'Onbekend')
-                        step1_source = row.get('Step1Source', '')
-                        step1_destination = row.get('Step1Destination', '')
-                        step1_volume = row.get('Step1Volume', '')
-                                                
-                        # Parse source and destination for display
-                        source_match = re.search(r'"([^"]+)"', str(step1_source))
-                        dest_match = re.search(r'"([^"]+)"', str(step1_destination))
-                        
-                        source_id = source_match.group(1) if source_match else str(step1_source)
-                        dest_id = dest_match.group(1) if dest_match else str(step1_destination)
-                        
-                        # Try multiple patterns for extracting positions
-                        # Pattern 1: :A1, :B2, etc. at the end
-                        source_pos_match = re.search(r':([A-H]\d{1,2})$', source_id)
-                        dest_pos_match = re.search(r':([A-H]\d{1,2})$', dest_id)
-                        
-                        # Pattern 2: Just A1, B2, etc. at the end (if Pattern 1 fails)
-                        if not source_pos_match:
-                            source_pos_match = re.search(r'([A-H]\d{1,2})$', source_id)
-                        if not dest_pos_match:
-                            dest_pos_match = re.search(r'([A-H]\d{1,2})$', dest_id)
-                        
-                        # Pattern 3: Any A1, B2 pattern anywhere in the string (if Pattern 2 fails)
-                        if not source_pos_match:
-                            source_pos_match = re.search(r'([A-H]\d{1,2})', source_id)
-                        if not dest_pos_match:
-                            dest_pos_match = re.search(r'([A-H]\d{1,2})', dest_id)
-                        
-                        source_position = metadata.get('poolplaat_position', 'Onbekend') if metadata else 'Onbekend'
-                        dest_position = metadata.get('analyseplaat_position', 'Onbekend') if metadata else 'Onbekend'
-                        
-                        # Get MP25 code (keep existing logic)
-                        mp25_match = re.search(r'MP25([A-Z0-9]+)\d{4}', dest_id)
-                        mp25_code = mp25_match.group(1) if mp25_match else "Onbekend"
-                        
-                        # Use metadata to determine sample type and details
-                        if metadata:
-                            is_control = metadata['sample_type'] == "Control Samples"
-                            control_type = metadata.get('control_name', 'Controle')
-                            sample_type_from_metadata = metadata['sample_type']
-                        else:
-                            # Fallback if no metadata (shouldn't happen with new system)
-                            is_control = False
-                            control_type = None
-                            sample_type_from_metadata = "Regular Samples"
-                        
-                        # Display sample information
-                        with col1:
-                            if is_control:
-                                st.write(f"🧪 **Controlemonster**")
-                                st.caption(f"Type: {control_type}")
-                            else:
-                                st.write(f"🔬 **Routine Monster**")
-                                st.caption(f"Naam: {solution_name}")
-                        
-                        with col2:
-                            st.write(f"**MP25 Code:**")
-                            st.write(f"`{mp25_code}`")
-                        
-                        with col3:
-                            st.write(f"**Volume:**")
-                            st.write(f"{step1_volume} μL")
-                        
-                        with col4:
-                            st.write(f"**Transfer:**")
-                            st.write(f"{source_position} → {dest_position}")
-                            st.caption(f"Poolplaat naar Analyseplaat")
-                        
-                        with col5:
-                            # Delete checkbox
-                            delete_key = f"delete_sample_{idx}_{df_idx}"
-                            st.write("**Verwijderen**")
-                            if st.checkbox("", key=delete_key, help="Markeer voor verwijdering"):
-                                samples_to_delete.append(df_idx)
-                                metadata_indices_to_delete.append(idx)
+                    # Extract sample information from the row
+                    solution_name = row.get('SolutionName', 'Onbekend')
+                    step1_source = row.get('Step1Source', '')
+                    step1_destination = row.get('Step1Destination', '')
+                    step1_volume = row.get('Step1Volume', '')
+                                            
+                    # Parse source and destination for display
+                    source_match = re.search(r'"([^"]+)"', str(step1_source))
+                    dest_match = re.search(r'"([^"]+)"', str(step1_destination))
                     
-                    st.markdown("---")
-                
-                # Delete selected samples
-                if samples_to_delete:
-                    col1, col2 = st.columns(2)
+                    source_id = source_match.group(1) if source_match else str(step1_source)
+                    dest_id = dest_match.group(1) if dest_match else str(step1_destination)
                     
+                    # Try multiple patterns for extracting positions
+                    source_pos_match = re.search(r':([A-H]\d{1,2})$', source_id)
+                    dest_pos_match = re.search(r':([A-H]\d{1,2})$', dest_id)
+                    
+                    if not source_pos_match:
+                        source_pos_match = re.search(r'([A-H]\d{1,2})$', source_id)
+                    if not dest_pos_match:
+                        dest_pos_match = re.search(r'([A-H]\d{1,2})$', dest_id)
+                    
+                    if not source_pos_match:
+                        source_pos_match = re.search(r'([A-H]\d{1,2})', source_id)
+                    if not dest_pos_match:
+                        dest_pos_match = re.search(r'([A-H]\d{1,2})', dest_id)
+                    
+                    source_position = metadata.get('poolplaat_position', 'Onbekend') if metadata else 'Onbekend'
+                    dest_position = metadata.get('analyseplaat_position', 'Onbekend') if metadata else 'Onbekend'
+                    
+                    # Get MP25 code
+                    mp25_match = re.search(r'MP25([A-Z0-9]+)\d{4}', dest_id)
+                    mp25_code = mp25_match.group(1) if mp25_match else "Onbekend"
+                    
+                    # Use metadata to determine sample type and details
+                    if metadata:
+                        is_control = metadata['sample_type'] == "Control Samples"
+                        control_type = metadata.get('control_name', 'Controle')
+                        sample_type_from_metadata = metadata['sample_type']
+                    else:
+                        is_control = False
+                        control_type = None
+                        sample_type_from_metadata = "Regular Samples"
+                    
+                    # Display sample information
                     with col1:
-                        if st.button("🗑️ Geselecteerde Monsters Verwijderen", type="secondary", use_container_width=True):
-                            # Remove selected rows from the dataframe
-                            processor.df = processor.df.drop(samples_to_delete).reset_index(drop=True)
-                            
-                            # Remove corresponding metadata entries (in reverse order to maintain indices)
-                            for idx in sorted(metadata_indices_to_delete, reverse=True):
-                                if 'added_samples_metadata' in st.session_state and idx < len(st.session_state.added_samples_metadata):
-                                    st.session_state.added_samples_metadata.pop(idx)
-                            
-                            st.success(f"✅ {len(samples_to_delete)} monster(s) verwijderd")
-                            
-                            # Clear the sample manager display and force refresh
-                            st.session_state.show_sample_manager = False
-                            st.rerun()
+                        if is_control:
+                            st.write(f"🧪 **Controlemonster**")
+                            st.caption(f"Type: {control_type}")
+                        else:
+                            st.write(f"🔬 **Routine Monster**")
+                            st.caption(f"Naam: {solution_name}")
                     
                     with col2:
-                        st.write(f"**{len(samples_to_delete)} monster(s) geselecteerd voor verwijdering**")
-                
-                # Close manager button
-                if st.button("❌ Sluiten", use_container_width=True):
-                    st.session_state.show_sample_manager = False
+                        st.write(f"**MP25 Code:**")
+                        st.write(f"`{mp25_code}`")
                     
-            else:
-                st.info("Geen toegevoegde monsters gevonden. Voeg monsters toe via de interface hieronder en ze verschijnen hier voor beheer.")
+                    with col3:
+                        st.write(f"**Volume:**")
+                        st.write(f"{step1_volume} μL")
+                    
+                    with col4:
+                        st.write(f"**Transfer:**")
+                        st.write(f"{source_position} → {dest_position}")
+                        st.caption(f"Poolplaat naar Analyseplaat")
+                    
+                    with col5:
+                        # Delete checkbox
+                        delete_key = f"delete_sample_{idx}_{df_idx}"
+                        st.write("**Verwijderen**")
+                        if st.checkbox("", key=delete_key, help="Markeer voor verwijdering"):
+                            samples_to_delete.append(df_idx)
+                            metadata_indices_to_delete.append(idx)
+                
+                st.markdown("---")
+            
+            # Delete selected samples
+            if samples_to_delete:
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    if st.button("🗑️ Geselecteerde Monsters Verwijderen", type="secondary", use_container_width=True):
+                        # Remove selected rows from the dataframe
+                        processor.df = processor.df.drop(samples_to_delete).reset_index(drop=True)
+                        
+                        # Remove corresponding metadata entries (in reverse order to maintain indices)
+                        for idx in sorted(metadata_indices_to_delete, reverse=True):
+                            if 'added_samples_metadata' in st.session_state and idx < len(st.session_state.added_samples_metadata):
+                                st.session_state.added_samples_metadata.pop(idx)
+                        
+                        st.success(f"✅ {len(samples_to_delete)} monster(s) verwijderd")
+                        
+                        # Close the sample manager and force refresh
+                        st.session_state.show_sample_manager = False
+                        st.rerun()
+                
+                with col2:
+                    st.write(f"**{len(samples_to_delete)} monster(s) geselecteerd voor verwijdering**")
+        
+        else:
+            st.info("Geen toegevoegde monsters gevonden. Voeg monsters toe via de interface hieronder en ze verschijnen hier voor beheer.")
 
     st.markdown("---")
                            
