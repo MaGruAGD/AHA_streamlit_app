@@ -718,7 +718,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
                 # Close manager button
                 if st.button("❌ Sluiten", use_container_width=True):
                     st.session_state.show_sample_manager = False
-                    st.rerun()
+                    
             else:
                 st.info("Geen toegevoegde monsters gevonden. Voeg monsters toe via de interface hieronder en ze verschijnen hier voor beheer.")
 
