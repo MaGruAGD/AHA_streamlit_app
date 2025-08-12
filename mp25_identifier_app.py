@@ -849,29 +849,32 @@ def add_row_interface(processor, allowed_codes, control_samples):
                 return mp25_ids[0]
             else:
                 # Fallback to default format if none found in CSV
-                return f"MP25{code}XXXX"
+                return f"MP25{code}0001"
         
         # Analyseplaat ID input with validation
         analyseplaat_key = f"analyseplaat_id_{selected_code}"
         
-        # Get the default/suggested value
-        default_analyseplaat_id = get_suggested_analyseplaat_id(processor, selected_code)
-        
-        # Initialize session state for analyseplaat ID if not exists
+        # Initialize session state ONLY if it doesn't exist for this specific code
+        # This prevents overwriting manual user input
         if analyseplaat_key not in st.session_state:
+            default_analyseplaat_id = get_suggested_analyseplaat_id(processor, selected_code)
             st.session_state[analyseplaat_key] = default_analyseplaat_id
+        
+        # Use the value from session state (preserves manual input)
+        current_analyseplaat_value = st.session_state[analyseplaat_key]
         
         # Single text input for Analyseplaat ID
         analyseplaat_id = st.text_input(
             "Analyseplaat ID:",
-            value=st.session_state[analyseplaat_key],
+            value=current_analyseplaat_value,
             key=f"analyseplaat_id_input_{selected_code}",
             help=f"Vereist formaat: MP25{selected_code}XXXX (bijv., MP25{selected_code}0081)",
-            placeholder=f"MP25{selected_code}XXXX"
+            placeholder=f"MP25{selected_code}0001"
         )
         
-        # Update session state when user changes the input
-        if analyseplaat_id != st.session_state[analyseplaat_key]:
+        # Only update session state if the user actually changed the input
+        # This prevents the default suggestion from overwriting manual input
+        if analyseplaat_id != current_analyseplaat_value:
             st.session_state[analyseplaat_key] = analyseplaat_id
         
         # Validate the Analyseplaat ID format
