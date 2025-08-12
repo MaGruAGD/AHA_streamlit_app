@@ -586,7 +586,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
     # Manage Added Samples button - now always visible
     if st.button("🗂️ Toegevoegde monsters beheren", type="secondary", use_container_width=True):
         st.session_state.show_sample_manager = not st.session_state.get('show_sample_manager', False)
-        st.rerun()
+
 
     # Sample manager interface
     if st.session_state.get('show_sample_manager', False):
