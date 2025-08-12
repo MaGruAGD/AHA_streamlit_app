@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import re
@@ -834,7 +833,7 @@ def add_row_interface(processor, allowed_codes, control_samples):
     with col2:
         st.subheader("🔬 Analyseplaat")
         
-        # Function to validate Analyseplaat ID format
+# Function to validate Analyseplaat ID format
         def validate_analyseplaat_id(plate_id, code):
             """Validate that the plate ID follows MP25 + code + 4 digits format"""
             import re
@@ -850,21 +849,22 @@ def add_row_interface(processor, allowed_codes, control_samples):
                 return mp25_ids[0]
             else:
                 # Fallback to default format if none found in CSV
-                return f"MP25{code}0001"  # Changed from XXXX to 0001
+                return f"MP25{code}XXXX"
         
         # Analyseplaat ID input with validation
         analyseplaat_key = f"analyseplaat_id_{selected_code}"
         
+        # Get the default/suggested value
+        default_analyseplaat_id = get_suggested_analyseplaat_id(processor, selected_code)
+        
         # Initialize session state for analyseplaat ID if not exists
-        # FIXED: Check if we already have a value in session state first
         if analyseplaat_key not in st.session_state:
-            default_analyseplaat_id = get_suggested_analyseplaat_id(processor, selected_code)
             st.session_state[analyseplaat_key] = default_analyseplaat_id
         
-        # FIXED: Use the session state value directly, don't override with default
+        # Single text input for Analyseplaat ID
         analyseplaat_id = st.text_input(
             "Analyseplaat ID:",
-            value=st.session_state[analyseplaat_key],  # Always use session state value
+            value=st.session_state[analyseplaat_key],
             key=f"analyseplaat_id_input_{selected_code}",
             help=f"Vereist formaat: MP25{selected_code}XXXX (bijv., MP25{selected_code}0081)",
             placeholder=f"MP25{selected_code}XXXX"
@@ -873,17 +873,6 @@ def add_row_interface(processor, allowed_codes, control_samples):
         # Update session state when user changes the input
         if analyseplaat_id != st.session_state[analyseplaat_key]:
             st.session_state[analyseplaat_key] = analyseplaat_id
-        
-        analyseplaat_id = st.text_input(
-            "Analyseplaat ID:",
-            value=st.session_state.get(analyseplaat_key, default_analyseplaat_id),
-            key=f"analyseplaat_id_input_{selected_code}",
-            help=f"Vereist formaat: MP25{selected_code}XXXX (bijv., MP25{selected_code}0081)",
-            placeholder=f"MP25{selected_code}0001"
-        )
-        
-        # Update session state
-        st.session_state[analyseplaat_key] = analyseplaat_id
         
         # Validate the Analyseplaat ID format
         is_valid_analyseplaat_id = validate_analyseplaat_id(analyseplaat_id, selected_code)
