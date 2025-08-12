@@ -585,11 +585,12 @@ def add_row_interface(processor, allowed_codes, control_samples):
 
     # Single toggle button with dynamic text and state
     current_manager_state = st.session_state.get('show_sample_manager', False)
-    button_text = "❌ Sluiten monsters beheer" if current_manager_state else "🗂️ Toegevoegde monsters beheren"
+    button_text = "❌ Sluiten" if current_manager_state else "🗂️ Toegevoegde monsters beheren"
     button_type = "primary" if current_manager_state else "secondary"
     
     if st.button(button_text, type=button_type, use_container_width=True, key="toggle_sample_manager"):
         st.session_state.show_sample_manager = not current_manager_state
+        st.rerun()
     
     # Sample manager interface (remove the internal close button)
     if st.session_state.get('show_sample_manager', False):
