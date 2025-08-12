@@ -851,31 +851,36 @@ def add_row_interface(processor, allowed_codes, control_samples):
                 # Fallback to default format if none found in CSV
                 return f"MP25{code}0001"
         
-        # Analyseplaat ID input with validation
+        # Create a stable key that doesn't change when interface updates
         analyseplaat_key = f"analyseplaat_id_{selected_code}"
+        analyseplaat_input_key = f"analyseplaat_input_{selected_code}"
         
-        # Initialize session state ONLY if it doesn't exist for this specific code
-        # This prevents overwriting manual user input
+        # Initialize session state ONLY ONCE per code - never overwrite existing values
         if analyseplaat_key not in st.session_state:
             default_analyseplaat_id = get_suggested_analyseplaat_id(processor, selected_code)
             st.session_state[analyseplaat_key] = default_analyseplaat_id
+            st.session_state[f"{analyseplaat_key}_initialized"] = True
         
-        # Use the value from session state (preserves manual input)
-        current_analyseplaat_value = st.session_state[analyseplaat_key]
+        # Get current value from session state (this preserves manual input)
+        current_value = st.session_state[analyseplaat_key]
         
-        # Single text input for Analyseplaat ID
+        # Text input with stable key that persists across reruns
         analyseplaat_id = st.text_input(
             "Analyseplaat ID:",
-            value=current_analyseplaat_value,
-            key=f"analyseplaat_id_input_{selected_code}",
+            value=current_value,
+            key=analyseplaat_input_key,  # Use stable key
             help=f"Vereist formaat: MP25{selected_code}XXXX (bijv., MP25{selected_code}0081)",
-            placeholder=f"MP25{selected_code}0001"
+            placeholder=f"MP25{selected_code}0001",
+            on_change=None  # Don't use on_change callback to avoid conflicts
         )
         
-        # Only update session state if the user actually changed the input
-        # This prevents the default suggestion from overwriting manual input
-        if analyseplaat_id != current_analyseplaat_value:
-            st.session_state[analyseplaat_key] = analyseplaat_id
+        # Update session state only if the value actually changed
+        # Use the widget's actual current value, not the initial value
+        widget_value = st.session_state.get(analyseplaat_input_key, current_value)
+        if widget_value != st.session_state[analyseplaat_key]:
+            st.session_state[analyseplaat_key] = widget_value
+            # Use the updated value for validation
+            analyseplaat_id = widget_value
         
         # Validate the Analyseplaat ID format
         is_valid_analyseplaat_id = validate_analyseplaat_id(analyseplaat_id, selected_code)
