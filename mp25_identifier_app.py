@@ -850,15 +850,29 @@ def add_row_interface(processor, allowed_codes, control_samples):
                 return mp25_ids[0]
             else:
                 # Fallback to default format if none found in CSV
-                return f"MP25{code}XXXX"
+                return f"MP25{code}0001"  # Changed from XXXX to 0001
         
         # Analyseplaat ID input with validation
-        default_analyseplaat_id = get_suggested_analyseplaat_id(processor, selected_code)
+        analyseplaat_key = f"analyseplaat_id_{selected_code}"
         
         # Initialize session state for analyseplaat ID if not exists
-        analyseplaat_key = f"analyseplaat_id_{selected_code}"
+        # FIXED: Check if we already have a value in session state first
         if analyseplaat_key not in st.session_state:
+            default_analyseplaat_id = get_suggested_analyseplaat_id(processor, selected_code)
             st.session_state[analyseplaat_key] = default_analyseplaat_id
+        
+        # FIXED: Use the session state value directly, don't override with default
+        analyseplaat_id = st.text_input(
+            "Analyseplaat ID:",
+            value=st.session_state[analyseplaat_key],  # Always use session state value
+            key=f"analyseplaat_id_input_{selected_code}",
+            help=f"Vereist formaat: MP25{selected_code}XXXX (bijv., MP25{selected_code}0081)",
+            placeholder=f"MP25{selected_code}XXXX"
+        )
+        
+        # Update session state when user changes the input
+        if analyseplaat_id != st.session_state[analyseplaat_key]:
+            st.session_state[analyseplaat_key] = analyseplaat_id
         
         analyseplaat_id = st.text_input(
             "Analyseplaat ID:",
