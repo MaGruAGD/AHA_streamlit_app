@@ -741,18 +741,18 @@ def add_row_interface(processor, allowed_codes, control_samples):
     # Update session state based on radio button selection
     if sample_type_selection == "Controle":
         sample_type = "Controle"
+        sample_type_internal = "Control Samples"  # Store the internal value separately
         if st.session_state.sample_type_index != 1:
             st.session_state.sample_type_index = 1
-            st.session_state.sample_type = "Control Samples"
             # Clear any form state that might be cached
             if 'code_selector' in st.session_state:
                 del st.session_state['code_selector']
             st.rerun()
     else:
         sample_type = "Routine"  
+        sample_type_internal = "Regular Samples"  # Store the internal value separately
         if st.session_state.sample_type_index != 0:
             st.session_state.sample_type_index = 0
-            st.session_state.sample_type = "Regular Samples"
             # Clear any form state that might be cached
             if 'code_selector' in st.session_state:
                 del st.session_state['code_selector']
@@ -1002,9 +1002,9 @@ def add_row_interface(processor, allowed_codes, control_samples):
         # NEW: Store metadata about this added sample
         sample_metadata = {
             'row_index': len(processor.df) - 1,  # Index of the newly added row
-            'sample_type': st.session_state.sample_type,  # Use the internal English value from session state
+            'sample_type': sample_type_internal,  # Use the internal variable instead of session state
             'mp25_code': selected_code,
-            'control_name': control_sample_name if st.session_state.sample_type == "Control Samples" else None,
+            'control_name': control_sample_name if sample_type_internal == "Control Samples" else None,
             'poolplaat_position': poolplaat_position,
             'analyseplaat_position': analyseplaat_position,
             'volume': volume,
