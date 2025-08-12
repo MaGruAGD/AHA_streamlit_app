@@ -1172,7 +1172,7 @@ def step_select_runs():
     st.success(f"{st.session_state.num_runs} run(s) geselecteerd")
 
 def step_select_codes():
-    """Step 4: Select Codes and Volumes - FULLY FIXED VERSION"""
+    """Step 4: Select Codes and Volumes - UPDATED VERSION WITHOUT GREY BARS"""
     st.header("Stap 4: Selecteer analyses")
     
     if st.session_state.processor is None:
@@ -1245,7 +1245,7 @@ def step_select_codes():
         st.session_state.selected_codes[run_num] = clean_selection
     
     # ==========================================
-    # NOW DISPLAY THE UI WITH CORRECT STATES
+    # NOW DISPLAY THE UI WITH CORRECT STATES (WITHOUT GREY BARS)
     # ==========================================
     
     for run_num in range(1, st.session_state.num_runs + 1):
@@ -1278,48 +1278,35 @@ def step_select_codes():
         # Update select all state based on current selection
         st.session_state[select_all_key] = all_selected
         
-        # OPTION 3: Container-style visual grouping
-        with st.container():
-            # Add subtle background styling
-            st.markdown("""
-            <div style="background-color: rgba(240, 242, 246, 0.5); 
-                        padding: 1rem; 
-                        border-radius: 8px; 
-                        border-left: 4px solid #1f77b4; 
-                        margin-bottom: 1rem;">
-            """, unsafe_allow_html=True)
+        # REMOVED: Container-style visual grouping (this was creating the grey bars)
+        # Simple select all checkbox without container styling
+        select_all_checked = st.checkbox(
+            f"Alles selecteren",
+            key=f"select_all_checkbox_{run_num}",
+            value=st.session_state[select_all_key],
+            disabled=len(available_codes_for_run) == 0,
+            help=f"Selecteer alle {len(available_codes_for_run)} beschikbare analyses voor deze run"
+        )
+        
+        # Handle select all logic
+        if select_all_checked != st.session_state[select_all_key]:
+            if select_all_checked:
+                # Select all available codes for this run
+                st.session_state.selected_codes[run_num] = available_codes_for_run.copy()
+                # Update individual checkboxes
+                for code in available_codes_for_run:
+                    checkbox_key = f"checkbox_{run_num}_{code}"
+                    st.session_state[checkbox_key] = True
+            else:
+                # Deselect all codes for this run
+                st.session_state.selected_codes[run_num] = []
+                # Update individual checkboxes
+                for code in all_available_codes:
+                    checkbox_key = f"checkbox_{run_num}_{code}"
+                    st.session_state[checkbox_key] = False
             
-            # Select all checkbox with better visual hierarchy
-            select_all_checked = st.checkbox(
-                f"Alles selecteren",
-                key=f"select_all_checkbox_{run_num}",
-                value=st.session_state[select_all_key],
-                disabled=len(available_codes_for_run) == 0,
-                help=f"Selecteer alle {len(available_codes_for_run)} beschikbare analyses voor deze run"
-            )
-            
-            # Handle select all logic
-            if select_all_checked != st.session_state[select_all_key]:
-                if select_all_checked:
-                    # Select all available codes for this run
-                    st.session_state.selected_codes[run_num] = available_codes_for_run.copy()
-                    # Update individual checkboxes
-                    for code in available_codes_for_run:
-                        checkbox_key = f"checkbox_{run_num}_{code}"
-                        st.session_state[checkbox_key] = True
-                else:
-                    # Deselect all codes for this run
-                    st.session_state.selected_codes[run_num] = []
-                    # Update individual checkboxes
-                    for code in all_available_codes:
-                        checkbox_key = f"checkbox_{run_num}_{code}"
-                        st.session_state[checkbox_key] = False
-                
-                st.session_state[select_all_key] = select_all_checked
-                st.rerun()
-            
-            # Close the styling div
-            st.markdown("</div>", unsafe_allow_html=True)
+            st.session_state[select_all_key] = select_all_checked
+            st.rerun()
         
         # Add section header for individual analyses
         st.markdown("**Analyses:**")
