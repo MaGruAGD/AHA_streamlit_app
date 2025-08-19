@@ -1,4 +1,4 @@
-/* Dark Laboratory Theme for AHA Streamlit App - COLLAPSED SIDEBAR FIX */
+/* Dark Laboratory Theme for AHA Streamlit App - FIXED COLLAPSED SIDEBAR */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* Main App Background */
@@ -87,98 +87,51 @@
     backdrop-filter: blur(5px);
 }
 
-/* CRITICAL FIX: Sidebar Styling with Proper Collapsed State Handling */
+/* FIXED: Sidebar Styling - Minimal intervention approach */
 
-/* Expanded sidebar (aria-expanded="true") */
-section[data-testid="stSidebar"][aria-expanded="true"] {
-    background: rgba(15, 15, 15, 0.95) !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
-    /* Make sure it's visible */
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    width: auto !important;
-}
-
-/* CRITICAL: Collapsed sidebar (aria-expanded="false") - MUST REMAIN VISIBLE */
-section[data-testid="stSidebar"][aria-expanded="false"] {
-    background: rgba(15, 15, 15, 0.95) !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
-    /* CRITICAL: Keep collapsed sidebar visible */
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    /* Let Streamlit handle the width - don't override it */
-    width: auto !important;
-    min-width: auto !important;
-    max-width: none !important;
-}
-
-/* Default sidebar styling (fallback for when aria-expanded is not set) */
+/* Base sidebar styling - only style background and borders, don't touch dimensions */
 section[data-testid="stSidebar"] {
     background: rgba(15, 15, 15, 0.95) !important;
     border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
-    /* Ensure it's always visible */
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+    /* REMOVED: All width, display, visibility, and opacity overrides that were breaking functionality */
 }
 
-/* Sidebar content styling - be more specific to avoid breaking functionality */
+/* Style sidebar content without breaking functionality */
 section[data-testid="stSidebar"] .stMarkdown,
 section[data-testid="stSidebar"] .stSelectbox,
 section[data-testid="stSidebar"] .stButton,
-section[data-testid="stSidebar"] .stRadio {
+section[data-testid="stSidebar"] .stRadio,
+section[data-testid="stSidebar"] .stTextInput,
+section[data-testid="stSidebar"] .stNumberInput {
     color: #e0e0e0;
 }
 
-/* CRITICAL: Collapse/Expand Button Styling - Make it highly visible */
-section[data-testid="stSidebar"] button[title="Close sidebar"],
-section[data-testid="stSidebar"] button[title="Open sidebar"],
-button[data-testid="collapsedControl"],
-/* Additional selectors for different Streamlit versions */
-.st-emotion-cache-1rs6os,
-.st-emotion-cache-17eq0hr,
-.st-emotion-cache-zt5igj {
-    /* High visibility styling */
-    background: rgba(59, 130, 246, 0.9) !important;
+/* FIXED: Collapse/Expand Button - Style without breaking positioning */
+section[data-testid="stSidebar"] button[kind="secondary"] {
+    background: rgba(59, 130, 246, 0.8) !important;
     color: white !important;
-    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
     border-radius: 6px !important;
-    box-shadow: 0 2px 12px rgba(59, 130, 246, 0.5) !important;
-    /* CRITICAL: Ensure button is always visible */
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    z-index: 9999 !important;
-    /* Make it more prominent */
-    min-width: 32px !important;
-    min-height: 32px !important;
-    position: relative !important;
+    /* REMOVED: position, width, height overrides that break functionality */
 }
 
-/* Hover state for collapse/expand button */
-section[data-testid="stSidebar"] button[title="Close sidebar"]:hover,
-section[data-testid="stSidebar"] button[title="Open sidebar"]:hover,
-button[data-testid="collapsedControl"]:hover,
-.st-emotion-cache-1rs6os:hover,
-.st-emotion-cache-17eq0hr:hover,
-.st-emotion-cache-zt5igj:hover {
+section[data-testid="stSidebar"] button[kind="secondary"]:hover {
     background: rgba(59, 130, 246, 1) !important;
-    transform: scale(1.05) !important;
-    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.7) !important;
-    border-color: rgba(255, 255, 255, 0.5) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    transform: scale(1.02) !important;
 }
 
-/* ADDITIONAL: Style the collapsed sidebar's arrow/expand area */
-/* This ensures the collapsed state has a visible click area */
-section[data-testid="stSidebar"][aria-expanded="false"] > div {
-    background: rgba(15, 15, 15, 0.98) !important;
-    border-right: 2px solid rgba(59, 130, 246, 0.3) !important;
-    /* Keep it visible and clickable */
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+/* Alternative approach: Target the collapse button more specifically if needed */
+button[title*="sidebar"] {
+    background: rgba(59, 130, 246, 0.8) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 6px !important;
+}
+
+button[title*="sidebar"]:hover {
+    background: rgba(59, 130, 246, 1) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
 }
 
 /* Input Fields */
