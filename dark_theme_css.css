@@ -87,51 +87,36 @@
     backdrop-filter: blur(5px);
 }
 
-/* FIXED: Sidebar Styling - Minimal intervention approach */
+/* MINIMAL SIDEBAR STYLING - Only visual changes, no functionality overrides */
 
-/* Base sidebar styling - only style background and borders, don't touch dimensions */
+/* Style the sidebar background - ONLY when expanded */
+section[data-testid="stSidebar"]:not([aria-expanded="false"]) {
+    background: rgba(15, 15, 15, 0.95) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Style the collapsed sidebar background - very minimal */
+section[data-testid="stSidebar"][aria-expanded="false"] {
+    background: rgba(15, 15, 15, 0.98) !important;
+    border-right: 1px solid rgba(59, 130, 246, 0.3) !important;
+}
+
+/* Fallback for when aria-expanded isn't set */
 section[data-testid="stSidebar"] {
     background: rgba(15, 15, 15, 0.95) !important;
     border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
-    /* REMOVED: All width, display, visibility, and opacity overrides that were breaking functionality */
 }
 
-/* Style sidebar content without breaking functionality */
+/* Style sidebar content text color only */
 section[data-testid="stSidebar"] .stMarkdown,
 section[data-testid="stSidebar"] .stSelectbox,
 section[data-testid="stSidebar"] .stButton,
 section[data-testid="stSidebar"] .stRadio,
 section[data-testid="stSidebar"] .stTextInput,
-section[data-testid="stSidebar"] .stNumberInput {
-    color: #e0e0e0;
-}
-
-/* FIXED: Collapse/Expand Button - Style without breaking positioning */
-section[data-testid="stSidebar"] button[kind="secondary"] {
-    background: rgba(59, 130, 246, 0.8) !important;
-    color: white !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    border-radius: 6px !important;
-    /* REMOVED: position, width, height overrides that break functionality */
-}
-
-section[data-testid="stSidebar"] button[kind="secondary"]:hover {
-    background: rgba(59, 130, 246, 1) !important;
-    border-color: rgba(255, 255, 255, 0.4) !important;
-    transform: scale(1.02) !important;
-}
-
-/* Alternative approach: Target the collapse button more specifically if needed */
-button[title*="sidebar"] {
-    background: rgba(59, 130, 246, 0.8) !important;
-    color: white !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    border-radius: 6px !important;
-}
-
-button[title*="sidebar"]:hover {
-    background: rgba(59, 130, 246, 1) !important;
-    border-color: rgba(255, 255, 255, 0.4) !important;
+section[data-testid="stSidebar"] .stNumberInput,
+section[data-testid="stSidebar"] label,
+section[data-testid="stSidebar"] p {
+    color: #e0e0e0 !important;
 }
 
 /* Input Fields */
