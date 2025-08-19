@@ -1,322 +1,178 @@
-/* Laboratory Theme - GitHub Repository Version */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
-
-:root {
-    --primary: #0066cc;
-    --primary-dark: #0052a3;
-    --accent: #00a896;
-    --success: #16a34a;
-    --warning: #f59e0b;
-    --error: #dc2626;
-    --bg: #fafafa;
-    --card: rgba(255,255,255,0.95);
-    --border: #e5e5e5;
-    --text: #262626;
-    --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-}
+/* Dark Laboratory Theme for Streamlit App - Full Version */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* =======================
    Main App
 ======================= */
-.stApp {
-    background: linear-gradient(135deg, var(--bg) 0%, #fff 100%);
-    font-family: 'Inter', sans-serif;
-    color: var(--text);
-    padding-top: 2rem; /* Added to match light theme header position */
+.stApp { 
+    font-family: 'Inter', sans-serif; 
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+    color: #e0e0e0;
+    padding-top: 2rem; /* Added top spacing to match light theme header position */
 }
 
+/* Main content container */
 .main .block-container {
     padding: 2rem;
-    background: var(--card);
-    backdrop-filter: blur(20px);
+    background: rgba(20,20,20,0.95);
     border-radius: 12px;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border);
-    margin: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    margin: 1.5rem auto;
     max-width: 1200px;
-    transition: all 0.3s ease;
-    color: var(--text) !important;
+    backdrop-filter: blur(10px);
 }
 
 /* =======================
    Header
 ======================= */
 .header-container {
-    background: linear-gradient(135deg, var(--primary), var(--accent));
+    background: linear-gradient(135deg, #1e3a8a, #059669);
     padding: 2rem;
-    margin: 0 -2rem 2rem -2rem; /* Adjusted top margin for proper position */
+    margin: 0 -2rem 2rem -2rem; /* Adjusted top margin for proper header position */
     border-radius: 12px 12px 0 0;
+    color: white;
+    box-shadow: 0 4px 20px rgba(30,58,138,0.3);
     position: relative;
-    overflow: hidden;
-    color: white !important;
-    isolation: isolate;
 }
 
-.header-container::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-    opacity: 0.3;
-}
-
-.header-container .header-title,
-.header-container h1.header-title,
-div.header-container .header-title {
-    font-size: clamp(1.75rem, 4vw, 2.5rem);
+.header-title {
+    font-size: 2rem;
     font-weight: 700;
-    color: white !important;
     margin: 0;
     display: flex;
     align-items: center;
     gap: 1rem;
-    position: relative;
-    z-index: 1;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
-.header-container .header-subtitle,
-.header-container p.header-subtitle,
-div.header-container .header-subtitle {
+.header-subtitle {
     font-size: 0.875rem;
-    color: rgba(255,255,255,0.85) !important;
     margin: 0.75rem 0 0 0;
-    font-weight: 500;
+    opacity: 0.9;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    position: relative;
-    z-index: 1;
-}
-
-/* Ensure all text inside header is white */
-.header-container > *,
-.header-container .header-title,
-.header-container .header-subtitle,
-.header-container .lab-icon {
-    color: white !important;
-}
-
-.header-container button,
-.header-container .stButton > button,
-.header-container [data-testid="stButton"] button {
-    background: rgba(255,255,255,0.2) !important;
-    border: 1px solid rgba(255,255,255,0.3) !important;
-    backdrop-filter: blur(10px);
-    font-weight: 600 !important;
-}
-
-.header-container button:hover,
-.header-container .stButton > button:hover {
-    background: rgba(255,255,255,0.3) !important;
-    border: 1px solid rgba(255,255,255,0.5) !important;
-    transform: translateY(-1px);
-}
-
-.header-container svg,
-.header-container path,
-.header-container svg *,
-.header-container [class*="plus"],
-.header-container [class*="icon"],
-.header-container [class*="symbol"] {
-    color: white !important;
-    fill: white !important;
-    stroke: white !important;
-    opacity: 1 !important;
 }
 
 /* =======================
-   Step & Status Cards
+   Status Cards
 ======================= */
-.step-container {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-left: 4px solid var(--primary);
-    padding: 1rem 1.5rem;
-    border-radius: 8px;
-    color: var(--text);
-    font-weight: 600;
-    margin: 1rem 0;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.875rem;
-    transition: transform 0.2s ease;
-}
-
-.step-container:hover { transform: translateY(-1px); }
-
 .status-card {
-    background: var(--card);
-    backdrop-filter: blur(10px);
+    background: rgba(30,30,30,0.9);
     padding: 1.5rem;
     border-radius: 8px;
-    border: 1px solid var(--border);
+    border: 1px solid rgba(255,255,255,0.1);
     margin: 1rem 0;
-    position: relative;
-    transition: all 0.3s ease;
-    box-shadow: var(--shadow);
-}
-
-.status-card:hover { transform: translateY(-2px); }
-
-.status-card::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    width: 4px;
-    background: var(--border);
-    border-radius: 4px 0 0 4px;
-    transition: all 0.3s ease;
-}
-
-.status-success { border-color: rgba(22,163,74,0.2); background: rgba(240,253,244,0.8); }
-.status-success::before { background: var(--success); box-shadow: 0 0 20px rgba(22,163,74,0.3); }
-
-.status-warning { border-color: rgba(245,158,11,0.2); background: rgba(255,251,235,0.8); }
-.status-warning::before { background: var(--warning); box-shadow: 0 0 20px rgba(245,158,11,0.3); }
-
-.status-error { border-color: rgba(220,38,38,0.2); background: rgba(254,242,242,0.8); }
-.status-error::before { background: var(--error); box-shadow: 0 0 20px rgba(220,38,38,0.3); }
-
-.status-info { border-color: rgba(0,102,204,0.2); background: rgba(232,242,255,0.8); }
-.status-info::before { background: var(--primary); box-shadow: 0 0 20px rgba(0,102,204,0.3); }
-
-/* =======================
-   Buttons & Metrics
-======================= */
-.stButton > button {
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 0.75rem 1.5rem;
-    font-weight: 600;
-    font-family: 'Inter', sans-serif;
-    transition: all 0.2s ease;
-    box-shadow: var(--shadow);
-    position: relative;
-    overflow: hidden;
-}
-
-.stButton > button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-}
-
-.metric-container {
-    background: var(--card);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
     backdrop-filter: blur(10px);
-    padding: 1.5rem;
-    border-radius: 8px;
-    text-align: center;
-    border: 1px solid var(--border);
-    margin: 0.5rem;
-    transition: all 0.3s ease;
-    box-shadow: var(--shadow);
 }
 
-.metric-container:hover { transform: translateY(-2px); }
-
-.metric-value {
-    font-size: 2.5rem;
-    font-weight: 800;
-    margin: 0;
-    font-family: 'JetBrains Mono', monospace;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.metric-label {
-    font-size: 0.75rem;
-    color: #666;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-top: 0.5rem;
-    font-weight: 600;
-}
+.status-card.status-success { border-left: 4px solid #10b981; background: rgba(16,185,129,0.1); }
+.status-card.status-warning { border-left: 4px solid #f59e0b; background: rgba(245,158,11,0.1); }
+.status-card.status-error   { border-left: 4px solid #ef4444; background: rgba(239,68,68,0.1); }
 
 /* =======================
-   File Uploader & Breadcrumb
+   Breadcrumb
 ======================= */
-.stFileUploader {
-    border: 2px dashed var(--border);
-    border-radius: 8px;
-    padding: 2rem;
-    text-align: center;
-    background: var(--bg);
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.stFileUploader:hover {
-    border-color: var(--primary);
-    background: rgba(232,242,255,0.8);
-    transform: translateY(-2px);
-}
-
 .breadcrumb-container {
-    background: var(--card);
-    backdrop-filter: blur(10px);
-    border: 1px solid var(--border);
+    background: rgba(30,30,30,0.8);
+    border: 1px solid rgba(255,255,255,0.15);
     border-radius: 8px;
     padding: 0.75rem 1rem;
     margin-bottom: 1rem;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Courier New', monospace;
     font-size: 0.8rem;
-    color: #666;
-    box-shadow: var(--shadow);
+    color: #a0a0a0;
+    backdrop-filter: blur(5px);
 }
 
 /* =======================
-   Section Headers & Lab Icons
+   Inputs
 ======================= */
-.section-header {
-    color: var(--text);
-    font-weight: 700;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 3px solid var(--primary);
-    font-size: 1.25rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+.stTextInput > div > div > input,
+.stTextArea > div > div > textarea,
+.stSelectbox > div > div > select,
+.stNumberInput > div > div > input {
+    background: rgba(40,40,40,0.8) !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+    color: #e0e0e0 !important;
+    border-radius: 6px !important;
 }
 
-.lab-icon {
-    font-size: 1.5rem;
-    margin-right: 0.5rem;
-    vertical-align: middle;
-    transition: transform 0.2s ease;
+.stTextInput > div > div > input:focus,
+.stTextArea > div > div > textarea:focus,
+.stSelectbox > div > div > select:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 2px rgba(59,130,246,0.2) !important;
 }
 
-.header-title .lab-icon {
-    font-size: 2rem;
-    animation: pulse 2s infinite;
+/* =======================
+   Buttons
+======================= */
+.stButton > button {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
     color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 0.6rem 1.2rem !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.3) !important;
 }
 
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-}
-
-.validation-success { color: var(--success); font-weight: 600; }
-.validation-error { color: var(--error); font-weight: 600; }
-.validation-warning { color: var(--warning); font-weight: 600; }
-
-/* =======================
-   Responsive
-======================= */
-@media (max-width: 768px) {
-    .main .block-container { margin: 0.75rem; padding: 1rem; }
-    .header-container { padding: 1.5rem; }
-    .metric-container { margin: 0.25rem; }
+.stButton > button:hover {
+    background: linear-gradient(135deg, #2563eb, #1e40af) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 16px rgba(59,130,246,0.4) !important;
 }
 
 /* =======================
-   Sidebar Toggle Adjustment
+   Sidebar Toggle Fix
 ======================= */
 header [data-testid="collapsedControl"] {
-    top: 2.25rem !important; /* Align with new header position */
+    visibility: visible !important;
+    display: flex !important;
+    position: fixed !important;
+    top: 2.25rem !important; /* Adjusted to match new header position */
+    left: 0.75rem !important;
+    z-index: 10000 !important;
+    cursor: pointer !important;
+    background: rgba(40,40,40,0.9) !important;
+    border: 1px solid rgba(255,255,255,0.3) !important;
+    border-radius: 50% !important;
+    width: 36px !important;
+    height: 36px !important;
+    justify-content: center !important;
+    align-items: center !important;
 }
+
+header [data-testid="collapsedControl"] svg {
+    fill: white !important;
+    stroke: white !important;
+    width: 20px !important;
+    height: 20px !important;
+}
+
+/* Keep all other Streamlit headers & footer visible */
+#MainMenu, footer,
+header [data-testid="stToolbar"],
+header [data-testid="stDecoration"],
+header [data-testid="stStatusWidget"] {
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* =======================
+   Scrollbar
+======================= */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.6); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.8); }
+
+/* =======================
+   Dark Effects
+======================= */
+.dark-card { background: rgba(20,20,20,0.9); border-radius: 12px; padding: 1.5rem; margin: 1rem 0; box-shadow: 0 4px 20px rgba(0,0,0,0.3); backdrop-filter: blur(10px); }
+.glow-text { text-shadow: 0 0 10px rgba(59,130,246,0.5); }
+.glass-effect { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; }
