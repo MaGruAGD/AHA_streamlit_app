@@ -156,15 +156,6 @@ header [data-testid="collapsedControl"] svg {
     height: 20px !important;
 }
 
-/* Hide Streamlit Branding */
-#MainMenu { visibility: hidden; }
-footer { visibility: hidden; }
-header [data-testid="stToolbar"],
-header [data-testid="stDecoration"],
-header [data-testid="stStatusWidget"] {
-    display: none !important;
-}
-
 /* =======================
    Scrollbar
    ======================= */
