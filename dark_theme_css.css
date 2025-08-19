@@ -1,4 +1,4 @@
-/* Dark Laboratory Theme for AHA Streamlit App */
+/* Dark Laboratory Theme for AHA Streamlit App - FIXED VERSION */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* Main App Background */
@@ -87,144 +87,152 @@
     backdrop-filter: blur(5px);
 }
 
-/* Sidebar Styling */
-.css-1d391kg {
-    background: rgba(15, 15, 15, 0.95);
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
+/* FIXED: Safer Sidebar Styling - Only target content, not structure */
+section[data-testid="stSidebar"] {
+    background: rgba(15, 15, 15, 0.95) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-/* Sidebar Header */
-section[data-testid="stSidebar"] .css-1d391kg {
-    background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
+/* Sidebar content styling - be more specific to avoid breaking functionality */
+section[data-testid="stSidebar"] .stMarkdown,
+section[data-testid="stSidebar"] .stSelectbox,
+section[data-testid="stSidebar"] .stButton,
+section[data-testid="stSidebar"] .stRadio {
+    color: #e0e0e0;
 }
 
-/* SIDEBAR TOGGLE BUTTON FIX - Make it visible in dark mode */
-.css-1rs6os,
-.css-17eq0hr,
-button[data-testid="collapsedControl"],
-.st-emotion-cache-1rs6os,
-.st-emotion-cache-17eq0hr {
+/* FIXED: More targeted sidebar toggle button styling */
+/* Target the specific collapse button without interfering with functionality */
+section[data-testid="stSidebar"] button[title="Close sidebar"],
+section[data-testid="stSidebar"] button[title="Open sidebar"],
+button[data-testid="collapsedControl"] {
     background: rgba(59, 130, 246, 0.9) !important;
     color: white !important;
     border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    border-radius: 8px !important;
+    border-radius: 6px !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
-    backdrop-filter: blur(10px) !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    z-index: 999999 !important;
+    /* CRITICAL: Don't mess with visibility, opacity, or display */
+    /* Let Streamlit handle the show/hide logic */
 }
 
-.css-1rs6os:hover,
-.css-17eq0hr:hover,
-button[data-testid="collapsedControl"]:hover,
-.st-emotion-cache-1rs6os:hover,
-.st-emotion-cache-17eq0hr:hover {
+section[data-testid="stSidebar"] button[title="Close sidebar"]:hover,
+section[data-testid="stSidebar"] button[title="Open sidebar"]:hover,
+button[data-testid="collapsedControl"]:hover {
     background: rgba(59, 130, 246, 1) !important;
     transform: translateY(-1px) !important;
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
 }
 
-/* Additional sidebar toggle selectors for different Streamlit versions */
-[data-testid="collapsedControl"],
-.css-zt5igj,
-.st-emotion-cache-zt5igj {
-    background: rgba(59, 130, 246, 0.9) !important;
-    color: white !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    border-radius: 8px !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
-    backdrop-filter: blur(10px) !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    z-index: 999999 !important;
-}
+/* REMOVED: All the overly broad sidebar selectors that were causing issues */
+/* The following selectors were removed as they were too aggressive:
+.css-1d391kg, .css-1rs6os, .css-17eq0hr, .st-emotion-cache-1rs6os, etc.
+These were interfering with Streamlit's internal sidebar collapse mechanism */
 
 /* Input Fields */
 .stTextInput > div > div > input,
 .stTextArea > div > div > textarea,
 .stSelectbox > div > div > select {
-    background: rgba(40, 40, 40, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #e0e0e0;
-    border-radius: 6px;
+    background: rgba(40, 40, 40, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #e0e0e0 !important;
+    border-radius: 6px !important;
 }
 
 .stTextInput > div > div > input:focus,
 .stTextArea > div > div > textarea:focus,
 .stSelectbox > div > div > select:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+}
+
+/* Number Input */
+.stNumberInput > div > div > input {
+    background: rgba(40, 40, 40, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #e0e0e0 !important;
+    border-radius: 6px !important;
 }
 
 /* Buttons */
 .stButton > button {
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 0.6rem 1.2rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 0.6rem 1.2rem !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3) !important;
 }
 
 .stButton > button:hover {
-    background: linear-gradient(135deg, #2563eb, #1e40af);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+    background: linear-gradient(135deg, #2563eb, #1e40af) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4) !important;
+}
+
+/* Secondary buttons */
+.stButton > button[kind="secondary"] {
+    background: rgba(40, 40, 40, 0.8) !important;
+    color: #e0e0e0 !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.stButton > button[kind="secondary"]:hover {
+    background: rgba(60, 60, 60, 0.8) !important;
+    border-color: #3b82f6 !important;
 }
 
 /* Download Button */
 .stDownloadButton > button {
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 0.6rem 1.2rem;
-    font-weight: 500;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 0.6rem 1.2rem !important;
+    font-weight: 500 !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3) !important;
 }
 
 .stDownloadButton > button:hover {
-    background: linear-gradient(135deg, #059669, #047857);
-    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+    background: linear-gradient(135deg, #059669, #047857) !important;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4) !important;
 }
 
 /* File Uploader */
 .stFileUploader > div {
-    background: rgba(40, 40, 40, 0.6);
-    border: 2px dashed rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
+    background: rgba(40, 40, 40, 0.6) !important;
+    border: 2px dashed rgba(255, 255, 255, 0.3) !important;
+    border-radius: 8px !important;
 }
 
 .stFileUploader > div:hover {
-    border-color: #3b82f6;
-    background: rgba(59, 130, 246, 0.1);
+    border-color: #3b82f6 !important;
+    background: rgba(59, 130, 246, 0.1) !important;
 }
 
 /* DataFrames */
 .stDataFrame {
-    background: rgba(30, 30, 30, 0.9);
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(30, 30, 30, 0.9) !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
 /* Tables */
 table {
-    background: rgba(30, 30, 30, 0.9);
-    color: #e0e0e0;
+    background: rgba(30, 30, 30, 0.9) !important;
+    color: #e0e0e0 !important;
 }
 
 th {
     background: rgba(50, 50, 50, 0.9) !important;
     color: #f0f0f0 !important;
-    font-weight: 600;
+    font-weight: 600 !important;
 }
 
 td {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
 /* Metrics */
@@ -238,111 +246,115 @@ td {
 
 /* Progress Bars */
 .stProgress .st-bo {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.1) !important;
 }
 
 .stProgress .st-bp {
-    background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8) !important;
 }
 
 /* Alerts and Messages */
 .stAlert {
-    background: rgba(40, 40, 40, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    backdrop-filter: blur(10px);
+    background: rgba(40, 40, 40, 0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px !important;
+    backdrop-filter: blur(10px) !important;
 }
 
 .stSuccess {
-    background: rgba(16, 185, 129, 0.15);
-    border-left: 4px solid #10b981;
-    color: #d1fae5;
+    background: rgba(16, 185, 129, 0.15) !important;
+    border-left: 4px solid #10b981 !important;
+    color: #d1fae5 !important;
 }
 
 .stWarning {
-    background: rgba(245, 158, 11, 0.15);
-    border-left: 4px solid #f59e0b;
-    color: #fef3c7;
+    background: rgba(245, 158, 11, 0.15) !important;
+    border-left: 4px solid #f59e0b !important;
+    color: #fef3c7 !important;
 }
 
 .stError {
-    background: rgba(239, 68, 68, 0.15);
-    border-left: 4px solid #ef4444;
-    color: #fecaca;
+    background: rgba(239, 68, 68, 0.15) !important;
+    border-left: 4px solid #ef4444 !important;
+    color: #fecaca !important;
 }
 
 .stInfo {
-    background: rgba(59, 130, 246, 0.15);
-    border-left: 4px solid #3b82f6;
-    color: #dbeafe;
+    background: rgba(59, 130, 246, 0.15) !important;
+    border-left: 4px solid #3b82f6 !important;
+    color: #dbeafe !important;
 }
 
 /* Spinner */
 .stSpinner {
-    color: #3b82f6;
+    color: #3b82f6 !important;
 }
 
 /* Tabs */
 .stTabs [data-baseweb="tab-list"] {
-    background: rgba(30, 30, 30, 0.8);
-    border-radius: 8px;
-    padding: 0.25rem;
+    background: rgba(30, 30, 30, 0.8) !important;
+    border-radius: 8px !important;
+    padding: 0.25rem !important;
 }
 
 .stTabs [data-baseweb="tab"] {
-    background: transparent;
-    color: #a0a0a0;
-    border-radius: 6px;
-    padding: 0.5rem 1rem;
+    background: transparent !important;
+    color: #a0a0a0 !important;
+    border-radius: 6px !important;
+    padding: 0.5rem 1rem !important;
 }
 
 .stTabs [aria-selected="true"] {
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-    color: white;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+    color: white !important;
 }
 
 /* Expander */
 .streamlit-expanderHeader {
-    background: rgba(40, 40, 40, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    color: #e0e0e0;
+    background: rgba(40, 40, 40, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px !important;
+    color: #e0e0e0 !important;
 }
 
 .streamlit-expanderContent {
-    background: rgba(30, 30, 30, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-top: none;
-    border-radius: 0 0 8px 8px;
+    background: rgba(30, 30, 30, 0.6) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-top: none !important;
+    border-radius: 0 0 8px 8px !important;
 }
 
 /* Selectbox */
 .stSelectbox > div > div {
-    background: rgba(40, 40, 40, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 6px;
+    background: rgba(40, 40, 40, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 6px !important;
 }
 
 /* Multiselect */
 .stMultiSelect > div > div {
-    background: rgba(40, 40, 40, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 6px;
+    background: rgba(40, 40, 40, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 6px !important;
 }
 
 /* Checkbox */
 .stCheckbox > label {
-    color: #e0e0e0;
+    color: #e0e0e0 !important;
 }
 
 /* Radio */
 .stRadio > label {
-    color: #e0e0e0;
+    color: #e0e0e0 !important;
+}
+
+.stRadio > div {
+    color: #e0e0e0 !important;
 }
 
 /* Slider */
 .stSlider > div {
-    color: #e0e0e0;
+    color: #e0e0e0 !important;
 }
 
 /* Custom Lab Icons Glow Effect */
