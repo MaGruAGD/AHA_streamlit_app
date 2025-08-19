@@ -8,7 +8,6 @@
     font-family: 'Inter', sans-serif; 
     background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
     color: #e0e0e0;
-    padding-top: 2rem; /* Added top spacing to match light theme header position */
 }
 
 /* Main content container */
@@ -29,7 +28,7 @@
 .header-container {
     background: linear-gradient(135deg, #1e3a8a, #059669);
     padding: 2rem;
-    margin: 0 -2rem 2rem -2rem; /* Adjusted top margin for proper header position */
+    margin: -2rem -2rem 2rem -2rem;
     border-radius: 12px 12px 0 0;
     color: white;
     box-shadow: 0 4px 20px rgba(30,58,138,0.3);
@@ -133,7 +132,7 @@ header [data-testid="collapsedControl"] {
     visibility: visible !important;
     display: flex !important;
     position: fixed !important;
-    top: 2.25rem !important; /* Adjusted to match new header position */
+    top: 0.75rem !important;
     left: 0.75rem !important;
     z-index: 10000 !important;
     cursor: pointer !important;
