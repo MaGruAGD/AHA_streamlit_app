@@ -1,20 +1,16 @@
-/* =======================
-   Laboratory Dark Theme - AHA Streamlit App
-   ======================= */
+/* Dark Laboratory Theme for Streamlit App - Full Version */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* =======================
    Main App
-   ======================= */
-.stApp {
-    font-family: 'Inter', sans-serif;
+======================= */
+.stApp { 
+    font-family: 'Inter', sans-serif; 
     background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
     color: #e0e0e0;
 }
 
-/* =======================
-   Main Container
-   ======================= */
+/* Main content container */
 .main .block-container {
     padding: 2rem;
     background: rgba(20,20,20,0.95);
@@ -28,7 +24,7 @@
 
 /* =======================
    Header
-   ======================= */
+======================= */
 .header-container {
     background: linear-gradient(135deg, #1e3a8a, #059669);
     padding: 2rem;
@@ -59,7 +55,7 @@
 
 /* =======================
    Status Cards
-   ======================= */
+======================= */
 .status-card {
     background: rgba(30,30,30,0.9);
     padding: 1.5rem;
@@ -72,11 +68,11 @@
 
 .status-card.status-success { border-left: 4px solid #10b981; background: rgba(16,185,129,0.1); }
 .status-card.status-warning { border-left: 4px solid #f59e0b; background: rgba(245,158,11,0.1); }
-.status-card.status-error { border-left: 4px solid #ef4444; background: rgba(239,68,68,0.1); }
+.status-card.status-error   { border-left: 4px solid #ef4444; background: rgba(239,68,68,0.1); }
 
 /* =======================
-   Breadcrumbs
-   ======================= */
+   Breadcrumb
+======================= */
 .breadcrumb-container {
     background: rgba(30,30,30,0.8);
     border: 1px solid rgba(255,255,255,0.15);
@@ -91,7 +87,7 @@
 
 /* =======================
    Inputs
-   ======================= */
+======================= */
 .stTextInput > div > div > input,
 .stTextArea > div > div > textarea,
 .stSelectbox > div > div > select,
@@ -111,9 +107,9 @@
 
 /* =======================
    Buttons
-   ======================= */
+======================= */
 .stButton > button {
-    background: linear-gradient(135deg,#3b82f6,#1d4ed8) !important;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
     color: white !important;
     border: none !important;
     border-radius: 8px !important;
@@ -124,14 +120,14 @@
 }
 
 .stButton > button:hover {
-    background: linear-gradient(135deg,#2563eb,#1e40af) !important;
+    background: linear-gradient(135deg, #2563eb, #1e40af) !important;
     transform: translateY(-1px) !important;
     box-shadow: 0 4px 16px rgba(59,130,246,0.4) !important;
 }
 
 /* =======================
-   Sidebar Toggle (ALWAYS VISIBLE)
-   ======================= */
+   Sidebar Toggle Fix
+======================= */
 header [data-testid="collapsedControl"] {
     visibility: visible !important;
     display: flex !important;
@@ -156,22 +152,26 @@ header [data-testid="collapsedControl"] svg {
     height: 20px !important;
 }
 
+/* Keep all other Streamlit headers & footer visible */
+#MainMenu, footer,
+header [data-testid="stToolbar"],
+header [data-testid="stDecoration"],
+header [data-testid="stStatusWidget"] {
+    display: block !important;
+    visibility: visible !important;
+}
+
 /* =======================
    Scrollbar
-   ======================= */
+======================= */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius: 4px; }
 ::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.6); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.8); }
 
 /* =======================
-   Dark Mode Enhancements
-   ======================= */
-@media (prefers-color-scheme: dark) {
-    /* Override any Streamlit light styles */
-    .stApp, .main .block-container, .status-card, .breadcrumb-container, .stTextInput > div > div > input,
-    .stTextArea > div > div > textarea, .stSelectbox > div > div > select, .stNumberInput > div > div > input {
-        background: rgba(20,20,20,0.95) !important;
-        color: #e0e0e0 !important;
-    }
-}
+   Dark Effects
+======================= */
+.dark-card { background: rgba(20,20,20,0.9); border-radius: 12px; padding: 1.5rem; margin: 1rem 0; box-shadow: 0 4px 20px rgba(0,0,0,0.3); backdrop-filter: blur(10px); }
+.glow-text { text-shadow: 0 0 10px rgba(59,130,246,0.5); }
+.glass-effect { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; }
