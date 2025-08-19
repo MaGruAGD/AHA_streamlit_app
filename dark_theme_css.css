@@ -1,36 +1,40 @@
-/* Dark Laboratory Theme for AHA Streamlit App - FULL FIXED VERSION */
+/* Dark Laboratory Theme for AHA Streamlit App - FIXED SIDEBAR TOGGLE */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* ---------------- Main App ---------------- */
+/* =======================
+   Main App Background
+   ======================= */
 .stApp { 
     font-family: 'Inter', sans-serif; 
-    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%) !important;
-    color: #e0e0e0 !important;
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+    color: #e0e0e0;
 }
 
-/* Main Container */
+/* =======================
+   Main Container
+   ======================= */
 .main .block-container {
     padding: 2rem;
-    background: rgba(20, 20, 20, 0.95) !important;
+    background: rgba(20, 20, 20, 0.95);
     border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     margin: 1.5rem auto;
     max-width: 1200px;
     backdrop-filter: blur(10px);
-    color: #e0e0e0 !important;
 }
 
-/* ---------------- Header ---------------- */
+/* =======================
+   Header Container
+   ======================= */
 .header-container {
-    background: linear-gradient(135deg, #1e3a8a, #059669) !important;
+    background: linear-gradient(135deg, #1e3a8a, #059669);
     padding: 2rem;
     margin: -2rem -2rem 2rem -2rem;
     border-radius: 12px 12px 0 0;
-    color: white !important;
+    color: white;
     box-shadow: 0 4px 20px rgba(30, 58, 138, 0.3);
     position: relative;
-    z-index: 10;
 }
 
 .header-title {
@@ -40,8 +44,7 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    color: white !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .header-subtitle {
@@ -50,67 +53,60 @@
     opacity: 0.9;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: white !important;
 }
 
-/* ---------------- Sidebar Collapse Button Fix ---------------- */
-div[data-testid="collapsedControl"] {
-    all: unset !important;
-    display: flex !important;
-    position: fixed !important;
-    top: 0.75rem !important;
-    left: 0.75rem !important;
-    z-index: 10000 !important;
-    cursor: pointer !important;
-    width: 36px !important;
-    height: 36px !important;
-    justify-content: center !important;
-    align-items: center !important;
-    background: rgba(40,40,40,0.9) !important;
-    border: 1px solid rgba(255,255,255,0.3) !important;
-    border-radius: 50% !important;
-}
-
-div[data-testid="collapsedControl"] svg {
-    fill: white !important;
-    stroke: white !important;
-    width: 20px !important;
-    height: 20px !important;
-}
-
-/* ---------------- Status Cards ---------------- */
+/* =======================
+   Status Cards
+   ======================= */
 .status-card {
-    background: rgba(30,30,30,0.9) !important;
+    background: rgba(30, 30, 30, 0.9);
     padding: 1.5rem;
     border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     margin: 1rem 0;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(10px);
 }
 
 .status-card.status-success {
     border-left: 4px solid #10b981;
-    background: rgba(16,185,129,0.1);
+    background: rgba(16, 185, 129, 0.1);
 }
 
 .status-card.status-warning {
     border-left: 4px solid #f59e0b;
-    background: rgba(245,158,11,0.1);
+    background: rgba(245, 158, 11, 0.1);
 }
 
 .status-card.status-error {
     border-left: 4px solid #ef4444;
-    background: rgba(239,68,68,0.1);
+    background: rgba(239, 68, 68, 0.1);
 }
 
-/* ---------------- Inputs ---------------- */
+/* =======================
+   Breadcrumb Navigation
+   ======================= */
+.breadcrumb-container {
+    background: rgba(30, 30, 30, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: #a0a0a0;
+    backdrop-filter: blur(5px);
+}
+
+/* =======================
+   Inputs
+   ======================= */
 .stTextInput > div > div > input,
 .stTextArea > div > div > textarea,
 .stSelectbox > div > div > select,
 .stNumberInput > div > div > input {
-    background: rgba(40,40,40,0.8) !important;
-    border: 1px solid rgba(255,255,255,0.2) !important;
+    background: rgba(40, 40, 40, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
     color: #e0e0e0 !important;
     border-radius: 6px !important;
 }
@@ -119,10 +115,12 @@ div[data-testid="collapsedControl"] svg {
 .stTextArea > div > div > textarea:focus,
 .stSelectbox > div > div > select:focus {
     border-color: #3b82f6 !important;
-    box-shadow: 0 0 0 2px rgba(59,130,246,0.2) !important;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
 }
 
-/* ---------------- Buttons ---------------- */
+/* =======================
+   Buttons
+   ======================= */
 .stButton > button {
     background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
     color: white !important;
@@ -131,83 +129,26 @@ div[data-testid="collapsedControl"] svg {
     padding: 0.6rem 1.2rem !important;
     font-weight: 500 !important;
     transition: all 0.3s ease !important;
-    box-shadow: 0 2px 8px rgba(59,130,246,0.3) !important;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3) !important;
 }
 
 .stButton > button:hover {
     background: linear-gradient(135deg, #2563eb, #1e40af) !important;
     transform: translateY(-1px) !important;
-    box-shadow: 0 4px 16px rgba(59,130,246,0.4) !important;
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4) !important;
 }
 
-/* Secondary Buttons */
-.stButton > button[kind="secondary"] {
-    background: rgba(40,40,40,0.8) !important;
-    color: #e0e0e0 !important;
-    border: 1px solid rgba(255,255,255,0.2) !important;
-}
-
-.stButton > button[kind="secondary"]:hover {
-    background: rgba(60,60,60,0.8) !important;
-    border-color: #3b82f6 !important;
-}
-
-/* ---------------- File Uploader ---------------- */
-.stFileUploader > div {
-    background: rgba(40,40,40,0.6) !important;
-    border: 2px dashed rgba(255,255,255,0.3) !important;
-    border-radius: 8px !important;
-}
-
-.stFileUploader > div:hover {
-    border-color: #3b82f6 !important;
-    background: rgba(59,130,246,0.1) !important;
-}
-
-/* ---------------- DataFrames & Tables ---------------- */
-.stDataFrame,
-table {
-    background: rgba(30,30,30,0.9) !important;
-    border-radius: 8px !important;
-    color: #e0e0e0 !important;
-}
-
-th {
-    background: rgba(50,50,50,0.9) !important;
-    color: #f0f0f0 !important;
-}
-
-td {
-    border-bottom: 1px solid rgba(255,255,255,0.1) !important;
-}
-
-/* ---------------- Scrollbar ---------------- */
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-::-webkit-scrollbar-track {
-    background: rgba(255,255,255,0.1);
-    border-radius: 4px;
-}
-::-webkit-scrollbar-thumb {
-    background: rgba(59,130,246,0.6);
-    border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: rgba(59,130,246,0.8);
-}
-
-/* ---------------- Hide Streamlit Branding, Keep Sidebar Toggle ---------------- */
-#MainMenu { visibility: hidden !important; }
-footer { visibility: hidden !important; }
-
+/* =======================
+   Sidebar Toggle Fix
+   ======================= */
+/* Hide unnecessary header elements but keep toggle */
 header [data-testid="stToolbar"],
 header [data-testid="stDecoration"],
 header [data-testid="stStatusWidget"] {
     display: none !important;
 }
 
+/* Ensure the sidebar collapse/expand button is visible */
 header [data-testid="collapsedControl"] {
     visibility: visible !important;
     display: flex !important;
@@ -216,4 +157,39 @@ header [data-testid="collapsedControl"] {
     left: 0.75rem !important;
     z-index: 10000 !important;
     cursor: pointer !important;
+    background: rgba(40, 40, 40, 0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 50% !important;
+    width: 36px !important;
+    height: 36px !important;
+    justify-content: center !important;
+    align-items: center !important;
 }
+
+header [data-testid="collapsedControl"] svg {
+    fill: white !important;
+    stroke: white !important;
+    width: 20px !important;
+    height: 20px !important;
+}
+
+/* =======================
+   Scrollbar
+   ======================= */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.6); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(59, 130, 246, 0.8); }
+
+/* =======================
+   Custom Dark Effects
+   ======================= */
+.dark-card { background: rgba(20, 20, 20, 0.9); border-radius: 12px; padding: 1.5rem; margin: 1rem 0; box-shadow: 0 4px 20px rgba(0,0,0,0.3); backdrop-filter: blur(10px); }
+.glow-text { text-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+.glass-effect { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; }
+
+/* =======================
+   Hide Streamlit Branding
+   ======================= */
+#MainMenu { visibility: hidden; }
+footer { visibility: hidden; }
