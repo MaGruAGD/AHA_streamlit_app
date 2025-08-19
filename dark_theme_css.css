@@ -98,6 +98,48 @@ section[data-testid="stSidebar"] .css-1d391kg {
     background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
 }
 
+/* SIDEBAR TOGGLE BUTTON FIX - Make it visible in dark mode */
+.css-1rs6os,
+.css-17eq0hr,
+button[data-testid="collapsedControl"],
+.st-emotion-cache-1rs6os,
+.st-emotion-cache-17eq0hr {
+    background: rgba(59, 130, 246, 0.9) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    backdrop-filter: blur(10px) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 999999 !important;
+}
+
+.css-1rs6os:hover,
+.css-17eq0hr:hover,
+button[data-testid="collapsedControl"]:hover,
+.st-emotion-cache-1rs6os:hover,
+.st-emotion-cache-17eq0hr:hover {
+    background: rgba(59, 130, 246, 1) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
+}
+
+/* Additional sidebar toggle selectors for different Streamlit versions */
+[data-testid="collapsedControl"],
+.css-zt5igj,
+.st-emotion-cache-zt5igj {
+    background: rgba(59, 130, 246, 0.9) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    backdrop-filter: blur(10px) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 999999 !important;
+}
+
 /* Input Fields */
 .stTextInput > div > div > input,
 .stTextArea > div > div > textarea,
