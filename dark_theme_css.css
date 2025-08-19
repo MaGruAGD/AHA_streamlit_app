@@ -18,6 +18,7 @@
     margin: 1.5rem;
     max-width: 1200px;
     backdrop-filter: blur(10px);
+    z-index: 1 !important; /* Ensure sidebar toggle is on top */
 }
 
 /* Header Container */
@@ -28,6 +29,7 @@
     border-radius: 12px 12px 0 0;
     color: white;
     box-shadow: 0 4px 20px rgba(30, 58, 138, 0.3);
+    z-index: 1 !important; /* Ensure sidebar toggle is on top */
 }
 
 .header-title {
@@ -59,20 +61,9 @@
     backdrop-filter: blur(10px);
 }
 
-.status-card.status-success {
-    border-left: 4px solid #10b981;
-    background: rgba(16, 185, 129, 0.1);
-}
-
-.status-card.status-warning {
-    border-left: 4px solid #f59e0b;
-    background: rgba(245, 158, 11, 0.1);
-}
-
-.status-card.status-error {
-    border-left: 4px solid #ef4444;
-    background: rgba(239, 68, 68, 0.1);
-}
+.status-card.status-success { border-left: 4px solid #10b981; background: rgba(16, 185, 129, 0.1); }
+.status-card.status-warning { border-left: 4px solid #f59e0b; background: rgba(245, 158, 11, 0.1); }
+.status-card.status-error { border-left: 4px solid #ef4444; background: rgba(239, 68, 68, 0.1); }
 
 /* Breadcrumb Navigation */
 .breadcrumb-container {
@@ -87,50 +78,11 @@
     backdrop-filter: blur(5px);
 }
 
-/* SIDEBAR STYLING COMMENTED OUT - TESTING COLLAPSE FUNCTIONALITY */
-
-/* Style the sidebar background - ONLY when expanded */
-/*
-section[data-testid="stSidebar"]:not([aria-expanded="false"]) {
-    background: rgba(15, 15, 15, 0.95) !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-*/
-
-/* Style the collapsed sidebar background - very minimal */
-/*
-section[data-testid="stSidebar"][aria-expanded="false"] {
-    background: rgba(15, 15, 15, 0.98) !important;
-    border-right: 1px solid rgba(59, 130, 246, 0.3) !important;
-}
-*/
-
-/* Fallback for when aria-expanded isn't set */
-/*
-section[data-testid="stSidebar"] {
-    background: rgba(15, 15, 15, 0.95) !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-*/
-
-/* Style sidebar content text color only */
-/*
-section[data-testid="stSidebar"] .stMarkdown,
-section[data-testid="stSidebar"] .stSelectbox,
-section[data-testid="stSidebar"] .stButton,
-section[data-testid="stSidebar"] .stRadio,
-section[data-testid="stSidebar"] .stTextInput,
-section[data-testid="stSidebar"] .stNumberInput,
-section[data-testid="stSidebar"] label,
-section[data-testid="stSidebar"] p {
-    color: #e0e0e0 !important;
-}
-*/
-
 /* Input Fields */
 .stTextInput > div > div > input,
 .stTextArea > div > div > textarea,
-.stSelectbox > div > div > select {
+.stSelectbox > div > div > select,
+.stNumberInput > div > div > input {
     background: rgba(40, 40, 40, 0.8) !important;
     border: 1px solid rgba(255, 255, 255, 0.2) !important;
     color: #e0e0e0 !important;
@@ -142,14 +94,6 @@ section[data-testid="stSidebar"] p {
 .stSelectbox > div > div > select:focus {
     border-color: #3b82f6 !important;
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
-}
-
-/* Number Input */
-.stNumberInput > div > div > input {
-    background: rgba(40, 40, 40, 0.8) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    color: #e0e0e0 !important;
-    border-radius: 6px !important;
 }
 
 /* Buttons */
@@ -168,18 +112,6 @@ section[data-testid="stSidebar"] p {
     background: linear-gradient(135deg, #2563eb, #1e40af) !important;
     transform: translateY(-1px) !important;
     box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4) !important;
-}
-
-/* Secondary buttons */
-.stButton > button[kind="secondary"] {
-    background: rgba(40, 40, 40, 0.8) !important;
-    color: #e0e0e0 !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-}
-
-.stButton > button[kind="secondary"]:hover {
-    background: rgba(60, 60, 60, 0.8) !important;
-    border-color: #3b82f6 !important;
 }
 
 /* Download Button */
@@ -210,169 +142,34 @@ section[data-testid="stSidebar"] p {
     background: rgba(59, 130, 246, 0.1) !important;
 }
 
-/* DataFrames */
-.stDataFrame {
-    background: rgba(30, 30, 30, 0.9) !important;
-    border-radius: 8px !important;
-    overflow: hidden !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-
-/* Tables */
-table {
-    background: rgba(30, 30, 30, 0.9) !important;
-    color: #e0e0e0 !important;
-}
-
-th {
-    background: rgba(50, 50, 50, 0.9) !important;
-    color: #f0f0f0 !important;
-    font-weight: 600 !important;
-}
-
-td {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-
-/* Alerts and Messages */
-.stSuccess {
-    background: rgba(16, 185, 129, 0.15) !important;
-    border-left: 4px solid #10b981 !important;
-    color: #d1fae5 !important;
-}
-
-.stWarning {
-    background: rgba(245, 158, 11, 0.15) !important;
-    border-left: 4px solid #f59e0b !important;
-    color: #fef3c7 !important;
-}
-
-.stError {
-    background: rgba(239, 68, 68, 0.15) !important;
-    border-left: 4px solid #ef4444 !important;
-    color: #fecaca !important;
-}
-
-.stInfo {
-    background: rgba(59, 130, 246, 0.15) !important;
-    border-left: 4px solid #3b82f6 !important;
-    color: #dbeafe !important;
-}
-
-/* Expander */
-.streamlit-expanderHeader {
-    background: rgba(40, 40, 40, 0.8) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 8px !important;
-    color: #e0e0e0 !important;
-}
-
-.streamlit-expanderContent {
-    background: rgba(30, 30, 30, 0.6) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-top: none !important;
-    border-radius: 0 0 8px 8px !important;
-}
-
-/* Selectbox */
-.stSelectbox > div > div {
-    background: rgba(40, 40, 40, 0.8) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    border-radius: 6px !important;
-}
-
-/* Checkbox */
-.stCheckbox > label {
-    color: #e0e0e0 !important;
-}
-
-/* Radio */
-.stRadio > label {
-    color: #e0e0e0 !important;
-}
-
-.stRadio > div {
-    color: #e0e0e0 !important;
-}
-
-/* Custom Lab Icons Glow Effect */
-.lab-icon {
-    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.6));
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0%, 100% {
-        filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.6));
-    }
-    50% {
-        filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.8));
-    }
-}
-
 /* Scrollbar Styling */
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.6); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(59, 130, 246, 0.8); }
 
-::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-}
+/* Dark Card, Glow Text, Glass Effect */
+.dark-card { background: rgba(20, 20, 20, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1.5rem; margin: 1rem 0; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); backdrop-filter: blur(10px); }
+.glow-text { text-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+.glass-effect { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; }
 
-::-webkit-scrollbar-thumb {
-    background: rgba(59, 130, 246, 0.6);
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: rgba(59, 130, 246, 0.8);
-}
-
-/* Custom Dark Theme Enhancements */
-.dark-card {
-    background: rgba(20, 20, 20, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin: 1rem 0;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(10px);
-}
-
-.glow-text {
-    text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
-}
-
-.glass-effect {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-}
-
-/* Ensure sidebar collapse/expand button is not overridden by header styles */
-.header-container div[data-testid="collapsedControl"],
-.header-container div[data-testid="collapsedControl"] * {
-    all: unset !important;
-    display: flex !important;
+/* Sidebar Toggle Button Fix */
+div[data-testid="collapsedControl"] {
     position: fixed !important;
     top: 0.75rem !important;
     left: 0.75rem !important;
     z-index: 10000 !important;
-    cursor: pointer !important;
-}
-
-/* Style it to look consistent */
-div[data-testid="collapsedControl"] {
+    display: flex !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
     background: rgba(40, 40, 40, 0.9) !important;
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
     border-radius: 50% !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
     width: 36px !important;
     height: 36px !important;
     justify-content: center !important;
     align-items: center !important;
+    cursor: pointer !important;
 }
 
 div[data-testid="collapsedControl"] svg {
@@ -382,24 +179,11 @@ div[data-testid="collapsedControl"] svg {
     height: 20px !important;
 }
 
-
-/* Hide Streamlit Branding in Dark Mode */
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-/* Hide only Streamlit header items, keep sidebar toggle visible */
+/* Hide Streamlit Branding without breaking toggle */
+#MainMenu { visibility: hidden; }
+footer { visibility: hidden; }
 header [data-testid="stToolbar"],
 header [data-testid="stDecoration"],
 header [data-testid="stStatusWidget"] {
     display: none !important;
-}
-
-/* Keep the sidebar collapse/expand button visible */
-header [data-testid="collapsedControl"] {
-    visibility: visible !important;
-    display: flex !important;
-    position: fixed !important;
-    top: 0.75rem !important;
-    left: 0.75rem !important;
-    z-index: 10000 !important;
-    cursor: pointer !important;
 }
