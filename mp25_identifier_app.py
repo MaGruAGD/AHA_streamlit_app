@@ -1644,16 +1644,19 @@ def main():
     GITHUB_REPO = "AHA_streamlit_app"
     THEME_FILE = "theme.css"
     
-    # Initialize theme selection early
+    # Initialize theme selection early - BEFORE applying any theme
     if 'selected_theme' not in st.session_state:
         st.session_state.selected_theme = "☀️ Lichtmodus"
+    
+    # IMPORTANT: Initialize theme_changed flag
+    if 'theme_changed' not in st.session_state:
+        st.session_state.theme_changed = False
     
     # Theme options mapping
     theme_options = {
         "☀️ Lichtmodus": "theme.css",
         "🌙 Donkermodus": "dark_theme_css.css",
         "🏖️ Zomer Thema": "summer_theme.css",
-        
     }
     
     # Get current theme file
@@ -1733,8 +1736,8 @@ def main():
         show_status=False  # Set to True if you want to see loading status
     )
     
-    # Add theme selector to sidebar (call this early)
-    add_theme_selector()
+    # Add theme selector to sidebar (call this early) - FIXED VERSION
+    add_theme_selector_fixed()
     
    
     # Modern professional laboratory header
@@ -1812,9 +1815,9 @@ def main():
     elif step == "7. Download CSV":
         step_download_results()
 
-# Add this function if you want to provide theme switching capability
-def add_theme_selector():
-    """Add theme selection in sidebar with real-time switching"""
+# FIXED: Theme selector that doesn't break sidebar collapse
+def add_theme_selector_fixed():
+    """Add theme selection in sidebar WITHOUT st.rerun() to prevent sidebar collapse issues"""
     with st.sidebar:
         
         # Available theme files in your repo
@@ -1828,71 +1831,28 @@ def add_theme_selector():
         if 'selected_theme' not in st.session_state:
             st.session_state.selected_theme = "☀️ Lichtmodus"
         
-        # Create a container for the theme selector with tooltip
-        st.markdown("""
-        <style>
-        .theme-selector-container {
-            position: relative;
-        }
-        .tooltip-icon {
-            display: inline-block;
-            margin-left: 5px;
-            color: #666;
-            cursor: help;
-            font-size: 12px;
-        }
-        .tooltip-icon:hover::after {
-            content: "voor browsers met donkere modus";
-            position: absolute;
-            top: -30px;
-            left: 0;
-            background: #333;
-            color: white;
-            padding: 5px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            white-space: nowrap;
-            z-index: 1000;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        }
-        .tooltip-icon:hover::before {
-            content: "";
-            position: absolute;
-            top: -5px;
-            left: 10px;
-            border: 5px solid transparent;
-            border-top-color: #333;
-            z-index: 1000;
-        }
-        </style>
-        """, unsafe_allow_html=True)
+        # CRITICAL FIX: Use on_change callback instead of st.rerun()
+        def handle_theme_change():
+            """Handle theme change without causing rerun"""
+            new_theme = st.session_state.theme_selector_key
+            if new_theme != st.session_state.selected_theme:
+                st.session_state.selected_theme = new_theme
+                st.session_state.theme_changed = True
+                
+                # Clear theme cache to force reload
+                cache_keys = [k for k in st.session_state.keys() if k.startswith("github_theme_")]
+                for key in cache_keys:
+                    del st.session_state[key]
         
-        # Theme selector with callback
+        # Theme selector with on_change callback (NO st.rerun())
         selected_theme = st.selectbox(
             "Thema kiezen",
             options=list(theme_options.keys()),
             index=list(theme_options.keys()).index(st.session_state.selected_theme),
-            key="theme_selector",
+            key="theme_selector_key",
+            on_change=handle_theme_change,  # Use callback instead of checking afterwards
             help="🌙 Donkermodus: voor browsers met donkere modus"
         )
-        
-        # Auto-apply theme when selection changes
-        if selected_theme != st.session_state.selected_theme:
-            st.session_state.selected_theme = selected_theme
-            
-            # Clear theme cache to force reload
-            cache_keys = [k for k in st.session_state.keys() if k.startswith("github_theme_")]
-            for key in cache_keys:
-                del st.session_state[key]
-            
-            # Apply new theme
-            apply_github_theme(
-                username="MaGruAGD",
-                repository="AHA_streamlit_app",
-                file_path=theme_options[selected_theme],
-                show_status=False
-            )
-            st.rerun()
 
 
 if __name__ == "__main__":
