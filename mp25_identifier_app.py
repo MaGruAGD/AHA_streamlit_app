@@ -519,7 +519,7 @@ def initialize_session_state():
 
 # UI Components
 def create_sidebar():
-    """Create the sidebar navigation"""
+    """Create the sidebar navigation with simple current step highlighting"""
     with st.sidebar:
         st.header("Navigatie")
         
@@ -535,11 +535,23 @@ def create_sidebar():
         
         for step_name in steps:
             is_current = st.session_state.current_step == step_name
+            
+            # Simple highlight: different button type and label for current step
+            if is_current:
+                button_label = f"► {step_name}"  # Arrow indicator for current
+                button_type = "primary"
+                help_text = "Currently active step"
+            else:
+                button_label = step_name
+                button_type = "secondary"
+                help_text = None
+            
             if st.button(
-                step_name, 
+                button_label,
                 key=f"nav_{step_name}",
-                type="primary" if is_current else "secondary",
-                use_container_width=True
+                type=button_type,
+                use_container_width=True,
+                help=help_text
             ):
                 st.session_state.current_step = step_name
                 st.rerun()
