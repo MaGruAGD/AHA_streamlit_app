@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import re
@@ -399,11 +400,7 @@ def well_plate_selector(key: str, title: str = "Select Position", default_positi
     col_key = f"{key}_col"
     popup_key = f"{key}_show_popup"
     visual_state_key = f"{key}_visual_state"
-    
-    # Add this at the start of your well_plate_selector function
-    st.write(f"DEBUG - Key: {key}")
-    st.write(f"DEBUG - Session state keys: {[k for k in st.session_state.keys() if key in k]}")
-    
+
     # Initialize session state for row and col if not present
     if row_key not in st.session_state:
         st.session_state[row_key] = default_position[0]
@@ -486,9 +483,6 @@ def well_plate_selector(key: str, title: str = "Select Position", default_positi
                             # Also update main dropdown selections immediately
                             st.session_state[row_key] = well_pos[0]
                             st.session_state[col_key] = int(well_pos[1:])
-                            # CRITICAL: Also update the dropdown widget keys
-                            st.session_state[f"{key}_row_dropdown"] = well_pos[0]
-                            st.session_state[f"{key}_col_dropdown"] = int(well_pos[1:])
                             # Close popup immediately
                             st.session_state[popup_key] = False
                             st.rerun()
