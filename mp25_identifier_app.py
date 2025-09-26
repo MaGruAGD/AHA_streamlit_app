@@ -393,69 +393,62 @@ def well_plate_selector_compact(key, title="Select Position", default_position="
 
 
 def well_plate_selector(key: str, title: str = "Select Position", default_position: str = "A1"):
+    """Simplified well plate selector that actually works"""
     rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     cols = list(range(1, 13))
 
-    row_key = f"{key}_row"
-    col_key = f"{key}_col"
-    popup_key = f"{key}_show_popup"
-    visual_state_key = f"{key}_visual_state"
-
-    # Initialize session state for row and col if not present
-    if row_key not in st.session_state:
-        st.session_state[row_key] = default_position[0]
-
-    if col_key not in st.session_state:
-        try:
-            st.session_state[col_key] = int(default_position[1:])
-        except:
-            st.session_state[col_key] = 1
-
-    # Initialize visual selection state
-    if visual_state_key not in st.session_state:
-        st.session_state[visual_state_key] = f"{st.session_state[row_key]}{st.session_state[col_key]}"
+    # Single session state key for the selected position
+    position_key = f"well_position_{key}"
+    
+    # Initialize with default if not exists
+    if position_key not in st.session_state:
+        st.session_state[position_key] = default_position
 
     st.markdown(f"### {title}")
 
-    # Create three columns for better layout
+    # Extract current row and column from session state
+    current_position = st.session_state[position_key]
+    current_row = current_position[0] if current_position else 'A'
+    try:
+        current_col = int(current_position[1:]) if len(current_position) > 1 else 1
+    except ValueError:
+        current_col = 1
+
+    # Simple dropdown selectors
     col1, col2, col3 = st.columns([2, 2, 1])
 
     with col1:
         selected_row = st.selectbox(
             "Row:",
             options=rows,
-            index=rows.index(st.session_state[row_key]),
-            key=f"{key}_row_dropdown"
+            index=rows.index(current_row) if current_row in rows else 0,
+            key=f"{key}_row_select"
         )
 
     with col2:
         selected_col = st.selectbox(
             "Column:",
             options=cols,
-            index=st.session_state[col_key] - 1,
-            key=f"{key}_col_dropdown"
+            index=current_col - 1 if 1 <= current_col <= 12 else 0,
+            key=f"{key}_col_select"
         )
 
+    # Update session state immediately when dropdowns change
+    new_position = f"{selected_row}{selected_col}"
+    if new_position != st.session_state[position_key]:
+        st.session_state[position_key] = new_position
+
     with col3:
-        # Add some top padding to align with the selectboxes
         st.markdown("<div style='margin-top: 25px;'></div>", unsafe_allow_html=True)
-        if st.button("🧬 Well Selector", key=f"{key}_visual_btn", help="Open visual well plate selector", use_container_width=True):
-            st.session_state[popup_key] = True
-            # Sync visual selector to current dropdown selection when opening
-            st.session_state[visual_state_key] = f"{st.session_state[row_key]}{st.session_state[col_key]}"
-            st.rerun()
+        show_visual = st.button("🧬 Visual", key=f"{key}_visual_btn", use_container_width=True)
 
-    # Update session_state with dropdown selections
-    st.session_state[row_key] = selected_row
-    st.session_state[col_key] = selected_col
-
-    # Show popup if active
-    if st.session_state.get(popup_key, False):
-        with st.expander("🧬 Visual Well Plate Selector", expanded=True):
+    # Visual selector (only when button clicked)
+    if show_visual:
+        with st.expander("Visual Well Plate Selector", expanded=True):
             # Column headers
             header_cols = st.columns([1] + [1] * 12)
             with header_cols[0]:
-                st.write("")  # Empty corner for row labels
+                st.write("")
             for i, col_num in enumerate(cols):
                 with header_cols[i + 1]:
                     st.markdown(f"<div style='text-align: center; font-weight: bold;'>{col_num}</div>", unsafe_allow_html=True)
@@ -465,37 +458,28 @@ def well_plate_selector(key: str, title: str = "Select Position", default_positi
                 row_cols = st.columns([1] + [1] * 12)
                 with row_cols[0]:
                     st.markdown(f"<div style='text-align: center; font-weight: bold; padding-top: 8px;'>{row}</div>", unsafe_allow_html=True)
+                
                 for i, col_num in enumerate(cols):
                     well_pos = f"{row}{col_num}"
                     with row_cols[i + 1]:
-                        is_selected = st.session_state[visual_state_key] == well_pos
+                        is_selected = st.session_state[position_key] == well_pos
                         btn_label = "●" if is_selected else "○"
-                        # Use unique key for each button
+                        
                         if st.button(
                             btn_label,
-                            key=f"{key}_visual_well_{well_pos}",
+                            key=f"{key}_btn_{well_pos}",
                             type="primary" if is_selected else "secondary",
                             help=f"Select {well_pos}",
                             use_container_width=True
                         ):
-                            # Update visual selection
-                            st.session_state[visual_state_key] = well_pos
-                            # Also update main dropdown selections immediately
-                            st.session_state[row_key] = well_pos[0]
-                            st.session_state[col_key] = int(well_pos[1:])
-                            # Close popup immediately
-                            st.session_state[popup_key] = False
+                            # Direct update - no complex state management
+                            st.session_state[position_key] = well_pos
                             st.rerun()
 
-            st.success(f"Visual selection: **{st.session_state[visual_state_key]}**")
+            st.success(f"Selected: **{st.session_state[position_key]}**")
 
-            # Add a close button at the bottom
-            if st.button("❌ Close", key=f"{key}_close_visual", type="secondary", use_container_width=True):
-                st.session_state[popup_key] = False
-                st.rerun()
-
-    # Return combined selected position string
-    return f"{st.session_state[row_key]}{st.session_state[col_key]}"
+    # Return the current position
+    return st.session_state[position_key]
 
 def initialize_session_state():
     """Initialize session state variables"""
