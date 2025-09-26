@@ -486,6 +486,9 @@ def well_plate_selector(key: str, title: str = "Select Position", default_positi
                             # Also update main dropdown selections immediately
                             st.session_state[row_key] = well_pos[0]
                             st.session_state[col_key] = int(well_pos[1:])
+                            # CRITICAL: Also update the dropdown widget keys
+                            st.session_state[f"{key}_row_dropdown"] = well_pos[0]
+                            st.session_state[f"{key}_col_dropdown"] = int(well_pos[1:])
                             # Close popup immediately
                             st.session_state[popup_key] = False
                             st.rerun()
