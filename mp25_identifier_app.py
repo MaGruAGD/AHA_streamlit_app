@@ -1,5 +1,3 @@
-
-
 import streamlit as st
 import pandas as pd
 import re
@@ -401,7 +399,11 @@ def well_plate_selector(key: str, title: str = "Select Position", default_positi
     col_key = f"{key}_col"
     popup_key = f"{key}_show_popup"
     visual_state_key = f"{key}_visual_state"
-
+    
+    # Add this at the start of your well_plate_selector function
+    st.write(f"DEBUG - Key: {key}")
+    st.write(f"DEBUG - Session state keys: {[k for k in st.session_state.keys() if key in k]}")
+    
     # Initialize session state for row and col if not present
     if row_key not in st.session_state:
         st.session_state[row_key] = default_position[0]
