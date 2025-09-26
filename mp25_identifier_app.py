@@ -441,12 +441,14 @@ def well_plate_selector(key: str, title: str = "Select Position", default_positi
         if st.button("🧬 Well Selector", key=f"{key}_visual_btn", help="Open visual well plate selector", use_container_width=True):
             st.session_state[popup_key] = True
             # Sync visual selector to current dropdown selection when opening
-            st.session_state[visual_state_key] = f"{st.session_state[row_key]}{st.session_state[col_key]}"
+            st.session_state[visual_state_key] = f"{selected_row}{selected_col}"
             st.rerun()
 
-    # Update session_state with dropdown selections
-    st.session_state[row_key] = selected_row
-    st.session_state[col_key] = selected_col
+    # CRITICAL FIX: Update session_state immediately when dropdowns change
+    if selected_row != st.session_state[row_key]:
+        st.session_state[row_key] = selected_row
+    if selected_col != st.session_state[col_key]:
+        st.session_state[col_key] = selected_col
 
     # Show popup if active
     if st.session_state.get(popup_key, False):
@@ -479,7 +481,7 @@ def well_plate_selector(key: str, title: str = "Select Position", default_positi
                         ):
                             # Update visual selection
                             st.session_state[visual_state_key] = well_pos
-                            # Also update main dropdown selections immediately
+                            # CRITICAL FIX: Update dropdown selections immediately
                             st.session_state[row_key] = well_pos[0]
                             st.session_state[col_key] = int(well_pos[1:])
                             # Close popup immediately
@@ -493,7 +495,7 @@ def well_plate_selector(key: str, title: str = "Select Position", default_positi
                 st.session_state[popup_key] = False
                 st.rerun()
 
-    # Return combined selected position string
+    # Return current session state value (the critical fix)
     return f"{st.session_state[row_key]}{st.session_state[col_key]}"
 
 def initialize_session_state():
